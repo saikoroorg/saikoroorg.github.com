@@ -3,14 +3,15 @@
 <meta charset="utf-8">
 <style>
 h1 { text-align: center; }
+body { background-color: #888; }
 #resultRoot { width: 100%; height: 50%; display: flex; }
 #resultMain { width: 100%; border: 0; overflow: hidden; background-color: #888; }
 #scriptRoot { width: 100%; height: 40%; display: flex; }
 #scriptMain { width: 100%; }
 #buttonRoot { width: 100%; height: 10%; display: flex; }
-#runButton { width: 90%; margin: 12px 6px; }
-#editButton { width: 10%; margin: 12px 6px; display: none; }
-#fullButton { width: 10%; margin: 12px 6px; display: block; }
+#runButton { width: 90%; height: 100%; margin: 0; }
+#editButton { width: 10%; height: 100%; margin: 0; display: none; }
+#fullButton { width: 10%; height: 100%; margin: 0; display: block; }
 </style>
 </head>
 <body>
@@ -26,7 +27,7 @@ h1 { text-align: center; }
 <div id="scriptRoot">
 <textarea id="scriptMain">
 // Define counts of sprites.
-var number = 3;
+var number = 2;
 
 // Define maximum of sprite faces.
 var maximum = 6;
@@ -47,7 +48,6 @@ image.SetFrame(0, 0, 192, 192);
 
 // Clone to create sprites.
 var sprites = [];
-var angles = [];
 for (var i = 0; i < number; i++) {
 	sprites[i] = image.Clone();
 }
@@ -97,7 +97,11 @@ while (true) {
 
 	// Draw results.
 	if (results != null) {
-		screen.Print(results.reduce((a, b) => a + b) + "#" + number + "d" + maximum);
+		var result = 0;
+		for (var i = 0; i < number; i++) {
+			result += results[i];
+		}
+		screen.Print("" + result + "#" + number + "d" + maximum);
 	} else {
 		screen.Print("" + timeout);
 	}
@@ -126,7 +130,7 @@ while (true) {
 	var runButton = document.getElementById("runButton");
 
 	// Edit screen button event.
-	editButton.addEventListener("click", () => {
+	editButton.onclick = () => {
 
 		// Half result panes.
 		var result = document.getElementById("resultRoot");
@@ -142,10 +146,10 @@ while (true) {
 		var button = document.getElementById("buttonRoot");
 		editButton.style.display = "none";
 		fullButton.style.display = "block";
-    });
+    };
 
 	// Full screen button event.
-	fullButton.addEventListener("click", () => {
+	fullButton.onclick = () => {
 
 		// Open result panes.
 		var result = document.getElementById("resultRoot");
@@ -161,10 +165,10 @@ while (true) {
 		var button = document.getElementById("buttonRoot");
 		editButton.style.display = "block";
 		fullButton.style.display = "none";
-    });
+    };
 
-	// Run event.
-	var runEvent = () => {
+	// Run button / Load event.
+	runButton.onclick = window.onload =  () => {
 
 		// Create result panes.
 		var result = document.getElementById("resultRoot");
@@ -174,17 +178,12 @@ while (true) {
 		// Get script panes.
 		var scriptMain = document.getElementById("scriptMain");
 
-		// Add result window.
-		while ( result.firstChild ) {
-			result.removeChild(result.firstChild);
-		}
-		result.appendChild(resultMain);
-
 		// Add scripts to result pane after load iframe html.
-		resultMain.contentWindow.addEventListener("load", () => {
+		resultMain.onload = () => {
 
 			// Set result window style.
 			resultMain.contentWindow.document.documentElement.style.overflow = "hidden";
+			resultMain.contentWindow.document.body.style.margin = "0";
 
 			// Add common script to result pane.
 			var commonScript = document.createElement("script");
@@ -197,14 +196,15 @@ while (true) {
 				userScript.innerHTML = "(async()=>{" + scriptMain.value + "})();";
 				resultMain.contentWindow.document.body.appendChild(userScript);
 			});
-		});
+		};
+
+		// Add result window.
+		while ( result.firstChild ) {
+			result.removeChild(result.firstChild);
+		}
+		result.appendChild(resultMain);
 	};
 
-	// Run button event.
-	runButton.addEventListener("click", runEvent);
-
-	// On load event.
-	window.addEventListener("load", runEvent);
 </script>
 </body>
 </html>
