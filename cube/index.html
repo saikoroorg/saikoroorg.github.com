@@ -1,6 +1,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<title>WebDev by CUBE</title>
 <style>
 h1 { text-align: center; }
 body { background-color: #888; }
@@ -26,95 +27,74 @@ body { background-color: #888; }
 </div>
 <div id="scriptRoot">
 <textarea id="scriptMain">
-// Define counts of sprites.
-var number = 2;
+var counts = 2; // Counts of sprites.
+var maximum = 6; // Maximum of sprite faces.
+var timeout = 100; // Timeout counts.
 
-// Define maximum of sprite faces.
-var maximum = 6;
+// Resize screen.
+//var screen = cubeScreen();
+var screen = cubeResizeScreen(120, 60);
 
-// Define timeout counts.
-var timeout = 100;
-
-// Initialize common modules.
-var count = new cube.Count();
-var screen = new cube.Screen("screen");
-var input = new cube.Input(screen);
-
-// Load image for sprite.
-var image = new cube.Sprite("image");
-image.LoadImage("cube.png");
-await image.WaitLoadingImage();
-image.SetFrame(0, 0, 192, 192);
-
-// Clone to create sprites.
+// Create sprites.
 var sprites = [];
-for (var i = 0; i < number; i++) {
-	sprites[i] = image.Clone();
+for (var i = 0; i < counts; i++) {
+	sprites[i] = await cubeLoadSprite("cube.svg");
 }
 
 // Main loop.
-var randoms = null;
-var results = null;
+var result = 0;
 var angle = 0;
-while (true) {
+for (var i = 0; i < 999999; i++) {
+	cubeClear();
+
+	// Read input status.
+	var joypad = cubeReadJoypad();
 
 	// Update sprites.
-	if (results == null) {
+	if (!result) {
+
+		// Update angle.
+		angle = (angle + 20) % 360;
 
 		// Set random faces.
-		randoms = [];
-		for (var i = 0; i < number; i++) {
-			randoms[i] = count.Random(maximum) + 1;
-			var fx = 192 * Math.floor((randoms[i] - 1) % 4);
-			var fy = 192 * Math.floor((randoms[i] - 1) / 4);
-			sprites[i].SetFrame(fx, fy, 192, 192);
+		var randoms = [];
+		for (var i = 0; i < counts; i++) {
+			randoms[i] = cubeRandom(maximum) + 1;
+			var fx = cubeMod(randoms[i] - 1, 5) * 80;
+			var fy = cubeDiv(randoms[i] - 1, 5) * 80;
+			cubeFrame(fx, fy, 80, 80, sprites[i]);
+			cubeScale(1.2 / (counts + 1), sprites[i]);
 		}
 
-		// Decrease timeout count.
+		// Calculate result on timeout.
 		timeout--;
+		if (timeout <= 0 || joypad.act) {
+			for (var i = 0; i < counts; i++) {
+				result += randoms[i];
+			}
 
-		// Set result faces.
-		input.UpdateDirs();
-		if (timeout <= 0 || input.Dirs(true)) {
-			results = randoms;
-			randoms = null;
+			// Reset angle on timeout.
+			angle = 0;
 		}
 	}
 
-	// Update sprite positions.
-	screen.UpdateLen();
-	for (var i = 0; i < number; i++) {
-		sprites[i].SetScale(2.0 / (number + 1));
-		sprites[i].SetPos(new cube.Vec(screen.len.x / (number + 1) * (i + 1), screen.len.y / 2));
-	}
-
-	// Update sprite angles.
-	if (randoms != null) {
-		angle = (angle + 20) % 360;
-	} else if ((angle % 90) > 0) {
-		angle = (angle + 10) % 360;
-	}
-
-	// Draw results.
-	if (results != null) {
-		var result = 0;
-		for (var i = 0; i < number; i++) {
-			result += results[i];
-		}
-		screen.Print("" + result + "#" + number + "d" + maximum);
+	// Draw timeout count or result.
+	if (result > 0) {
+		cubeWrite("" + result + " #" + counts + "d" + maximum);
 	} else {
-		screen.Print("" + timeout);
+		cubeWrite("" + timeout);
 	}
 
 	// Draw sprites.
-	for (var i = 0; i < number; i++) {
-		sprites[i].SetAngle(angle);
-		sprites[i].Enable(screen, true);
+	for (var i = 0; i < counts; i++) {
+		cubeRotate(angle, sprites[i]);
+		var sx = screen.width.x / (counts + 1) * (i + 1);
+		var sy = screen.width.y / 2;
+		cubeMove(sx, sy, sprites[i]);
+		cubeDraw(sprites[i]);
 	}
 
-	// Clear screen for next loop.
-	await count.Wait(10);
-	screen.Clear();
+	await cubeWait(10);
 }
 </textarea>
 </div>
@@ -167,8 +147,8 @@ while (true) {
 		fullButton.style.display = "none";
     };
 
-	// Run button / Load event.
-	runButton.onclick = window.onload =  () => {
+	// Run button event.
+	runButton.onclick = () => {
 
 		// Create result panes.
 		var result = document.getElementById("resultRoot");
@@ -187,7 +167,7 @@ while (true) {
 
 			// Add common script to result pane.
 			var commonScript = document.createElement("script");
-			commonScript.src = "cube-0.1.js";
+			commonScript.src = "cube-api-0.8.js";
 			resultMain.contentWindow.document.body.appendChild(commonScript);
 
 			// Add user script to result pane after load common script.
@@ -205,6 +185,12 @@ while (true) {
 		result.appendChild(resultMain);
 	};
 
+	// Load event.
+	window.onload = () => {
+
+		// Run script.
+		runButton.onclick();
+	};
 </script>
 </body>
 </html>
