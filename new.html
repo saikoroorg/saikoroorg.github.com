@@ -14,40 +14,39 @@ body {
     width: 100%; height: 100%;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
-    justify-content: space-between; -webkit-justify-content: space-between;
+    justify-content: flex-start; -webkit-justify-content: flex-start;
     align-items: center; -webkit-align-items: center;
 }
 #header {
-    width: 90%; height: 10%;
+    width: 90%; height: 5%;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: space-between; -webkit-justify-content: space-between;
     align-items: center; -webkit-align-items: center;
 }
 #contents {
-    margin: 20px 0px;
+    width: 90%; padding: 20px;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: space-evenly; -webkit-justify-content: space-evenly;
     align-items: center; -webkit-align-items: center;
 }
 #footer {
-    width: 90%; height: 5%; padding: 10px;
+    width: 90%; height: 5%;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: flex-end; -webkit-justify-content: flex-end;
     align-items: center; -webkit-align-items: center;
 }
 .logo {
+    width: 100%; height: 60px;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
-    justify-content: center; -webkit-justify-content: center;
+    justify-content: flex-start; -webkit-justify-content: flex-start;
     align-items: center; -webkit-align-items: center;
-    color: #000;
-    text-decoration: none;
 }
 .logo .icon {
-    width: 80px; height: 80px;
+    width: 60px; height: 60px; margin: 0px 10px 0px -10px;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: center; -webkit-justify-content: center;
@@ -58,16 +57,17 @@ body {
     text-decoration: none;
 }
 .lang {
-    margin: 4px;;
     display: flex; display: -webkit-flex;
-    flex-direction: column; -webkit-flex-direction: column;
+    flex-direction: row; -webkit-flex-direction: row;
     justify-content: center; -webkit-justify-content: center;
     align-items: center; -webkit-align-items: center;
     text-align: center;
     vertical-align: middle;
+    font-size: 12px;
 }
 .lang a {
-    color: #000;
+    padding: 4px;
+    color: #888;
     text-decoration: none;
     transform: scale(1);
 }
@@ -81,6 +81,8 @@ body {
     width: 80%; margin: 10px; padding: 20px;
     display: flex; display: -webkit-flex;
     flex-flow: wrap; -webkit-flex-flow: wrap;
+    justify-content: center; -webkit-justify-content: center;
+    align-items: start; -webkit-align-items: start;
     background-color: #eee;
 }
 .app .name {
@@ -118,14 +120,17 @@ body {
     display: none;
 }
 .app .disc a {
-    margin: 0px; padding: 0px 2px;
+    margin: 0px; padding-right: 2px;
     color: #e00;
     font-weight: bold;
     text-decoration: underline;
     white-space: nowrap;
 }
+.app .disc a:hover {
+    text-decoration: none;
+}
 .app .disc .note {
-    margin: 0px; padding: 0px 2px;
+    margin: 0px;
     color: #888;
 }
 
@@ -140,6 +145,10 @@ body {
                 Saikoro.org
             </a>
         </div>
+        <div class="lang">
+            <a href="javascript:setLanguage('en');">en</a>
+            <a href="javascript:setLanguage('ja');">ja</a>
+        </div>
     </h1>
     <div id="contents">
         <div class="app">
@@ -153,18 +162,18 @@ body {
                 <div class="en">
                     The web app that rolls dice by tapping.
                     <a href="dice?2d">2d</a> is for 2 dice.
-                    <a href="dice?3d6">3d6</a> is for 3 dice 6 sided.
+                    <a href="dice?3d6">3d6</a> is for 3 dice.
                     <a href="dice?d8">d8</a> is for a die 8 sided.
                     <a href="dice?2d10">2d10</a> is for 2 dice 10 sided.
                     <span class="note">"Add to Homescreen" to use like as native app.</span>
                 </div>
                 <div class="ja">
-                    タップでサイコロをころがすWebアプリです。
-                    <a href="dice?2d">2d</a> は2つのサイコロです。
-                    <a href="dice?3d6">3d6</a> は3つの6面サイコロです。
-                    <a href="dice?d8">d8</a> は8面サイコロです。
-                    <a href="dice?2d10">2d10</a> は2つの10面サイコロです。
-                    <span class="note">"ホーム画面に追加" をするとアプリのようにつかえます。</span>
+                    タップでサイコロをころがすウェブアプリです。
+                    <a href="dice?2d">2d</a>は2つのサイコロです。
+                    <a href="dice?3d6">3d6</a>は3つのサイコロです。
+                    <a href="dice?d8">d8</a>は8面サイコロです。
+                    <a href="dice?2d10">2d10</a>は2つの10面サイコロです。
+                    <span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
                 </div>
             </div>
         </div>
@@ -179,27 +188,26 @@ body {
                 <div class="en">
                     The web app for practicing mental arithmetic by tapping.
                     You can see the time it took for the 20 questions.
-                    <a href="kuku?t10">t10</a>(Tashite 10) is addition/subtraction up to 10.
-                    <a href="kuku?t20">t20</a>(Tashite 20) is addition/subtraction up to 20.
+                    <a href="kuku?t10">t10</a>(Tashite 10) is addition / subtraction up to 10.
+                    <a href="kuku?t20">t20</a>(Tashite 20) is addition / subtraction up to 20.
                     <a href="kuku?x9">x9</a>(Kuku) is multiplication up to 9x9.
                     <a href="kuku?x19">x19</a>(Indian Kuku) is multiplication from 10x1 to 19x19.
                     <span class="note">"Add to Homescreen" to use like as native app.</span>
                 </div>
                 <div class="ja">
-                    タップであんざんのれんしゅうをするWebアプリです。
-                    20もんでかかったじかんがでます。
-                    <a href="kuku?t10">t10</a>(たして10) は10までのたしざん/ひきざんです。
-                    <a href="kuku?t20">t20</a>(たして20) は20までのたしざん/ひきざんです。
-                    <a href="kuku?x9">x9</a>(九九) は9×9までのかけざんです。
-                    <a href="kuku?x19">x19</a>(インド式九九) は10×1から19×19までのかけざんです。
-                    <span class="note">"ホーム画面に追加" をするとアプリのようにつかえます。</span>
+                    タップであんざんのれんしゅうをするウェブアプリです。
+                    20もんおわると、かかったじかんがわかります。
+                    <a href="kuku?t10">t10</a>(たして10)は10までのたしざん/ひきざんです。
+                    <a href="kuku?t20">t20</a>(たして20)は20までのたしざん/ひきざんです。
+                    <a href="kuku?x9">x9</a>(九九)は9×9までのかけざんです。
+                    <a href="kuku?x19">x19</a>(インド式九九)は10×1から19×19までのかけざんです。
+                    <span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
                </div>
             </div>
         </div>
     </div>
     <h6 id="footer">
-        <div class="lang"><a href="javascript:setLanguage('en');">en</a></div>
-        <div class="lang"><a href="javascript:setLanguage('ja');">ja</a></div>
+        .
     </h6>
 </div>
 <script src="dice/cube-api-0.8.js"></script>
