@@ -40,7 +40,7 @@ body {
     align-items: center; -webkit-align-items: center;
 }
 .logo {
-    width: 240px; height: 60px;
+    width: 160px; height: 60px;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: flex-start; -webkit-justify-content: flex-start;
@@ -58,7 +58,7 @@ body {
     text-decoration: none;
 }
 .menu {
-    margin-top: -30px;
+    width: 40px; margin-top: -30px;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: center; -webkit-justify-content: center;
@@ -110,8 +110,8 @@ body {
     transform: scale(0.9);
 }
 .app .disc {
-    width: 60%; margin: 0px 10px 0px;
-    flex: 1 0 auto;
+    width: 60%; margin: 10px;
+    flex: 1 1 auto;
 }
 .app .disc a {
     color: #e00;
@@ -159,23 +159,21 @@ body {
                     Dice
                 </a>
             </div>
-            <div class="disc">
-                <div class="en">
-                    The web app that rolls dice by tapping.
-                    <a href="dice?2d">2d</a> is for 2 dice.
-                    <a href="dice?3d6">3d6</a> is for 3 dice.
-                    <a href="dice?d8">d8</a> is for a die 8 sided.
-                    <a href="dice?2d10">2d10</a> is for 2 dice 10 sided.
-                    <span class="note">"Add to Homescreen" to use like as native app.</span>
-                </div>
-                <div class="ja">
-                    タップでサイコロをころがすウェブアプリです。
-                    <a href="dice?2d">2d</a>は2つのサイコロです。
-                    <a href="dice?3d6">3d6</a>は3つのサイコロです。
-                    <a href="dice?d8">d8</a>は8面サイコロです。
-                    <a href="dice?2d10">2d10</a>は2つの10面サイコロです。
-                    <span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
-                </div>
+            <div class="disc en">
+                The web app that rolls dice by tapping.
+                <a href="dice?2d">2d</a> is for 2 dice.
+                <a href="dice?3d6">3d6</a> is for 3 dice.
+                <a href="dice?d8">d8</a> is for a die 8 sided.
+                <a href="dice?2d10">2d10</a> is for 2 dice 10 sided.
+                <span class="note">"Add to Homescreen" to use like as native app.</span>
+            </div>
+            <div class="disc ja">
+                タップでサイコロをころがすウェブアプリです。
+                <a href="dice?2d">2d</a>は2つのサイコロです。
+                <a href="dice?3d6">3d6</a>は3つのサイコロです。
+                <a href="dice?d8">d8</a>は8面サイコロです。
+                <a href="dice?2d10">2d10</a>は2つの10面サイコロです。
+                <span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
             </div>
         </div>
         <div class="app">
@@ -185,26 +183,24 @@ body {
                     Kuku
                 </a>
             </div>
-            <div class="disc">
-                <div class="en">
-                    The web app for practicing mental arithmetic by tapping.
-                    You can see the time it took for the 20 questions.
-                    <a href="kuku?t10">t10</a>(Tashite 10) is addition / subtraction up to 10.
-                    <a href="kuku?t20">t20</a>(Tashite 20) is addition / subtraction up to 20.
-                    <a href="kuku?x9">x9</a>(Kuku) is multiplication up to 9x9.
-                    <a href="kuku?x19">x19</a>(Indian Kuku) is multiplication from 10x1 to 19x19.
-                    <span class="note">"Add to Homescreen" to use like as native app.</span>
-                </div>
-                <div class="ja">
-                    タップであんざんのれんしゅうをするウェブアプリです。
-                    20もんおわると、かかったじかんがわかります。
-                    <a href="kuku?t10">t10</a>(たして10)は10までのたしざん/ひきざんです。
-                    <a href="kuku?t20">t20</a>(たして20)は20までのたしざん/ひきざんです。
-                    <a href="kuku?x9">x9</a>(九九)は9×9までのかけざんです。
-                    <a href="kuku?x19">x19</a>(インド式九九)は10×1から19×19までのかけざんです。
-                    <span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
-               </div>
+            <div class="disc en">
+                The web app for practicing mental arithmetic by tapping.
+                You can see the time it took for the 20 questions.
+                <a href="kuku?t10">t10</a>(Tashite 10) is addition / subtraction up to 10.
+                <a href="kuku?t20">t20</a>(Tashite 20) is addition / subtraction up to 20.
+                <a href="kuku?x9">x9</a>(Kuku) is multiplication up to 9x9.
+                <a href="kuku?x19">x19</a>(Indian Kuku) is multiplication from 10x1 to 19x19.
+                <span class="note">"Add to Homescreen" to use like as native app.</span>
             </div>
+            <div class="disc ja">
+                タップであんざんのれんしゅうをするウェブアプリです。
+                20もんおわると、かかったじかんがわかります。
+                <a href="kuku?t10">t10</a>(たして10)は10までのたしざん/ひきざんです。
+                <a href="kuku?t20">t20</a>(たして20)は20までのたしざん/ひきざんです。
+                <a href="kuku?x9">x9</a>(九九)は9×9までのかけざんです。
+                <a href="kuku?x19">x19</a>(インド式九九)は10×1から19×19までのかけざんです。
+                <span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
+           </div>
         </div>
     </div>
     <h6 id="footer">
