@@ -21,7 +21,14 @@ body {
     width: 90%; height: 10%;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
-    justify-content: center; -webkit-justify-content: center;
+    justify-content: space-between; -webkit-justify-content: space-between;
+    align-items: center; -webkit-align-items: center;
+}
+#contents {
+    margin: 20px 0px;
+    display: flex; display: -webkit-flex;
+    flex-direction: column; -webkit-flex-direction: column;
+    justify-content: space-evenly; -webkit-justify-content: space-evenly;
     align-items: center; -webkit-align-items: center;
 }
 #footer {
@@ -31,62 +38,95 @@ body {
     justify-content: flex-end; -webkit-justify-content: flex-end;
     align-items: center; -webkit-align-items: center;
 }
-#logo {
+.logo {
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: center; -webkit-justify-content: center;
     align-items: center; -webkit-align-items: center;
-}
-#logo a {
     color: #000;
     text-decoration: none;
 }
-#icon {
+.logo .icon {
     width: 80px; height: 80px;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: center; -webkit-justify-content: center;
     align-items: center; -webkit-align-items: center;
 }
-#menu {
+.logo a {
+    color: #000;
+    text-decoration: none;
+}
+.lang {
+    margin: 4px;;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
-    justify-content: space-evenly; -webkit-justify-content: space-evenly;
-    align-items: center; -webkit-align-items: center;
-    background-color: #eee;
-}
-#apps {
-    display: flex; display: -webkit-flex;
-    flex-direction: row; -webkit-flex-direction: row;
-    justify-content: space-evenly; -webkit-justify-content: space-evenly;
+    justify-content: center; -webkit-justify-content: center;
     align-items: center; -webkit-align-items: center;
     text-align: center;
     vertical-align: middle;
 }
-#apps a {
+.lang a {
     color: #000;
     text-decoration: none;
     transform: scale(1);
 }
-#apps a:hover {
+.lang a:hover {
+    transform: scale(1.2);
+}
+.lang a:active {
+    transform: scale(0.9);
+}
+.app {
+    width: 80%; margin: 10px;
+    display: flex; display: -webkit-flex;
+    flex-flow: wrap; -webkit-flex-flow: wrap;
+    background-color: #eee;
+}
+.app .name {
+    width: 80px; margin: 20px;
+    flex: 0 0 auto;
+    display: flex; display: -webkit-flex;
+    flex-direction: column; -webkit-flex-direction: column;
+    justify-content: center; -webkit-justify-content: center;
+    align-items: center; -webkit-align-items: center;
+    text-align: center;
+    vertical-align: middle;
+}
+.app .name a {
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
+    transform: scale(1);
+}
+.app .name a:hover {
     transform: scale(1.1);
 }
-#apps a:active {
-    transform: scale(0.8);
+.app .name a:active {
+    transform: scale(0.9);
 }
-#dice {
-    margin: 40px;
+.app .disc {
+    width: 60%; margin: 20px;
+    flex: 1 0 auto;
 }
-#diceicon {
-    width: 80px; height: 80px;
-    background-image: url('dice/icon.svg');
+.app .disc .en {
+    margin: 10px 0px;
+    display: block;
 }
-#kuku {
-    margin: 40px;
+.app .disc .ja {
+    margin: 10px 0px;
+    display: none;
 }
-#kukuicon {
-    width: 80px; height: 80px;
-    background-image: url('kuku/icon.svg');
+.app .disc a {
+    margin: 0px; padding: 0px 2px;
+    color: #e00;
+    font-weight: bold;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+.app .disc .note {
+    margin: 0px; padding: 0px 2px;
+    color: #888;
 }
 
 </style>
@@ -94,33 +134,95 @@ body {
 <body>
 <div id="container">
     <h1 id="header">
-        <div id="logo">
-            <div id="icon" class="cubeScreen"></div>
+        <div class="logo">
+            <div class="icon cubeScreen"></div>
             <a href="?">
                 Saikoro.org
             </a>
         </div>
     </h1>
-    <div id="menu">
-        <h2 id="header">
-            Web Apps
-        </h2>
-        <div id="apps">
-            <a id="dice" href="dice/">
-                <div id="diceicon"></div>
-                Dice
-            </a>
-            <a id="kuku" href="kuku/">
-                <div id="kukuicon"></div>
-                Kuku
-            </a>
+    <div id="contents">
+        <div class="app">
+            <div class="name">
+                <a href="dice/">
+                    <img class="icon" src="dice/icon.svg"/>
+                    Dice
+                </a>
+            </div>
+            <div class="disc">
+                <div class="en">
+                    The web app that rolls dice by tapping.
+                    <a href="dice?2d">2d</a> is for 2 dice.
+                    <a href="dice?3d6">3d6</a> is for 3 dice 6 sided.
+                    <a href="dice?d8">d8</a> is for a die 8 sided.
+                    <a href="dice?2d10">2d10</a> is for 2 dice 10 sided.
+                    <span class="note">"Add to Homescreen" to use like as native app.</span>
+                </div>
+                <div class="ja">
+                    タップでサイコロをころがすWebアプリです。
+                    <a href="dice?2d">2d</a> は2つのサイコロです。
+                    <a href="dice?3d6">3d6</a> は3つの6面サイコロです。
+                    <a href="dice?d8">d8</a> は8面サイコロです。
+                    <a href="dice?2d10">2d10</a> は2つの10面サイコロです。
+                    <span class="note">"ホーム画面に追加" をするとアプリのようにつかえます。</span>
+                </div>
+            </div>
+        </div>
+        <div class="app">
+            <div class="name">
+                <a href="kuku/">
+                    <img class="icon" src="kuku/icon.svg"/>
+                    Kuku
+                </a>
+            </div>
+            <div class="disc">
+                <div class="en">
+                    The web app for practicing mental arithmetic by tapping.
+                    You can see the time it took for the 20 questions.
+                    <a href="kuku?t10">t10</a>(Tashite 10) is addition/subtraction up to 10.
+                    <a href="kuku?t20">t20</a>(Tashite 20) is addition/subtraction up to 20.
+                    <a href="kuku?x9">x9</a>(Kuku) is multiplication up to 9x9.
+                    <a href="kuku?x19">x19</a>(Indian Kuku) is multiplication from 10x1 to 19x19.
+                    <span class="note">"Add to Homescreen" to use like as native app.</span>
+                </div>
+                <div class="ja">
+                    タップであんざんのれんしゅうをするWebアプリです。
+                    20もんでかかったじかんがでます。
+                    <a href="kuku?t10">t10</a>(たして10) は10までのたしざん/ひきざんです。
+                    <a href="kuku?t20">t20</a>(たして20) は20までのたしざん/ひきざんです。
+                    <a href="kuku?x9">x9</a>(九九) は9×9までのかけざんです。
+                    <a href="kuku?x19">x19</a>(インド式九九) は10×1から19×19までのかけざんです。
+                    <span class="note">"ホーム画面に追加" をするとアプリのようにつかえます。</span>
+               </div>
+            </div>
         </div>
     </div>
     <h6 id="footer">
+        <div class="lang"><a href="javascript:setLanguage('en');">en</a></div>
+        <div class="lang"><a href="javascript:setLanguage('ja');">ja</a></div>
     </h6>
 </div>
 <script src="dice/cube-api-0.8.js"></script>
-<!--Main--><script>(async()=>{
+<!--Language--><script>
+    var query = "" + cubeLoadParam();
+
+    // Set language.
+    var setLanguage = (lang="en") => {
+        var menuClass = lang.match("en|ja") ? lang :
+                        (window.navigator.userLanguage ||
+                         window.navigator.language ||
+                         window.navigator.browserLanguage).substr(0,2) == "ja" ? "ja" : "en";
+        var menuClasses = ["en", "ja"];
+        for (let i = 0; i < menuClasses.length; ++i) {
+        let menuElems = document.getElementsByClassName(menuClasses[i]);
+            for (let j = 0; j < menuElems.length; ++j) {
+                menuElems[j].style.display = menuClasses[i] == menuClass ? "block" : "none";
+            }
+        }
+    };
+   setLanguage(query);
+</script><!--/Language-->
+<!--Logo--><script>(async()=>{
     var maximum = 6; // Maximum of dice faces.
     var rolling = 0; // Rolling count.
 
@@ -195,7 +297,7 @@ body {
             await cubeWait(10);
         }
     }
-})();</script><!--/Main-->
+})();</script><!--/Logo-->
 <!--script>navigator.serviceWorker.register("worker.js");</script-->
 </body>
 </html>
