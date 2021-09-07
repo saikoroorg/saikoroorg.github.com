@@ -43,14 +43,15 @@ body {
     align-items: center; -webkit-align-items: center;
 }
 .logo {
-    width: 160px; height: 60px;
+    width: 160px; height: 60px; margin-right: 16px;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: flex-start; -webkit-justify-content: flex-start;
     align-items: center; -webkit-align-items: center;
+    font-size: 24px;
 }
 .logo .icon {
-    width: 50px; height: 50px; margin: 8px;
+    width: 40px; height: 40px; margin: 8px;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: center; -webkit-justify-content: center;
@@ -78,7 +79,7 @@ body {
 .menu a:active {
     transform: scale(0.9);
 }
-.lang {
+.menu .lang {
     padding: 4px;
     font-size: 12px;
 }
@@ -113,7 +114,7 @@ body {
     transform: scale(0.9);
 }
 .app .name .icon {
-    width: 80px;
+    width: 80px; height: 80px;
 }
 .app .disc {
     width: 60%; margin: 10px;
@@ -313,6 +314,5 @@ body {
         }
     }
 })();</script><!--/Logo-->
-<!--script>navigator.serviceWorker.register("worker.js");</script-->
 </body>
 </html>
