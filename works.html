@@ -50,7 +50,7 @@ body {
     align-items: center; -webkit-align-items: center;
 }
 .logo .icon {
-    width: 60px; height: 60px;
+    width: 50px; height: 50px; margin: 8px;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: center; -webkit-justify-content: center;
@@ -112,6 +112,9 @@ body {
 .app .name a:active {
     transform: scale(0.9);
 }
+.app .name .icon {
+    width: 80px;
+}
 .app .disc {
     width: 60%; margin: 10px;
     flex: 1 1 auto;
@@ -129,8 +132,11 @@ body {
     margin: 0px;
     color: #888;
 }
-.en {
+.no {
     display: block;
+}
+.en {
+    display: none;
 }
 .ja {
     display: none;
@@ -142,7 +148,9 @@ body {
 <div id="container">
     <h1 id="header">
         <div class="logo">
-            <div class="icon cubeScreen"></div>
+            <div class="icon cubeScreen">
+                <img class="icon no" src="dice/icon.svg"/>
+            </div>
             <a href="?">
                 Saikoro.org
             </a>
@@ -219,7 +227,7 @@ body {
                         (window.navigator.userLanguage ||
                          window.navigator.language ||
                          window.navigator.browserLanguage).substr(0,2) == "ja" ? "ja" : "en";
-        var langIds = ["en", "ja"];
+        var langIds = ["no", "en", "ja"];
         for (let i = 0; i < langIds.length; ++i) {
             let elems = document.getElementsByClassName(langIds[i]);
             for (let j = 0; j < elems.length; ++j) {
@@ -234,7 +242,7 @@ body {
     var rolling = 0; // Rolling count.
 
     // Resize screen.
-    cubeResizeScreen(200, 200);
+    cubeResizeScreen(80, 80);
 
     // Create sprites.
     var sprite = await cubeSprite("dice/dice.svg", 40, 40);
@@ -286,9 +294,9 @@ body {
             // Update sprites.
             cubeAnimate(random, sprite);
             if (rolling < 5) {
-                cubeExpand(5 * (0.8 + 0.04 * rolling), sprite);
+                cubeExpand(2 * (0.8 + 0.04 * rolling), sprite);
             } else {
-                cubeExpand(5, sprite);
+                cubeExpand(2, sprite);
             }
             cubeRotate(angle, sprite);
             var sx = size.x / 2;
