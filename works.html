@@ -279,7 +279,7 @@ body {
 
                 // Timeout and show result.
                 } else if (rolling > 60) {
-                    result += random;
+                    result = random;
                     angle = 0;
                     rolling = 1;
                 }
@@ -288,11 +288,11 @@ body {
             // Roll sprites.
             if (result <= 0) {
                 angle = (angle + 20) % 360;
-                random = cubeRandom(maximum - 1) + 1;
+                random = cubeRandom(maximum) + 1;
             }
 
             // Update sprites.
-            cubeAnimate(random, sprite);
+            cubeAnimate(random - 1, sprite);
             if (rolling < 5) {
                 cubeExpand(2 * (0.8 + 0.04 * rolling), sprite);
             } else {
