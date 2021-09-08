@@ -41,6 +41,10 @@ body {
     justify-content: flex-end; -webkit-justify-content: flex-end;
     align-items: center; -webkit-align-items: center;
 }
+#version {
+    font-size: 12px;
+    opacity: 0.1;
+}
 .logo {
     width: 160px; height: 60px; margin-right: 16px;
     display: flex; display: -webkit-flex;
@@ -61,14 +65,12 @@ body {
     text-decoration: none;
 }
 .menu {
-    width: 40px; margin-top: -30px;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: center; -webkit-justify-content: center;
     align-items: center; -webkit-align-items: center;
 }
 .menu a {
-    color: #888;
     text-decoration: none;
     transform: scale(1);
 }
@@ -78,9 +80,12 @@ body {
 .menu a:active {
     transform: scale(0.9);
 }
-.menu .lang {
+.lang {
     padding: 4px;
     font-size: 12px;
+}
+a.lang {
+    color: #888;
 }
 .app {
     width: 80%; margin: 10px; padding: 20px;
@@ -95,25 +100,17 @@ body {
     flex: 0 0 auto;
     text-align: center;
     vertical-align: middle;
-}
-.app .name a {
     color: #000;
+    font-size: 16px;
     font-weight: bold;
-    text-decoration: none;
-    transform: scale(1);
 }
-.app .name a:hover {
-    transform: scale(1.1);
-}
-.app .name a:active {
-    transform: scale(0.9);
-}
-.app .name .icon {
+.app .icon {
     width: 80px; height: 80px;
 }
 .app .disc {
     width: 60%; margin: 10px;
     flex: 1 1 auto;
+    line-height: 150%;
 }
 .app .disc a {
     color: #e00;
@@ -128,16 +125,12 @@ body {
     margin: 0px;
     color: #888;
 }
-.no {
-    display: block;
-}
 .en {
     display: none;
 }
 .ja {
     display: none;
 }
-
 </style>
 </head>
 <body>
@@ -160,8 +153,8 @@ body {
     </h1>
     <div id="contents">
         <div class="app">
-            <div class="name">
-                <a href="dice/">
+            <div class="menu">
+                <a class="name" href="dice/">
                     <img class="icon" src="dice/icon.svg"/>
                     Dice
                 </a>
@@ -175,7 +168,7 @@ body {
                 <span class="note">"Add to Homescreen" to use like as native app.</span>
             </div>
             <div class="disc ja">
-                <a href="dice/">Dice</a>はタップでサイコロをころがすウェブアプリです。
+                <a href="dice/">Dice</a>はタップでサイコロをふるウェブアプリです。
                 <a href="dice/?2d">2d</a>は2つのサイコロです。
                 <a href="dice/?3d6">3d6</a>は3つのサイコロです。
                 <a href="dice/?d8">d8</a>は8面サイコロです。
@@ -184,8 +177,8 @@ body {
             </div>
         </div>
         <div class="app">
-            <div class="name">
-                <a href="kuku/">
+            <div class="menu">
+                <a class="name" href="kuku/">
                     <img class="icon" src="kuku/icon.svg"/>
                     Kuku
                 </a>
@@ -210,7 +203,7 @@ body {
         </div>
     </div>
     <h6 id="footer">
-        .
+        <div id="version">.</div>
     </h6>
 </div>
 <script src="dice/cube-api-0.8.js"></script>
