@@ -134,7 +134,7 @@
                      M8,9v1
                      M4,10v1 M12,10v1
                      M4,12v1 M12,12v1
-                     M6,12h1 M9,12h1" stroke="none" fill="#000"/>
+                     M6,12h1 M9,12h1"/>
         </g>
         <g transform="translate(60,60)">
             <path d="M0,0h16v16h-16Z"/>
