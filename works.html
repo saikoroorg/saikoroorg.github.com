@@ -18,7 +18,7 @@ body {
 }
 #header {
     width: 90%; height: 5%;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: space-between; -webkit-justify-content: space-between;
@@ -26,7 +26,7 @@ body {
 }
 #contents {
     width: 90%; padding: 20px;
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: space-evenly; -webkit-justify-content: space-evenly;
@@ -35,7 +35,7 @@ body {
 }
 #footer {
     width: 90%; height: 5%;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
     justify-content: flex-end; -webkit-justify-content: flex-end;
@@ -212,10 +212,10 @@ a.lang {
 
     // Set language.
     var setLanguage = (lang="en") => {
-        var langId = lang.match("en|ja") ? lang :
-                        (window.navigator.userLanguage ||
-                         window.navigator.language ||
-                         window.navigator.browserLanguage).substr(0,2) == "ja" ? "ja" : "en";
+        var langId = lang.match("^en$|^ja$") ? lang :
+                     (window.navigator.userLanguage ||
+                      window.navigator.language ||
+                      window.navigator.browserLanguage).substr(0,2) == "ja" ? "ja" : "en";
         var langIds = ["no", "en", "ja"];
         for (let i = 0; i < langIds.length; ++i) {
             let elems = document.getElementsByClassName(langIds[i]);
