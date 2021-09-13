@@ -17,7 +17,7 @@ body {
     align-items: center; -webkit-align-items: center;
 }
 #header {
-    width: 90%; height: 5%;
+    width: 95%; height: 5%;
     flex: 0 0 auto;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
@@ -25,7 +25,7 @@ body {
     align-items: center; -webkit-align-items: center;
 }
 #contents {
-    width: 90%; padding: 20px;
+    width: 95%; padding: 20px;
     flex: 1 1 auto;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
@@ -34,7 +34,7 @@ body {
     background-color: #fff;
 }
 #footer {
-    width: 90%; height: 5%;
+    width: 95%; height: 5%;
     flex: 0 0 auto;
     display: flex; display: -webkit-flex;
     flex-direction: row; -webkit-flex-direction: row;
@@ -54,7 +54,7 @@ body {
     font-size: 24px;
 }
 .logo .icon {
-    width: 40px; height: 40px; margin: 8px;
+    width: 60px; height: 60px;
     display: flex; display: -webkit-flex;
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: center; -webkit-justify-content: center;
@@ -252,7 +252,7 @@ a.lang {
     var rolling = 0; // Rolling count.
 
     // Resize screen.
-    cubeResizeScreen(80, 80);
+    cubeResizeScreen(60, 60);
 
     // Create sprites.
     var sprite = await cubeSprite("dice/resource.svg", 40, 40);
@@ -304,9 +304,9 @@ a.lang {
             // Update sprites.
             cubeAnimate(random - 1, sprite);
             if (rolling < 5) {
-                cubeExpand(2 * (0.8 + 0.04 * rolling), sprite);
+                cubeExpand(1 * (0.8 + 0.04 * rolling), sprite);
             } else {
-                cubeExpand(2, sprite);
+                cubeExpand(1, sprite);
             }
             cubeRotate(angle, sprite);
             var sx = size.x / 2;
