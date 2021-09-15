@@ -226,28 +226,30 @@ a {
 </div>
 <script src="dice/cube-api-0.8.js"></script>
 <!--Language--><script>
-    var query = "" + cubeLoadParam();
+    console.log = () => {};
 
     // Set language.
     var setLanguage = (lang="en") => {
-        var langIds = ["no", "en", "ja"];
-        for (let i = 0; i < langIds.length; ++i) {
-            let elements = document.getElementsByClassName(langIds[i]);
+        var ids = ["no", "en", "ja"];
+        for (let i = 0; i < ids.length; ++i) {
+            let elements = document.getElementsByClassName(ids[i]);
             for (let j = 0; j < elements.length; ++j) {
                 elements[j].style.display = "none";
             }
         }
-        var langSetting = (window.navigator.userLanguage ||
-                           window.navigator.language ||
-                           window.navigator.browserLanguage).substr(0,2);
-        var langId = lang.match("^no$|^en$|^ja$") ? lang :
-                     langSetting == "ja" ? "ja" : "en";
-        elements = document.getElementsByClassName(langId);
+        var settings = (window.navigator.userLanguage ||
+                        window.navigator.language ||
+                        window.navigator.browserLanguage).substr(0,2);
+        var id = lang.match("^no$|^en$|^ja$") ? lang :
+                     settings == "ja" ? "ja" : "en";
+        elements = document.getElementsByClassName(id);
         for (let j = 0; j < elements.length; ++j) {
             elements[j].style.display = "block";
         }
     };
-   setLanguage(query);
+
+    var query = "" + cubeLoadParam();
+    setLanguage(query);
 </script><!--/Language-->
 <!--Logo--><script>(async()=>{
     var maximum = 6; // Maximum of dice faces.
