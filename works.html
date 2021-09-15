@@ -58,11 +58,10 @@ a {
     font-size: 24px;
 }
 .logo .icon {
-    width: 40px; height: 40px; padding: 10px; margin-left: -30px;
-    display: flex; display: -webkit-flex;
-    flex-direction: column; -webkit-flex-direction: column;
-    justify-content: center; -webkit-justify-content: center;
-    align-items: center; -webkit-align-items: center;
+    width: 40px; height: 40px; padding: 10px; margin-left: -28px;
+}
+.logo .cubeScreen {
+    width: 60px; height: 60px; margin-left: -28px;
 }
 .menu {
     display: flex; display: -webkit-flex;
@@ -80,11 +79,11 @@ a {
 .menu a:active {
     transform: scale(0.9);
 }
-.lang {
+.menu .lang {
     padding: 4px; margin-top: -24px;
     font-size: 12px;
 }
-a.lang {
+.menu a.lang {
     color: #888;
 }
 .app {
@@ -138,18 +137,16 @@ a.lang {
 <div id="container">
     <h1 id="header">
         <div class="logo">
-            <div class="icon cubeScreen">
-                <img class="icon no" src="dice/icon.svg"/>
+            <img class="icon no" src="dice/icon.svg"/>
+            <div class="cubeScreen en ja">
             </div>
-            <a href="?">
-                Saikoro.org
-            </a>
+            <a href="?">Saikoro.org</a>
         </div>
         <div class="menu">
             <div class="lang en">en</div>
-            <a class="lang ja" href="javascript:setLanguage('en');">en</a>
+            <a class="lang no ja" href="javascript:setLanguage('en');">en</a>
             <div class="lang ja">ja</div>
-            <a class="lang en" href="javascript:setLanguage('ja');">ja</a>
+            <a class="lang no en" href="javascript:setLanguage('ja');">ja</a>
         </div>
     </h1>
     <div id="contents">
@@ -233,16 +230,21 @@ a.lang {
 
     // Set language.
     var setLanguage = (lang="en") => {
-        var langId = lang.match("^en$|^ja$") ? lang :
-                     (window.navigator.userLanguage ||
-                      window.navigator.language ||
-                      window.navigator.browserLanguage).substr(0,2) == "ja" ? "ja" : "en";
         var langIds = ["no", "en", "ja"];
         for (let i = 0; i < langIds.length; ++i) {
-            let elems = document.getElementsByClassName(langIds[i]);
-            for (let j = 0; j < elems.length; ++j) {
-                elems[j].style.display = langIds[i] == langId ? "block" : "none";
+            let elements = document.getElementsByClassName(langIds[i]);
+            for (let j = 0; j < elements.length; ++j) {
+                elements[j].style.display = "none";
             }
+        }
+        var langSetting = (window.navigator.userLanguage ||
+                           window.navigator.language ||
+                           window.navigator.browserLanguage).substr(0,2);
+        var langId = lang.match("^no$|^en$|^ja$") ? lang :
+                     langSetting == "ja" ? "ja" : "en";
+        elements = document.getElementsByClassName(langId);
+        for (let j = 0; j < elements.length; ++j) {
+            elements[j].style.display = "block";
         }
     };
    setLanguage(query);
