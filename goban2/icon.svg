@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="300" height="300">
+    <g stroke-linecap="square" stroke-width="10" stroke="#888">
+        <g transform="translate(5,5)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(55,5)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(5,55)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(55,55)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+    </g>
+</svg>
+<!-- qlmanage -t -s 192 -o ./ icon.svg -->
+<!--svg xmlns="http://www.w3.org/2000/svg" viewBox="20 20 180 180" width="300" height="300">
+    <g stroke-linecap="square" stroke-width="10" stroke="#888">
+        <g transform="translate(5,5)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(55,5)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(105,5)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(155,5)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(5,55)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(55,55)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(105,55)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(155,55)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(5,105)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(55,105)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(105,105)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(155,105)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(5,155)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(55,155)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+        <g transform="translate(105,155)">
+            <path d="M5,5h50v50h-50Z" fill="#000"/>
+        </g>
+        <g transform="translate(155,155)">
+            <path d="M5,5h50v50h-50Z" fill="#fff"/>
+        </g>
+    </g>
+</svg-->

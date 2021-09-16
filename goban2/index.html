@@ -1,0 +1,276 @@
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+<title>Goban</title>
+<link rel="icon" type="image/svg" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.png" sizes="192x192">
+<script src="manifest.js"></script>
+<style>
+body {
+	font-family: Courier, monospace, sans-serif;
+	background-color: #fff;
+}
+a {
+	color: #000;
+	text-decoration: none;
+}
+#container {
+	width: 100%; height: 100%;
+	display: flex; display: -webkit-flex;
+	flex-direction: column; -webkit-flex-direction: column;
+	justify-content: flex-start; -webkit-justify-content: flex-start;
+	align-items: center; -webkit-align-items: center;
+}
+#header {
+	width: 95%; margin: 0px;
+	flex: 0 1 auto;
+	display: flex; display: -webkit-flex;
+	flex-direction: row; -webkit-flex-direction: row;
+	justify-content: space-between; -webkit-justify-content: space-between;
+	align-items: center; -webkit-align-items: center;
+}
+#contents {
+	width: 95%; height: 90%;
+	flex: 1 1 auto;
+	display: flex; display: -webkit-flex;
+	flex-direction: column; -webkit-flex-direction: column;
+	justify-content: center; -webkit-justify-content: center;
+	align-items: center; -webkit-align-items: center;
+	background-color: #eee;
+}
+#footer {
+	width: 95%; margin: 0px;
+	flex: 0 1 auto;
+	display: flex; display: -webkit-flex;
+	flex-direction: row; -webkit-flex-direction: row;
+	justify-content: flex-end; -webkit-justify-content: flex-end;
+	align-items: center; -webkit-align-items: center;
+}
+#version {
+	font-size: 12px;
+	opacity: 0.1;
+}
+.logo {
+	width: 160px; height: 60px; margin: 0px 16px;
+	display: flex; display: -webkit-flex;
+	flex-direction: row; -webkit-flex-direction: row;
+	justify-content: flex-start; -webkit-justify-content: flex-start;
+	align-items: center; -webkit-align-items: center;
+	font-size: 24px;
+}
+.logo .icon {
+    width: 40px; height: 40px; padding: 10px; margin-left: -28px;
+}
+.menu {
+	width: 160px; height: 40px; margin: 5px 0px;
+	display: flex; display: -webkit-flex;
+	flex-direction: row; -webkit-flex-direction: row;
+	justify-content: space-between; -webkit-justify-content: space-between;
+	align-items: flex-end; -webkit-align-items: flex-end;
+	background-color: #888;
+}
+.menu a {
+	width: 40px; height: 40px;
+	display: flex; display: -webkit-flex;
+	flex-direction: column; -webkit-flex-direction: column;
+	justify-content: center; -webkit-justify-content: center;
+	align-items: center; -webkit-align-items: center;
+	font-size: 20px;
+	color: #fff;
+	text-decoration: none;
+	transform: scale(1);
+}
+.menu a:hover {
+	transform: scale(1);
+}
+.menu a:active {
+	transform: scale(0.8);
+}
+</style>
+</head>
+<body>
+<div id="container">
+	<h1 id="header">
+		<div class="logo">
+			<img class="icon" src="icon.svg"/>
+			<a href="?">Goban</a>
+		</div>
+		<div class="menu">
+			<a id="x6" href="javascript:setLevel(6);">×6</a>
+			<a id="x7" href="javascript:setLevel(7);">×7</a>
+			<a id="x8" href="javascript:setLevel(8);">×8</a>
+			<a id="x9" href="javascript:setLevel(9);">×9</a>
+		</div>
+	</h1>
+	<div id="contents" class="cubeScreen"></div>
+	<h6 id="footer">
+		<div id="version">.</div>
+	</h6>
+</div>
+<script src="cube-api-0.8.js"></script>
+<!--Menu--><script>
+	//console.log = () => {};
+	document.getElementById("version").innerText = manifest.version.substr(-4);
+
+	// Get query parameters.
+	var params = cubeParamNumbers("x");
+	var level = params[1] ? params[1] : 6; // Goban lines.
+	var playing = 0; // Playing count.
+
+	// Set playing level.
+	var setLevel = (x) => {
+        var levels = [6, 7, 8, 9];
+        level = levels.includes(x) ? x : 6;
+        for (let i = 0; i < levels.length; ++i) {
+            let menu = document.getElementById("x" + levels[i]);
+            if (menu) {
+				menu.style.backgroundColor = levels[i] == level ? "#000" : "#888";
+			}
+        }
+		playing = -1; // Replay.
+	};
+
+	// Initialize settings.
+	setLevel(level);
+</script><!--/Menu-->
+<!--Main--><script>(async()=>{
+	const levelMax = 9;
+
+	// Resize screen.
+	const screenWidth = 300;
+	const screenHeight = 200;
+	cubeResizeScreen(screenWidth, screenHeight);
+
+	// Create goban sprites.
+	var gobans = [];
+	for (var i = 0; i < levelMax * levelMax; i++) {
+		gobans[i] = await cubeSprite("resource.svg", 24, 24);
+	}
+	const gobansWidth = 160;
+	var gobansType = 0;
+	var gobansLines = 9;
+	var pieces = [], piecesIndex = [];
+	for (var i = 0; i < levelMax * levelMax; i++) {
+		pieces[i] = await cubeSprite("resource.svg", 24, 24);
+	}
+	const piecesWidth = 20;
+	var piecesLines = 9;
+	var players = [];
+	for (var i = 0; i < 2; i++) {
+		players[i] = await cubeSprite("resource.svg", 24, 24);
+	}
+	var playersIndex = 0;
+
+	// Main loop.
+	while (true) {
+
+		// Initialize gobans.
+		gobansType = cubeMod(level, 2);
+		gobansLines = cubeDiv(level, 2) * 2;
+		for (var i = 0; i < levelMax * levelMax; i++) {
+			piecesIndex[i] = -1;
+		}
+		piecesLines = level;
+
+		for (playing = 1; playing >= 1; ) {
+
+			let scale = gobansWidth / (piecesWidth * gobansLines);
+			let piecesWidthScaled = piecesWidth * scale;
+			let piecesOffset = gobansType > 0 ? piecesWidthScaled / 2 : 0;
+			let ox = (screenWidth - gobansWidth + piecesWidthScaled) / 2 - piecesOffset;
+			let oy = (screenHeight - gobansWidth + piecesWidthScaled) / 2 - piecesOffset;
+
+			// Update gobans.
+			for (let y = 0; y < gobansLines; y++) {
+				for (let x = 0; x < gobansLines; x++) {
+					let gx = ox + piecesOffset + piecesWidthScaled * x;
+					let gy = oy + piecesOffset + piecesWidthScaled * y;
+					cubeMove(gx, gy, gobans[gobansLines*y+x]);
+					cubeExpand(scale, gobans[gobansLines*y+x]);
+					cubeAnimate(gobansType > 0 ? 1 : 0, gobans[gobansLines*y+x]);
+				}
+			}
+
+			// Update pieces.
+			for (let y = 0; y < piecesLines; y++) {
+				for (let x = 0; x < piecesLines; x++) {
+					let gx = ox + piecesWidthScaled * x;
+					let gy = oy + piecesWidthScaled * y;
+					cubeMove(gx, gy, pieces[piecesLines*y+x]);
+					cubeExpand(scale, pieces[piecesLines*y+x]);
+					cubeDilute(0.8, pieces[piecesLines*y+x]);
+					cubeAnimate(piecesIndex[piecesLines*y+x] + 2, pieces[piecesLines*y+x]);
+				}
+			}
+
+			// Update players.
+			for (var i = 0; i < 2; i++) {
+				let gx = i == 0 ? screenWidth - piecesWidth * 1.5 : piecesWidth * 1.5;
+				let gy = screenHeight / 2;
+				cubeMove(gx, gy, players[i]);
+				cubeExpand(2, players[i]);
+				cubeDilute(i == playersIndex ? 0.8 : 0.2, players[i]);
+				cubeAnimate(i + 2, players[i]);
+			}
+
+			// Read input.
+			await cubeReadJoypad(0);
+			let motion = cubeJoypadMotion();
+			let motionIndex = -1;
+			let action = cubeJoypadAction();
+			if (motion) {
+				let mx = cubeDiv(motion.x - ox + piecesWidthScaled / 2, piecesWidthScaled);
+				let my = cubeDiv(motion.y - oy + piecesWidthScaled / 2, piecesWidthScaled);
+				if (my >= 0 && my < piecesLines) {
+					if (mx >= 0 && mx < piecesLines) {
+						motionIndex = piecesLines*my+mx;
+						cubeDilute(0.6, pieces[motionIndex]);
+						if (action) {
+							if (piecesIndex[motionIndex] != playersIndex) {
+								piecesIndex[motionIndex] = playersIndex;
+							} else {
+								piecesIndex[motionIndex] = -1;
+							}
+						}
+					}
+				}
+				if (mx >= piecesLines) {
+					cubeDilute(1, players[0]);
+					if (action) {
+						playersIndex = 0;
+					}
+				} else if (mx < 0) {
+					cubeDilute(1, players[1]);
+					if (action) {
+						playersIndex = 1;
+					}
+				}
+			}
+
+			// Clear screen.
+			cubeClear();
+
+			// Draw gobans.
+			for (var i = 0; i < gobansLines * gobansLines; i++) {
+				cubeDraw(gobans[i]);
+			}
+
+			// Draw pieces.
+			for (var i = 0; i < piecesLines * piecesLines; i++) {
+				if (piecesIndex[i] >= 0) {
+					cubeDraw(pieces[i]);
+				}
+			}
+
+			// Draw players.
+			for (var i = 0; i < 2; i++) {
+				cubeDraw(players[i]);
+			}
+
+			await cubeWait(10);
+		}
+	}
+})();</script><!--/Main-->
+</body>
+</html>
