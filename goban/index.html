@@ -115,17 +115,17 @@ a {
 
 	// Get query parameters.
 	var params = cubeParamNumbers("x");
+	var levelMax = params[1] > 9 ? params[1] : 9;
 	var level = params[1] ? params[1] : 6; // Goban lines.
 	var playing = 0; // Playing count.
 
 	// Set playing level.
 	var setLevel = (x) => {
-        var levels = [6, 7, 8, 9];
-        level = levels.includes(x) ? x : 6;
-        for (let i = 0; i < levels.length; ++i) {
-            let menu = document.getElementById("x" + levels[i]);
+        level = x >= 1 && x <= levelMax ? x : 6;
+        for (let i = 1; i <= levelMax; ++i) {
+            let menu = document.getElementById("x" + i);
             if (menu) {
-				menu.style.backgroundColor = levels[i] == level ? "#000" : "#888";
+				menu.style.backgroundColor = i == level ? "#000" : "#888";
 			}
         }
 		playing = -1; // Replay.
@@ -135,25 +135,24 @@ a {
 	setLevel(level);
 </script><!--/Menu-->
 <!--Main--><script>(async()=>{
-	const levelMax = 9;
 
 	// Resize screen.
 	const screenWidth = 300;
-	const screenHeight = 200;
+	const screenHeight = 250;
 	cubeResizeScreen(screenWidth, screenHeight);
 
 	// Create goban sprites.
 	var sprite = await cubeSprite("resource.svg", 24, 24);
-	var gobans = [], gobansIndex = [];
+	var gobans = [], gobansIndex = [], piecesIndex = [];
 	for (var i = 0; i < levelMax * levelMax; i++) {
 		gobans[i] = await cubeSprite("resource.svg", 24, 24);
 	}
-	const gobansWidth = 180;
-	var pieces = [];
-	for (var i = 0; i < 2; i++) {
-		pieces[i] = await cubeSprite("resource.svg", 24, 24);
-	}
-	var piecesIndex = 0;
+	const gobansWidth = 250;
+	//var pieces = [];
+	//for (var i = 0; i < 2; i++) {
+	//	pieces[i] = await cubeSprite("resource.svg", 24, 24);
+	//}
+	var pointerType = 10;
 	const piecesWidth = 20;
 
 	// Main loop.
@@ -162,35 +161,70 @@ a {
 		// Initialize pieces.
 		for (var i = 0; i < levelMax * levelMax; i++) {
 			gobansIndex[i] = 0;
+			piecesIndex[i] = 0;
+		}
+		var gobansType = cubeMod(level, 2);
+		for (let y = 0; y < level; y++) {
+			for (let x = 0; x < level; x++) {
+				if (gobansType > 0) {
+					if (y == 0) {
+						if (x == 0) {
+							gobansIndex[level*y+x] = 1;
+						} else if (x == level - 1) {
+							gobansIndex[level*y+x] = 3;
+						} else {
+							gobansIndex[level*y+x] = 2;
+						}
+					} else if (y == level - 1) {
+						if (x == 0) {
+							gobansIndex[level*y+x] = 7;
+						} else if (x == level - 1) {
+							gobansIndex[level*y+x] = 9;
+						} else {
+							gobansIndex[level*y+x] = 8;
+						}
+					} else {
+						if (x == 0) {
+							gobansIndex[level*y+x] = 4;
+						} else if (x == level - 1) {
+							gobansIndex[level*y+x] = 6;
+						} else {
+							gobansIndex[level*y+x] = 5;
+						}
+					}
+				} else {
+					gobansIndex[level*y+x] = 0;
+				}
+			}
 		}
 
 		for (playing = 1; playing >= 1; ) {
 
 			// Update gobans.
-			let scale = gobansWidth / (piecesWidth * level);
+			let scale = gobansWidth / (piecesWidth * (gobansType > 0 ? level - 1 : level));
 			let piecesWidthScaled = piecesWidth * scale;
-			let ox = (screenWidth - gobansWidth + piecesWidthScaled) / 2;
-			let oy = (screenHeight - gobansWidth + piecesWidthScaled) / 2;
+			let ox = (screenWidth - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
+			let oy = (screenHeight - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
 			for (let y = 0; y < level; y++) {
 				for (let x = 0; x < level; x++) {
 					let gx = ox + piecesWidthScaled * x;
 					let gy = oy + piecesWidthScaled * y;
 					cubeMove(gx, gy, gobans[level*y+x]);
 					cubeExpand(scale, gobans[level*y+x]);
-					cubeDilute(gobansIndex[level*y+x] > 0 ? 0.8 : 0.2, gobans[level*y+x]);
-					cubeAnimate(gobansIndex[level*y+x], gobans[level*y+x]);
+					cubeDilute(piecesIndex[level*y+x] > 0 ? 0.8 : 0.2, gobans[level*y+x]);
+					cubeAnimate(gobansIndex[level*y+x] + piecesIndex[level*y+x], gobans[level*y+x]);
 				}
 			}
 
 			// Update pieces.
-			for (var i = 0; i < 2; i++) {
-				let gx = i == 0 ? screenWidth - piecesWidth * 1.5	: piecesWidth * 1.5;
+			/*for (var i = 0; i < 2; i++) {
+				let gx = i == 0 ? screenWidth - piecesWidth * 0.5 : piecesWidth * 0.5;
 				let gy = screenHeight / 2;
 				cubeMove(gx, gy, pieces[i]);
-				cubeExpand(2, pieces[i]);
-				cubeDilute(i == piecesIndex ? 0.8 : 0.2, pieces[i]);
-				cubeAnimate(i + 1, pieces[i]);
-			}
+				cubeExpand(1, pieces[i]);
+				cubeDilute((i + 1) * 10 == pointerType ? 0.8 : 0.2, pieces[i]);
+				cubeAnimate((i + 1) * 10 + 5, pieces[i]);
+			}*/
 
 			// Read input.
 			await cubeReadJoypad(0);
@@ -205,24 +239,24 @@ a {
 						motionIndex = level*my+mx;
 						cubeDilute(0.6, gobans[motionIndex]);
 						if (action) {
-							if (gobansIndex[motionIndex] != piecesIndex + 1) {
-								gobansIndex[motionIndex] = piecesIndex + 1;
+							if (piecesIndex[motionIndex] != pointerType) {
+								piecesIndex[motionIndex] = pointerType;
 							} else {
-								gobansIndex[motionIndex] = 0;
+								piecesIndex[motionIndex] = 0;
 							}
 						}
 					}
 				}
 				if (mx >= level) {
-					cubeDilute(1, pieces[0]);
-					if (action) {
-						piecesIndex = 0;
-					}
+					//cubeDilute(1, pieces[0]);
+					//if (action) {
+						pointerType = 10;
+					//}
 				} else if (mx < 0) {
-					cubeDilute(1, pieces[1]);
-					if (action) {
-						piecesIndex = 1;
-					}
+					//cubeDilute(1, pieces[1]);
+					//if (action) {
+						pointerType = 20;
+					//}
 				}
 			}
 
@@ -238,12 +272,12 @@ a {
 			if (motionIndex >= 0) {
 				cubeDraw(gobans[motionIndex]);
 			}
-			for (var i = 0; i < 2; i++) {
-				cubeDraw(pieces[i]);
-			}
+			//for (var i = 0; i < 2; i++) {
+			//	cubeDraw(pieces[i]);
+			//}
 			if (motion) {
+				cubeAnimate(pointerType + 5, sprite);
 				cubeDilute(0.5, sprite);
-				cubeRotate(45, sprite);
 				cubeExpand(2, sprite);
 				cubeMove(motion.x, motion.y, sprite);
 				cubeDraw(sprite);
