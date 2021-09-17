@@ -222,7 +222,7 @@ a {
 				let gy = screenHeight / 2;
 				cubeMove(gx, gy, pieces[i]);
 				cubeExpand(1, pieces[i]);
-				cubeDilute((i + 1) * 10 == pointerType ? 0.8 : 0.2, pieces[i]);
+				cubeDilute((i + 1) * 10 == pointerType ? 0.8 : 0.1, pieces[i]);
 				cubeAnimate((i + 1) * 10 + 5, pieces[i]);
 			}
 
@@ -237,7 +237,7 @@ a {
 				if (my >= 0 && my < level) {
 					if (mx >= 0 && mx < level) {
 						motionIndex = level*my+mx;
-						cubeDilute(0.6, gobans[motionIndex]);
+						cubeDilute(0.2, gobans[motionIndex]);
 						if (action) {
 							if (piecesIndex[motionIndex] != pointerType) {
 								piecesIndex[motionIndex] = pointerType;
