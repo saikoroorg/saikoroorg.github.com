@@ -148,10 +148,10 @@ a {
 		gobans[i] = await cubeSprite("resource.svg", 24, 24);
 	}
 	const gobansWidth = 250;
-	//var pieces = [];
-	//for (var i = 0; i < 2; i++) {
-	//	pieces[i] = await cubeSprite("resource.svg", 24, 24);
-	//}
+	var pieces = [];
+	for (var i = 0; i < 2; i++) {
+		pieces[i] = await cubeSprite("resource.svg", 24, 24);
+	}
 	var pointerType = 10;
 	const piecesWidth = 20;
 
@@ -211,20 +211,20 @@ a {
 					let gy = oy + piecesWidthScaled * y;
 					cubeMove(gx, gy, gobans[level*y+x]);
 					cubeExpand(scale, gobans[level*y+x]);
-					cubeDilute(piecesIndex[level*y+x] > 0 ? 0.8 : 0.2, gobans[level*y+x]);
+					cubeDilute(1, gobans[level*y+x]);
 					cubeAnimate(gobansIndex[level*y+x] + piecesIndex[level*y+x], gobans[level*y+x]);
 				}
 			}
 
 			// Update pieces.
-			/*for (var i = 0; i < 2; i++) {
-				let gx = i == 0 ? screenWidth - piecesWidth * 0.5 : piecesWidth * 0.5;
+			for (var i = 0; i < 2; i++) {
+				let gx = i == 0 ? screenWidth + 2 : -2;
 				let gy = screenHeight / 2;
 				cubeMove(gx, gy, pieces[i]);
 				cubeExpand(1, pieces[i]);
 				cubeDilute((i + 1) * 10 == pointerType ? 0.8 : 0.2, pieces[i]);
 				cubeAnimate((i + 1) * 10 + 5, pieces[i]);
-			}*/
+			}
 
 			// Read input.
 			await cubeReadJoypad(0);
@@ -248,12 +248,12 @@ a {
 					}
 				}
 				if (mx >= level) {
-					//cubeDilute(1, pieces[0]);
+					cubeDilute(1, pieces[0]);
 					//if (action) {
 						pointerType = 10;
 					//}
 				} else if (mx < 0) {
-					//cubeDilute(1, pieces[1]);
+					cubeDilute(1, pieces[1]);
 					//if (action) {
 						pointerType = 20;
 					//}
@@ -264,6 +264,9 @@ a {
 			cubeClear();
 
 			// Draw gobans.
+			for (var i = 0; i < 2; i++) {
+				cubeDraw(pieces[i]);
+			}
 			for (var i = 0; i < level * level; i++) {
 				if (i != motionIndex) {
 					cubeDraw(gobans[i]);
@@ -272,9 +275,6 @@ a {
 			if (motionIndex >= 0) {
 				cubeDraw(gobans[motionIndex]);
 			}
-			//for (var i = 0; i < 2; i++) {
-			//	cubeDraw(pieces[i]);
-			//}
 			if (motion) {
 				cubeAnimate(pointerType + 5, sprite);
 				cubeDilute(0.5, sprite);
