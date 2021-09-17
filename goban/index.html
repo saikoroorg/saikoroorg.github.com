@@ -143,6 +143,7 @@ a {
 	cubeResizeScreen(screenWidth, screenHeight);
 
 	// Create goban sprites.
+	var sprite = await cubeSprite("resource.svg", 24, 24);
 	var gobans = [], gobansIndex = [];
 	for (var i = 0; i < levelMax * levelMax; i++) {
 		gobans[i] = await cubeSprite("resource.svg", 24, 24);
@@ -240,11 +241,12 @@ a {
 			for (var i = 0; i < 2; i++) {
 				cubeDraw(pieces[i]);
 			}
-			/*if (motion) {
-				cubeDilute(0.2, sprite);
+			if (motion) {
+				cubeDilute(0.5, sprite);
+				cubeExpand(0.5, sprite);
 				cubeMove(motion.x, motion.y, sprite);
 				cubeDraw(sprite);
-			}*/
+			}
 
 			await cubeWait(10);
 		}
