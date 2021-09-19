@@ -224,7 +224,9 @@ a {
 		cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokes[i]);
 		cubeAnimate((i + 1) * 10 + 5, gokes[i]);
 	}
-	var teban = 10;
+	var tebanColor = 10;
+	var pickIndex = -1;
+	var pickColor = 0;
 
 	// Main loop.
 	while (true) {
@@ -259,7 +261,11 @@ a {
 					let index = level * y + x;
 					cubeMove(gx, gy, gobans[index]);
 					cubeExpand(scale, gobans[index]);
-					cubeDilute(1, gobans[index]);
+					if (index == pickIndex) {
+						cubeDilute(0.2, gobans[index]);
+					} else {
+						cubeDilute(1, gobans[index]);
+					}
 					cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
 				}
 			}
@@ -271,19 +277,60 @@ a {
 			if (motion) {
 				let mx = cubeDiv(motion.x - (ox - piecesWidthScaled / 2), piecesWidthScaled);
 				let my = cubeDiv(motion.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
-				if (my >= 0 && my < level) {
-					if (mx >= 0 && mx < level) {
-						let index = level * my + mx;
-						cubeDilute(0.2, gobans[index]);
-						if (action) {
-							if (piecesIndex[index] != teban) {
-								piecesIndex[index] = teban;
+				if (my >= 0 && my < level && mx >= 0 && mx < level) {
+					let index = level * my + mx;
+					if (pickIndex == -1) {
+
+						// Pick a piece.
+						if (piecesIndex[index] > 0) {
+							pickIndex = index;
+							pickColor = piecesIndex[index];
+
+						// Touch gobans.
+						} else {
+							pickIndex = -2;
+							pickColor = 0;
+						}
+					}
+
+					cubeDilute(0.2, gobans[index]);
+					if (action) {
+						if (piecesIndex[index]) {
+
+							// Flip a piece.
+							if (pickIndex == index) {
+								piecesIndex[index] = cubeMod(piecesIndex[index], 20) + 10;
+								pickIndex = -1;
+
+							// Change a piece.
+							} else if (pickIndex >= 0) {
+								piecesIndex[pickIndex] = piecesIndex[index];
+								piecesIndex[index] = pickColor;
+								pickIndex = -1;
+							}
+						} else {
+
+							// Move a piece.
+							if (pickIndex >= 0) {
+								piecesIndex[pickIndex] = 0;
+								piecesIndex[index] = pickColor;
+								pickIndex = -1;
+
+							// Cancel pick.
 							} else {
-								piecesIndex[index] = 0;
+								piecesIndex[index] = tebanColor;
 							}
 						}
 					}
+				} else {
+					if (pickIndex >= 0) {
+						piecesIndex[pickIndex] = 0;
+						pickIndex = -1;
+						pickColor = 0;
+					}
 				}
+			} else {
+				pickIndex = -1;
 			}
 
 			// Update temochi piece and gokes.
@@ -298,13 +345,15 @@ a {
 					if (-piecesWidth <= mx && mx <= piecesWidth
 					 && -piecesWidth <= my && my <= piecesWidth) {
 						//if (action) {
-							teban = (i + 1) * 10;
+							tebanColor = (i + 1) * 10;
+							pickIndex = -1;
+							pickColor = 0;
 						//}
 					}
 				}
 
 				// Update gokes.
-				cubeDilute((i + 1) * 10 == teban ? 0.8 : 0.1, gokes[i]);
+				cubeDilute((i + 1) * 10 == tebanColor ? 0.8 : 0.1, gokes[i]);
 			}
 
 
@@ -326,7 +375,11 @@ a {
 
 			// Draw temochi piece.
 			if (motion) {
-				cubeAnimate(teban + 5, sprite);
+				if (pickColor > 0) {
+					cubeAnimate(pickColor + 5, sprite);
+				} else {
+					cubeAnimate(tebanColor + 5, sprite);
+				}
 				cubeDilute(0.5, sprite);
 				cubeExpand(2, sprite);
 				cubeMove(motion.x, motion.y, sprite);
