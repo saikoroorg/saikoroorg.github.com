@@ -210,19 +210,21 @@ a {
 		subJoypads[i] = cubeJoypad(subScreens[i]);
 	}
 
-	// Create goban sprites.
+	// Create sprites.
 	var sprite = await cubeSprite("resource.svg", 24, 24);
 	var gobans = [], gobansIndex = [], piecesIndex = [];
 	for (var i = 0; i < levelMax * levelMax; i++) {
 		gobans[i] = await cubeSprite("resource.svg", 24, 24);
 	}
 	const gobansWidth = 250;
+	const piecesWidth = 20;
 	var gokes = [];
 	for (var i = 0; i < 2; i++) {
 		gokes[i] = await cubeSprite("resource.svg", 24, 24);
+		cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokes[i]);
+		cubeAnimate((i + 1) * 10 + 5, gokes[i]);
 	}
 	var teban = 10;
-	const piecesWidth = 20;
 
 	// Main loop.
 	while (true) {
@@ -233,83 +235,58 @@ a {
 			piecesIndex[i] = 0;
 		}
 		var gobansType = cubeMod(level, 2);
-		for (let y = 0; y < level; y++) {
-			for (let x = 0; x < level; x++) {
-				if (gobansType > 0) {
-					if (y == 0) {
-						if (x == 0) {
-							gobansIndex[level*y+x] = 1;
-						} else if (x == level - 1) {
-							gobansIndex[level*y+x] = 3;
-						} else {
-							gobansIndex[level*y+x] = 2;
-						}
-					} else if (y == level - 1) {
-						if (x == 0) {
-							gobansIndex[level*y+x] = 7;
-						} else if (x == level - 1) {
-							gobansIndex[level*y+x] = 9;
-						} else {
-							gobansIndex[level*y+x] = 8;
-						}
-					} else {
-						if (x == 0) {
-							gobansIndex[level*y+x] = 4;
-						} else if (x == level - 1) {
-							gobansIndex[level*y+x] = 6;
-						} else {
-							gobansIndex[level*y+x] = 5;
-						}
-					}
-				} else {
-					gobansIndex[level*y+x] = 0;
+		if (gobansType > 0) {
+			for (let y = 0; y < level; y++) {
+				let oy = y == 0 ? 1 : y == level - 1 ? 7 : 4;
+				for (let x = 0; x < level; x++) {
+					let ox = x == 0 ? 0 : x == level - 1 ? 2 : 1;
+					gobansIndex[level*y+x] = ox + oy;
 				}
 			}
 		}
+		let scale = gobansWidth / (piecesWidth * (gobansType > 0 ? level - 1 : level));
+		let piecesWidthScaled = piecesWidth * scale;
+		let ox = (screenWidth - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
+		let oy = (screenHeight - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
 
 		for (playing = 1; playing >= 1; ) {
 
 			// Update gobans.
-			let scale = gobansWidth / (piecesWidth * (gobansType > 0 ? level - 1 : level));
-			let piecesWidthScaled = piecesWidth * scale;
-			let ox = (screenWidth - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
-			let oy = (screenHeight - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
 			for (let y = 0; y < level; y++) {
 				for (let x = 0; x < level; x++) {
 					let gx = ox + piecesWidthScaled * x;
 					let gy = oy + piecesWidthScaled * y;
-					cubeMove(gx, gy, gobans[level*y+x]);
-					cubeExpand(scale, gobans[level*y+x]);
-					cubeDilute(1, gobans[level*y+x]);
-					cubeAnimate(gobansIndex[level*y+x] + piecesIndex[level*y+x], gobans[level*y+x]);
+					let index = level * y + x;
+					cubeMove(gx, gy, gobans[index]);
+					cubeExpand(scale, gobans[index]);
+					cubeDilute(1, gobans[index]);
+					cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
 				}
 			}
 
 			// Read input.
 			await cubeReadJoypad(0, mainJoypad);
 			let motion = cubeJoypadMotion(mainJoypad);
-			let motionIndex = -1;
 			let action = cubeJoypadAction(mainJoypad);
 			if (motion) {
 				let mx = cubeDiv(motion.x - (ox - piecesWidthScaled / 2), piecesWidthScaled);
 				let my = cubeDiv(motion.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
 				if (my >= 0 && my < level) {
 					if (mx >= 0 && mx < level) {
-						motionIndex = level*my+mx;
-						cubeDilute(0.2, gobans[motionIndex]);
+						let index = level * my + mx;
+						cubeDilute(0.2, gobans[index]);
 						if (action) {
-							if (piecesIndex[motionIndex] != teban) {
-								piecesIndex[motionIndex] = teban;
+							if (piecesIndex[index] != teban) {
+								piecesIndex[index] = teban;
 							} else {
-								piecesIndex[motionIndex] = 0;
+								piecesIndex[index] = 0;
 							}
 						}
 					}
 				}
 			}
 
-
-			// Update pieces.
+			// Update temochi piece and gokes.
 			for (var i = 0; i < 2; i++) {
 
 				// Read input.
@@ -320,20 +297,14 @@ a {
 					let my = motion.y - subScreenHeight / 2;
 					if (-piecesWidth <= mx && mx <= piecesWidth
 					 && -piecesWidth <= my && my <= piecesWidth) {
-						cubeDilute(1, gokes[i]);
 						//if (action) {
-							teban = (i + 1 ) *10;
+							teban = (i + 1) * 10;
 						//}
 					}
 				}
 
 				// Update gokes.
-				let gx = subScreenWidth / 2;
-				let gy = subScreenHeight / 2;
-				cubeMove(gx, gy, gokes[i]);
-				cubeExpand(1, gokes[i]);
 				cubeDilute((i + 1) * 10 == teban ? 0.8 : 0.1, gokes[i]);
-				cubeAnimate((i + 1) * 10 + 5, gokes[i]);
 			}
 
 
@@ -350,13 +321,10 @@ a {
 
 			// Draw gobans
 			for (var i = 0; i < level * level; i++) {
-				if (i != motionIndex) {
-					cubeDraw(gobans[i], mainScreen);
-				}
+				cubeDraw(gobans[i], mainScreen);
 			}
-			if (motionIndex >= 0) {
-				cubeDraw(gobans[motionIndex], mainScreen);
-			}
+
+			// Draw temochi piece.
 			if (motion) {
 				cubeAnimate(teban + 5, sprite);
 				cubeDilute(0.5, sprite);
