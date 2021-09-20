@@ -1,7 +1,7 @@
 // Web app manifest for progressive web app.
 const manifest = {
     "name": "Kuku",
-    "version": "0.8.10919",
+    "version": "0.8.10920",
     "short_name": "Kuku",
     "background_color": "#fff",
     "theme_color": "#fff",
