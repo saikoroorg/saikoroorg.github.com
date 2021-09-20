@@ -1,7 +1,7 @@
 // Web app manifest for progressive web app.
 const manifest = {
     "name": "Goban",
-    "version": "0.8.10920",
+    "version": "0.8.10920a",
     "short_name": "Goban",
     "background_color": "#fff",
     "theme_color": "#fff",
