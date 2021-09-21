@@ -30,19 +30,27 @@ a {
 	justify-content: space-between; -webkit-justify-content: space-between;
 	align-items: center; -webkit-align-items: center;
 }
+#contents {
+	width: 95%; height: 90%;
+}
 .screen {
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	overflow: hidden;
+}
+.touchScreen {
+	position: absolute;
+	width: 91%; height: 80%;
+	z-index: 100;
 }
 @media (max-width: 480px) {
-	#contents {
-		width: 95%; height: 90%;
+	#screens {
+		width: 100%; height: 100%;
 		flex: 1 1 auto;
 		display: grid; display: -webkit-grid;
 		grid-template-columns: 50% 50%;
+		overflow: hidden;
 		background-color: #eee;
 	}
 	.mainScreen {
@@ -51,19 +59,20 @@ a {
 	}
 	.subScreen1 {
 		order: 3;
-		width: 100%;
+		width: 100%; height: 60%;
 	}
 	.subScreen2 {
 		order: 2;
-		width: 100%;
+		width: 100%; height: 60%;
 	}
 }
 @media (min-width: 480px) {
-	#contents {
-		width: 95%; height: 90%;
+	#screens {
+		width: 100%; height: 100%;
 		flex: 1 1 auto;
 		display: grid; display: -webkit-grid;
 		grid-template-columns: 20% 60% 20%;
+		overflow: hidden;
 		background-color: #eee;
 	}
 	.mainScreen {
@@ -154,9 +163,12 @@ a {
 		</div!-->
 	</h1>
 	<div id="contents">
-		<div class="screen mainScreen"></div>
-		<div class="screen subScreen1"></div>
-		<div class="screen subScreen2"></div>
+		<div class="screen touchScreen"></div>
+		<div id="screens">
+			<div class="screen mainScreen"></div>
+			<div class="screen subScreen1"></div>
+			<div class="screen subScreen2"></div>
+		</div>
 	</div>
 	<h6 id="footer">
 		<div id="version">.</div>
@@ -212,16 +224,16 @@ a {
 <!--Main--><script>(async()=>{
 
 	// Create screens.
+	var touchScreen = cubeScreen("touchScreen");
+	var joypad = cubeJoypad(touchScreen);
 	const screenWidth = 300;
 	const screenHeight = 300;
 	var mainScreen = cubeScreen("mainScreen", screenWidth, screenHeight);
-	var mainJoypad = cubeJoypad(mainScreen);
 	const subScreenWidth = 30;
 	const subScreenHeight = 30;
 	var subScreens = [], subJoypads = [];
 	for (var i = 0; i < 2; i++) {
 		subScreens[i] = cubeScreen("subScreen" + (i + 1), subScreenWidth, subScreenHeight);
-		subJoypads[i] = cubeJoypad(subScreens[i]);
 	}
 
 	// Create sprites.
@@ -237,7 +249,7 @@ a {
 		gokes[i] = await cubeSprite("resource.svg", 24, 24);
 		cubeAnimate((i + 1) * 10, gokes[i]);
 	}
-	var tebanColor = 10, gokesScale = [1, 1];
+	var tebanColor = 10;
 	const pickIdle = -1, pickNone = -2;
 	var pickIndex = pickIdle, pickColor = 0, pickCount = 0;
 
@@ -266,12 +278,14 @@ a {
 		for (playing = 1; playing >= 1; ) {
 
 			// Read input.
-			await cubeReadJoypad(0, mainJoypad);
-			let motion = cubeJoypadMotion(mainJoypad);
-			let action = cubeJoypadAction(mainJoypad);
+			await cubeReadJoypad(0, joypad);
+			let motion = cubeJoypadMotion(joypad);
+			let action = cubeJoypadAction(joypad);
+
 			if (motion) {
-				let mx = cubeDiv(motion.x - (ox - piecesWidthScaled / 2), piecesWidthScaled);
-				let my = cubeDiv(motion.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
+				let localPos = mainScreen.posToLocalPos(motion);
+				let mx = cubeDiv(localPos.x - (ox - piecesWidthScaled / 2), piecesWidthScaled);
+				let my = cubeDiv(localPos.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
 				if (my >= 0 && my < gobanSize && mx >= 0 && mx < gobanSize) {
 					let index = gobanSize * my + mx;
 
@@ -340,10 +354,28 @@ a {
 							}
 						}
 					}
+				} else {
+
+					// Remove a piece.
+					if (pickIndex >= 0 && pickColor == 0) {
+						piecesIndex[pickIndex] = 0;
+						pickIndex = pickIdle;
+						pickColor = pickCount = 0;
+					}
 				}
-			} else {
-				pickIndex = pickIdle;
-				pickColor = pickCount = 0;
+
+				// Update temochi piece.
+				if (pickColor > 0) {
+					cubeAnimate(pickColor, sprite);
+					cubeDilute(0.5, sprite);
+					cubeExpand(scale * 1.5, sprite);
+					cubeMove(localPos.x, localPos.y, sprite);
+				} else if (pickIndex == pickNone) {
+					cubeAnimate(tebanColor, sprite);
+					cubeDilute(0.5, sprite);
+					cubeExpand(scale * 1.5, sprite);
+					cubeMove(localPos.x, localPos.y, sprite);
+				}
 			}
 
 			// Update gobans.
@@ -366,14 +398,13 @@ a {
 
 			// Update gokes.
 			for (var i = 0; i < 2; i++) {
-				gokesScale[i] = 1;
+				let pos = cubeVector(subScreenWidth / 2, subScreenHeight / 2);
+				let scale = 1;
 
-				// Read input.
-				await cubeReadJoypad(0, subJoypads[i]);
-				let motion = cubeJoypadMotion(subJoypads[i]);
 				if (motion) {
-					let mx = motion.x - subScreenWidth / 2;
-					let my = motion.y - subScreenHeight / 2;
+					let localPos = subScreens[i].posToLocalPos(motion);
+					let mx = localPos.x - subScreenWidth / 2;
+					let my = localPos.y - subScreenHeight / 2;
 					if (-piecesWidth <= mx && mx <= piecesWidth
 					 && -piecesWidth <= my && my <= piecesWidth) {
 						//if (action) {
@@ -381,29 +412,16 @@ a {
 							pickIndex = pickIdle;
 							pickColor = pickCount = 0;
 						//}
-						gokesScale[i] = 0.9;
+						//if (pickIndex == pickIdle) {
+							scale = 0.9;
+						//}
 					}
 				}
 
 				// Update gokes.
 				cubeDilute((i + 1) * 10 == tebanColor ? 1 : 0.2, gokes[i]);
-				cubeExpand(gokesScale[i], gokes[i]);
-				cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokes[i]);
-			}
-
-			// Update temochi piece.
-			if (motion) {
-				if (pickColor > 0) {
-					cubeAnimate(pickColor, sprite);
-					cubeDilute(0.5, sprite);
-					cubeExpand(scale * 1.5, sprite);
-					cubeMove(motion.x, motion.y, sprite);
-				} else if (pickIndex == pickNone) {
-					cubeAnimate(tebanColor, sprite);
-					cubeDilute(0.5, sprite);
-					cubeExpand(scale * 1.5, sprite);
-					cubeMove(motion.x, motion.y, sprite);
-				}
+				cubeExpand(scale, gokes[i]);
+				cubeMove(pos.x, pos.y, gokes[i]);
 			}
 
 			// Clear sub screens.

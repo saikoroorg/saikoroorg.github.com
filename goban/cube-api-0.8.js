@@ -1128,12 +1128,20 @@ cube.Screen = class {
         return clone;
     }
 
-    // Calculate Global pos by local pos.
+    // Calculate global pos by local pos.
     posToGlobalPos(pos) {
         let globalPos = new cube.Vec();
-        globalPos.x = (pos.x - this.pos.x) / this.scale;
-        globalPos.y = (pos.y - this.pos.y) / this.scale;
-        return globalPos;
+        globalPos.x = pos.x * this.scale + this.pos.x;
+        globalPos.y = pos.y * this.scale + this.pos.y;
+       return globalPos;
+    }
+
+    // Calculate local pos by global pos.
+    posToLocalPos(pos) {
+        let localPos = new cube.Vec();
+        localPos.x = (pos.x - this.pos.x) / this.scale;
+        localPos.y = (pos.y - this.pos.y) / this.scale;
+        return localPos;
     }
 
     // Set screen position vector.
