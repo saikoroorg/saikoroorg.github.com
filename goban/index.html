@@ -30,6 +30,13 @@ a {
 	justify-content: space-between; -webkit-justify-content: space-between;
 	align-items: center; -webkit-align-items: center;
 }
+.screen {
+	display: flex; display: -webkit-flex;
+	flex-direction: column; -webkit-flex-direction: column;
+	justify-content: center; -webkit-justify-content: center;
+	align-items: center; -webkit-align-items: center;
+	overflow: hidden;
+}
 @media (max-width: 480px) {
 	#contents {
 		width: 95%; height: 90%;
@@ -41,26 +48,14 @@ a {
 	.mainScreen {
 		width: 100%;
 		grid-column: span 2;
-		display: flex; display: -webkit-flex;
-		flex-direction: column; -webkit-flex-direction: column;
-		justify-content: center; -webkit-justify-content: center;
-		align-items: center; -webkit-align-items: center;
 	}
 	.subScreen1 {
 		order: 3;
 		width: 100%;
-		display: flex; display: -webkit-flex;
-		flex-direction: column; -webkit-flex-direction: column;
-		justify-content: center; -webkit-justify-content: center;
-		align-items: center; -webkit-align-items: center;
 	}
 	.subScreen2 {
 		order: 2;
 		width: 100%;
-		display: flex; display: -webkit-flex;
-		flex-direction: column; -webkit-flex-direction: column;
-		justify-content: center; -webkit-justify-content: center;
-		align-items: center; -webkit-align-items: center;
 	}
 }
 @media (min-width: 480px) {
@@ -74,26 +69,14 @@ a {
 	.mainScreen {
 		order: 2;
 		width: 100%;
-		display: flex; display: -webkit-flex;
-		flex-direction: column; -webkit-flex-direction: column;
-		justify-content: center; -webkit-justify-content: center;
-		align-items: center; -webkit-align-items: center;
 	}
 	.subScreen1 {
 		order: 3;
 		width: 100%;
-		display: flex; display: -webkit-flex;
-		flex-direction: column; -webkit-flex-direction: column;
-		justify-content: center; -webkit-justify-content: center;
-		align-items: center; -webkit-align-items: center;
 	}
 	.subScreen2 {
 		order: 1;
 		width: 100%;
-		display: flex; display: -webkit-flex;
-		flex-direction: column; -webkit-flex-direction: column;
-		justify-content: center; -webkit-justify-content: center;
-		align-items: center; -webkit-align-items: center;
 	}
 }
 #footer {
@@ -126,6 +109,7 @@ a {
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
 	background-color: #888;
+	opacity: 0.9;
 }
 .menu a {
 	width: 40px; height: 40px;
@@ -133,25 +117,20 @@ a {
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	background-color: #888;
 	color: #fff;
 	font-size: 20px;
 	text-decoration: none;
 	transform: scale(1);
 }
 .menu a:hover {
-	transform: scale(0.9);
+	transform: scale(1);
+	opacity: 0.6;
 }
 .menu a:active {
 	transform: scale(0.8);
 }
 .menu a #icon {
 	width: 40px; height: 40px;
-}
-.menu #filter {
-	width: 40px; height: 40px;
-	background-color: #fff;
-	mix-blend-mode: difference;
 }
 </style>
 </head>
@@ -164,20 +143,20 @@ a {
 		</div>
 		<div class="menu">
 			<a href="javascript:changeSize(-1);">-</a>
-			<a href="javascript:changeType();"><span id="filter"></span><img id="icon" src="icon.svg"/></a>
+			<a href="javascript:changeType();"><img id="icon" src="icon.svg"/></a>
 			<a href="javascript:changeSize(1);">+</a>
 		</div>
 		<!--div class="menu">
-			<a id="x6" href="javascript:setSize(6);">×6</a>
-			<a id="x7" href="javascript:setSize(7);">×7</a>
-			<a id="x8" href="javascript:setSize(8);">×8</a>
-			<a id="x9" href="javascript:setSize(9);">×9</a>
+			<a id="x6" href="javascript:setSize(6);">¡Á6</a>
+			<a id="x7" href="javascript:setSize(7);">¡Á7</a>
+			<a id="x8" href="javascript:setSize(8);">¡Á8</a>
+			<a id="x9" href="javascript:setSize(9);">¡Á9</a>
 		</div!-->
 	</h1>
 	<div id="contents">
-		<div class="mainScreen"></div>
-		<div class="subScreen1"></div>
-		<div class="subScreen2"></div>
+		<div class="screen mainScreen"></div>
+		<div class="screen subScreen1"></div>
+		<div class="screen subScreen2"></div>
 	</div>
 	<h6 id="footer">
 		<div id="version">.</div>
@@ -198,7 +177,6 @@ a {
 
 	// Set goban type and size.
 	var setGoban = (size, type) => {
-		console.log("size:" + size + " type:" + type);
 		gobanType = type > 0 ? 1 : 0;
 		size = (size > gobanSizeMax) ? gobanSizeMax : (size < gobanSizeMin) ? gobanSizeMin : size;
 		if (gobanType != cubeMod(size, 2)) {
@@ -210,13 +188,6 @@ a {
 		} else {
 			gobanSize = size;
 		}
-		console.log("goban size:" + gobanSize + " type:" + gobanType);
-		/*for (let i = 1; i <= gobanSizeMax; ++i) {
-			let menu = document.getElementById("x" + i);
-			if (menu) {
-				menu.style.backgroundColor = i == gobanSize ? "#000" : "#888";
-			}
-        }*/
        	let icon = document.getElementById("icon");
         if (icon) {
 			icon.style.filter = gobanType > 0 ? "invert(75%) brightness(200%)" : "";
@@ -242,7 +213,7 @@ a {
 
 	// Create screens.
 	const screenWidth = 300;
-	const screenHeight = 280;
+	const screenHeight = 300;
 	var mainScreen = cubeScreen("mainScreen", screenWidth, screenHeight);
 	var mainJoypad = cubeJoypad(mainScreen);
 	const subScreenWidth = 30;
@@ -259,17 +230,16 @@ a {
 	for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
 		gobans[i] = await cubeSprite("resource.svg", 24, 24);
 	}
-	const gobansWidth = 250;
+	const gobansWidth = 240;
 	const piecesWidth = 20;
 	var gokes = [];
 	for (var i = 0; i < 2; i++) {
 		gokes[i] = await cubeSprite("resource.svg", 24, 24);
-		cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokes[i]);
 		cubeAnimate((i + 1) * 10, gokes[i]);
 	}
-	var tebanColor = 10;
-	var pickIndex = -1;
-	var pickColor = 0;
+	var tebanColor = 10, gokesScale = [1, 1];
+	const pickIdle = -1, pickNone = -2;
+	var pickIndex = pickIdle, pickColor = 0, pickCount = 0;
 
 	// Main loop.
 	while (true) {
@@ -295,23 +265,6 @@ a {
 
 		for (playing = 1; playing >= 1; ) {
 
-			// Update gobans.
-			for (let y = 0; y < gobanSize; y++) {
-				for (let x = 0; x < gobanSize; x++) {
-					let gx = ox + piecesWidthScaled * x;
-					let gy = oy + piecesWidthScaled * y;
-					let index = gobanSize * y + x;
-					cubeMove(gx, gy, gobans[index]);
-					cubeExpand(scale, gobans[index]);
-					if (index == pickIndex) {
-						cubeDilute(0.2, gobans[index]);
-					} else {
-						cubeDilute(1, gobans[index]);
-					}
-					cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
-				}
-			}
-
 			// Read input.
 			await cubeReadJoypad(0, mainJoypad);
 			let motion = cubeJoypadMotion(mainJoypad);
@@ -321,34 +274,54 @@ a {
 				let my = cubeDiv(motion.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
 				if (my >= 0 && my < gobanSize && mx >= 0 && mx < gobanSize) {
 					let index = gobanSize * my + mx;
-					if (pickIndex == -1) {
 
-						// Pick a piece.
+					// Check pick a piece.
+					if (pickIndex == pickIdle) {
+
+						// Start to pick a piece.
 						if (piecesIndex[index] > 0) {
 							pickIndex = index;
-							pickColor = piecesIndex[index];
 
 						// Touch gobans.
 						} else {
-							pickIndex = -2;
-							pickColor = 0;
+							pickIndex = pickNone;
+							pickColor = pickCount = 0;
+						}
+
+					// Check hold a piece.
+					} else if (pickIndex >= 0 && pickColor == 0) {
+
+						// Start to hold a piece.
+						if (index != pickIndex) {
+							pickColor = piecesIndex[pickIndex];
+							piecesIndex[pickIndex] = 0;
+
+						// Check timeout.
+						} else if (pickCount++ >= 30) {
+							pickColor = piecesIndex[pickIndex];
+							piecesIndex[pickIndex] = 0;
 						}
 					}
 
-					cubeDilute(0.2, gobans[index]);
+					// Set touching place.
+					cubeDilute(0.5, gobans[index]);
+
+					// Check release a piece.
 					if (action) {
-						if (piecesIndex[index]) {
+						if (piecesIndex[index] > 0) {
 
 							// Flip a piece.
-							if (pickIndex == index) {
+							if (pickIndex == index && pickColor == 0) {
 								piecesIndex[index] = cubeMod(piecesIndex[index], 20) + 10;
-								pickIndex = -1;
+								pickIndex = pickIdle;
+								pickColor = pickCount = 0;
 
 							// Change a piece.
 							} else if (pickIndex >= 0) {
 								piecesIndex[pickIndex] = piecesIndex[index];
 								piecesIndex[index] = pickColor;
-								pickIndex = -1;
+								pickIndex = pickIdle;
+								pickColor = pickCount = 0;
 							}
 						} else {
 
@@ -356,27 +329,44 @@ a {
 							if (pickIndex >= 0) {
 								piecesIndex[pickIndex] = 0;
 								piecesIndex[index] = pickColor;
-								pickIndex = -1;
+								pickIndex = pickIdle;
+								pickColor = pickCount = 0;
 
 							// Cancel pick.
-							} else {
+							} else if (pickIndex == pickNone) {
 								piecesIndex[index] = tebanColor;
+								pickIndex = pickIdle;
+								pickColor = pickCount = 0;
 							}
 						}
 					}
-				} else {
-					if (pickIndex >= 0) {
-						piecesIndex[pickIndex] = 0;
-						pickIndex = -1;
-						pickColor = 0;
-					}
 				}
 			} else {
-				pickIndex = -1;
+				pickIndex = pickIdle;
+				pickColor = pickCount = 0;
 			}
 
-			// Update temochi piece and gokes.
+			// Update gobans.
+			for (let y = 0; y < gobanSize; y++) {
+				for (let x = 0; x < gobanSize; x++) {
+					let gx = ox + piecesWidthScaled * x;
+					let gy = oy + piecesWidthScaled * y;
+					let index = gobanSize * y + x;
+					if (index == pickIndex) {
+						cubeExpand(scale * 0.9, gobans[index]);
+						cubeDilute(0.8, gobans[index]);
+					} else {
+						cubeExpand(scale * 1, gobans[index]);
+						cubeDilute(1, gobans[index]);
+					}
+					cubeMove(gx, gy, gobans[index]);
+					cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
+				}
+			}
+
+			// Update gokes.
 			for (var i = 0; i < 2; i++) {
+				gokesScale[i] = 1;
 
 				// Read input.
 				await cubeReadJoypad(0, subJoypads[i]);
@@ -388,16 +378,33 @@ a {
 					 && -piecesWidth <= my && my <= piecesWidth) {
 						//if (action) {
 							tebanColor = (i + 1) * 10;
-							pickIndex = -1;
-							pickColor = 0;
+							pickIndex = pickIdle;
+							pickColor = pickCount = 0;
 						//}
+						gokesScale[i] = 0.9;
 					}
 				}
 
 				// Update gokes.
-				cubeDilute((i + 1) * 10 == tebanColor ? 0.8 : 0.1, gokes[i]);
+				cubeDilute((i + 1) * 10 == tebanColor ? 1 : 0.2, gokes[i]);
+				cubeExpand(gokesScale[i], gokes[i]);
+				cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokes[i]);
 			}
 
+			// Update temochi piece.
+			if (motion) {
+				if (pickColor > 0) {
+					cubeAnimate(pickColor, sprite);
+					cubeDilute(0.5, sprite);
+					cubeExpand(scale * 1.5, sprite);
+					cubeMove(motion.x, motion.y, sprite);
+				} else if (pickIndex == pickNone) {
+					cubeAnimate(tebanColor, sprite);
+					cubeDilute(0.5, sprite);
+					cubeExpand(scale * 1.5, sprite);
+					cubeMove(motion.x, motion.y, sprite);
+				}
+			}
 
 			// Clear sub screens.
 			for (var i = 0; i < 2; i++) {
@@ -418,14 +425,10 @@ a {
 			// Draw temochi piece.
 			if (motion) {
 				if (pickColor > 0) {
-					cubeAnimate(pickColor, sprite);
-				} else {
-					cubeAnimate(tebanColor, sprite);
+					cubeDraw(sprite, mainScreen);
+				} else if (pickIndex == pickNone) {
+					cubeDraw(sprite, mainScreen);
 				}
-				cubeDilute(0.5, sprite);
-				cubeExpand(2, sprite);
-				cubeMove(motion.x, motion.y, sprite);
-				cubeDraw(sprite, mainScreen);
 			}
 
 			await cubeWait(10);

@@ -6,31 +6,31 @@
                 <path d="M8,8h44v44h-44Z" stroke="none" fill="#ccc"/>
             </g>
             <g transform="translate(60,0)">
-                <path d="M30,30h25 M30,30v25"/>
+                <path d="M30,30h24 M30,30v24"/>
             </g>
             <g transform="translate(120,0)">
-                <path d="M5,30h50 M30,30v25"/>
+                <path d="M6,30h48 M30,30v24"/>
             </g>
             <g transform="translate(180,0)">
-                <path d="M5,30h25 M30,30v25"/>
+                <path d="M6,30h24 M30,30v24"/>
             </g>
             <g transform="translate(240,0)">
-                <path d="M30,30h25 M30,5v50"/>
+                <path d="M30,30h24 M30,6v48"/>
             </g>
             <g transform="translate(0,60)">
-                <path d="M5,30h50 M30,5v50"/>
+                <path d="M6,30h48 M30,6v48"/>
             </g>
             <g transform="translate(60,60)">
-                <path d="M5,30h25 M30,5v50"/>
+                <path d="M6,30h24 M30,6v48"/>
             </g>
             <g transform="translate(120,60)">
-                <path d="M30,30h25 M30,5v25"/>
+                <path d="M30,30h24 M30,6v24"/>
             </g>
             <g transform="translate(180,60)">
-                <path d="M5,30h50 M30,5v25"/>
+                <path d="M6,30h48 M30,6v24"/>
             </g>
             <g transform="translate(240,60)">
-                <path d="M5,30h25 M30,5v25"/>
+                <path d="M6,30h24 M30,6v24"/>
             </g>
         </g>
         <!-- kuro -->
@@ -41,55 +41,55 @@
                 </g>
             </g>
             <g transform="translate(60,0)">
-                <path d="M30,30h25 M30,30v25"/>
+                <path d="M30,30h24 M30,30v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(120,0)">
-                <path d="M5,30h50 M30,30v25"/>
+                <path d="M6,30h48 M30,30v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(180,0)">
-                <path d="M5,30h25 M30,30v25"/>
+                <path d="M6,30h24 M30,30v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(240,0)">
-                <path d="M30,30h25 M30,5v50"/>
+                <path d="M30,30h24 M30,6v48"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(0,60)">
-                <path d="M5,30h50 M30,5v50"/>
+                <path d="M6,30h48 M30,6v48"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(60,60)">
-                <path d="M5,30h25 M30,5v50"/>
+                <path d="M6,30h24 M30,6v48"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(120,60)">
-                <path d="M30,30h25 M30,5v25"/>
+                <path d="M30,30h24 M30,6v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(180,60)">
-                <path d="M5,30h50 M30,5v25"/>
+                <path d="M6,30h48 M30,6v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
             </g>
             <g transform="translate(240,60)">
-                <path d="M5,30h25 M30,5v25"/>
+                <path d="M6,30h24 M30,6v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
@@ -103,55 +103,55 @@
                 </g>
             </g>
             <g transform="translate(60,0)">
-                <path d="M30,30h25 M30,30v25"/>
+                <path d="M30,30h24 M30,30v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(120,0)">
-                <path d="M5,30h50 M30,30v25"/>
+                <path d="M6,30h48 M30,30v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(180,0)">
-                <path d="M5,30h25 M30,30v25"/>
+                <path d="M6,30h24 M30,30v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(240,0)">
-                <path d="M30,30h25 M30,5v50"/>
+                <path d="M30,30h24 M30,6v48"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(0,60)">
-                <path d="M5,30h50 M30,5v50"/>
+                <path d="M6,30h48 M30,6v48"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(60,60)">
-                <path d="M5,30h25 M30,5v50"/>
+                <path d="M6,30h24 M30,6v48"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(120,60)">
-                <path d="M30,30h25 M30,5v25"/>
+                <path d="M30,30h24 M30,6v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(180,60)">
-                <path d="M5,30h50 M30,5v25"/>
+                <path d="M6,30h48 M30,6v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
             </g>
             <g transform="translate(240,60)">
-                <path d="M5,30h25 M30,5v25"/>
+                <path d="M6,30h24 M30,6v24"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
