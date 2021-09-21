@@ -120,11 +120,11 @@ a {
     width: 40px; height: 40px; padding: 10px; margin-left: -28px;
 }
 .menu {
-	width: 160px; height: 40px; margin: 5px 0px;
+	width: 120px; height: 50px;
 	display: flex; display: -webkit-flex;
 	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: space-between; -webkit-justify-content: space-between;
-	align-items: flex-end; -webkit-align-items: flex-end;
+	justify-content: center; -webkit-justify-content: center;
+	align-items: center; -webkit-align-items: center;
 	background-color: #888;
 }
 .menu a {
@@ -133,8 +133,9 @@ a {
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	font-size: 20px;
+	background-color: #888;
 	color: #fff;
+	font-size: 20px;
 	text-decoration: none;
 	transform: scale(1);
 }
@@ -143,6 +144,14 @@ a {
 }
 .menu a:active {
 	transform: scale(0.8);
+}
+.menu a #icon {
+	width: 40px; height: 40px;
+}
+.menu #filter {
+	width: 40px; height: 40px;
+	background-color: #fff;
+	mix-blend-mode: difference;
 }
 </style>
 </head>
@@ -154,11 +163,16 @@ a {
 			<a href="?">Goban</a>
 		</div>
 		<div class="menu">
-			<a id="x6" href="javascript:setLevel(6);">×6</a>
-			<a id="x7" href="javascript:setLevel(7);">×7</a>
-			<a id="x8" href="javascript:setLevel(8);">×8</a>
-			<a id="x9" href="javascript:setLevel(9);">×9</a>
+			<a href="javascript:changeSize(-1);">-</a>
+			<a href="javascript:changeType();"><span id="filter"></span><img id="icon" src="icon.svg"/></a>
+			<a href="javascript:changeSize(1);">+</a>
 		</div>
+		<!--div class="menu">
+			<a id="x6" href="javascript:setSize(6);">×6</a>
+			<a id="x7" href="javascript:setSize(7);">×7</a>
+			<a id="x8" href="javascript:setSize(8);">×8</a>
+			<a id="x9" href="javascript:setSize(9);">×9</a>
+		</div!-->
 	</h1>
 	<div id="contents">
 		<div class="mainScreen"></div>
@@ -176,24 +190,53 @@ a {
 
 	// Get query parameters.
 	var params = cubeParamNumbers("x");
-	var levelMax = params[1] > 9 ? params[1] : 9;
-	var level = params[1] ? params[1] : 6; // Goban lines.
+	var gobanSizeMin = 4;
+	var gobanSizeMax = params[1] > 9 ? params[1] : 9;
+	var gobanSize = params[1] ? params[1] : 6; // Goban lines.
+	var gobanType = cubeMod(gobanSize, 2);
 	var playing = 0; // Playing count.
 
-	// Set playing level.
-	var setLevel = (x) => {
-        level = x >= 1 && x <= levelMax ? x : 6;
-        for (let i = 1; i <= levelMax; ++i) {
-            let menu = document.getElementById("x" + i);
-            if (menu) {
-				menu.style.backgroundColor = i == level ? "#000" : "#888";
+	// Set goban type and size.
+	var setGoban = (size, type) => {
+		console.log("size:" + size + " type:" + type);
+		gobanType = type > 0 ? 1 : 0;
+		size = (size > gobanSizeMax) ? gobanSizeMax : (size < gobanSizeMin) ? gobanSizeMin : size;
+		if (gobanType != cubeMod(size, 2)) {
+			if (size != gobanSize || gobanType > 0) {
+				gobanSize = size + 1 <= gobanSizeMax ? size + 1 : size - 1;
+			} else {
+				gobanSize = size - 1 >= gobanSizeMin ? size - 1 : size + 1;
 			}
-        }
+		} else {
+			gobanSize = size;
+		}
+		console.log("goban size:" + gobanSize + " type:" + gobanType);
+		/*for (let i = 1; i <= gobanSizeMax; ++i) {
+			let menu = document.getElementById("x" + i);
+			if (menu) {
+				menu.style.backgroundColor = i == gobanSize ? "#000" : "#888";
+			}
+        }*/
+       	let icon = document.getElementById("icon");
+        if (icon) {
+			icon.style.filter = gobanType > 0 ? "invert(75%) brightness(200%)" : "";
+			icon.style.scale = gobanType > 0 ? "0.8" : "1";
+		}
 		playing = -1; // Replay.
 	};
 
+	// Change goban size.
+	var changeSize = (x=0) => {
+		setGoban(gobanSize + x * 2, gobanType);
+	};
+
+	// Change goban type.
+	var changeType = () => {
+		setGoban(gobanSize, gobanType > 0 ? 0 : 1);
+	};
+
 	// Initialize settings.
-	setLevel(level);
+	setGoban(gobanSize, gobanType);
 </script><!--/Menu-->
 <!--Main--><script>(async()=>{
 
@@ -213,7 +256,7 @@ a {
 	// Create sprites.
 	var sprite = await cubeSprite("resource.svg", 24, 24);
 	var gobans = [], gobansIndex = [], piecesIndex = [];
-	for (var i = 0; i < levelMax * levelMax; i++) {
+	for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
 		gobans[i] = await cubeSprite("resource.svg", 24, 24);
 	}
 	const gobansWidth = 250;
@@ -222,7 +265,7 @@ a {
 	for (var i = 0; i < 2; i++) {
 		gokes[i] = await cubeSprite("resource.svg", 24, 24);
 		cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokes[i]);
-		cubeAnimate((i + 1) * 10 + 5, gokes[i]);
+		cubeAnimate((i + 1) * 10, gokes[i]);
 	}
 	var tebanColor = 10;
 	var pickIndex = -1;
@@ -232,33 +275,32 @@ a {
 	while (true) {
 
 		// Initialize pieces.
-		for (var i = 0; i < levelMax * levelMax; i++) {
+		for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
 			gobansIndex[i] = 0;
 			piecesIndex[i] = 0;
 		}
-		var gobansType = cubeMod(level, 2);
-		if (gobansType > 0) {
-			for (let y = 0; y < level; y++) {
-				let oy = y == 0 ? 1 : y == level - 1 ? 7 : 4;
-				for (let x = 0; x < level; x++) {
-					let ox = x == 0 ? 0 : x == level - 1 ? 2 : 1;
-					gobansIndex[level*y+x] = ox + oy;
+		if (gobanType > 0) {
+			for (let y = 0; y < gobanSize; y++) {
+				let oy = y == 0 ? 1 : y == gobanSize - 1 ? 7 : 4;
+				for (let x = 0; x < gobanSize; x++) {
+					let ox = x == 0 ? 0 : x == gobanSize - 1 ? 2 : 1;
+					gobansIndex[gobanSize*y+x] = ox + oy;
 				}
 			}
 		}
-		let scale = gobansWidth / (piecesWidth * (gobansType > 0 ? level - 1 : level));
+		let scale = gobansWidth / (piecesWidth * (gobanType > 0 ? gobanSize - 1 : gobanSize));
 		let piecesWidthScaled = piecesWidth * scale;
-		let ox = (screenWidth - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
-		let oy = (screenHeight - gobansWidth) / 2 + (gobansType > 0 ? 0 : piecesWidthScaled / 2);
+		let ox = (screenWidth - gobansWidth) / 2 + (gobanType > 0 ? 0 : piecesWidthScaled / 2);
+		let oy = (screenHeight - gobansWidth) / 2 + (gobanType > 0 ? 0 : piecesWidthScaled / 2);
 
 		for (playing = 1; playing >= 1; ) {
 
 			// Update gobans.
-			for (let y = 0; y < level; y++) {
-				for (let x = 0; x < level; x++) {
+			for (let y = 0; y < gobanSize; y++) {
+				for (let x = 0; x < gobanSize; x++) {
 					let gx = ox + piecesWidthScaled * x;
 					let gy = oy + piecesWidthScaled * y;
-					let index = level * y + x;
+					let index = gobanSize * y + x;
 					cubeMove(gx, gy, gobans[index]);
 					cubeExpand(scale, gobans[index]);
 					if (index == pickIndex) {
@@ -277,8 +319,8 @@ a {
 			if (motion) {
 				let mx = cubeDiv(motion.x - (ox - piecesWidthScaled / 2), piecesWidthScaled);
 				let my = cubeDiv(motion.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
-				if (my >= 0 && my < level && mx >= 0 && mx < level) {
-					let index = level * my + mx;
+				if (my >= 0 && my < gobanSize && mx >= 0 && mx < gobanSize) {
+					let index = gobanSize * my + mx;
 					if (pickIndex == -1) {
 
 						// Pick a piece.
@@ -369,16 +411,16 @@ a {
 			cubeClear(mainScreen);
 
 			// Draw gobans
-			for (var i = 0; i < level * level; i++) {
+			for (var i = 0; i < gobanSize * gobanSize; i++) {
 				cubeDraw(gobans[i], mainScreen);
 			}
 
 			// Draw temochi piece.
 			if (motion) {
 				if (pickColor > 0) {
-					cubeAnimate(pickColor + 5, sprite);
+					cubeAnimate(pickColor, sprite);
 				} else {
-					cubeAnimate(tebanColor + 5, sprite);
+					cubeAnimate(tebanColor, sprite);
 				}
 				cubeDilute(0.5, sprite);
 				cubeExpand(2, sprite);

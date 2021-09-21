@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 360" width="120" height="144">
-    <g stroke-linecap="square" stroke-width="2" stroke="#888" fill="#ccc">
+    <g stroke-linecap="square" stroke-width="2" stroke="#888">
         <!-- no -->
         <g>
             <g transform="translate(0,0)">
-                <path d="M5,5h50v50h-50Z"/>
+                <path d="M8,8h44v44h-44Z" stroke="none" fill="#ccc"/>
             </g>
             <g transform="translate(60,0)">
                 <path d="M30,30h25 M30,30v25"/>
@@ -36,7 +36,6 @@
         <!-- kuro -->
         <g transform="translate(0,120)">
             <g transform="translate(0,0)">
-                <path d="M5,5h50v50h-50Z"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#000"/>
                 </g>
@@ -99,7 +98,6 @@
         <!-- siro -->
         <g transform="translate(0,240)">
             <g transform="translate(0,0)">
-                <path d="M5,5h50v50h-50Z"/>
                 <g transform="translate(30,30)">
                     <path d="M20,0L10-17.32L-10-17.32L-20,0L-10,17.32L10,17.32Z" fill="#fff"/>
                 </g>
