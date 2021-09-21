@@ -37,7 +37,7 @@ a {
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	background-color: #eee;
+	background-color: #111;
 }
 #footer {
 	width: 95%; margin: 0px;
@@ -68,7 +68,7 @@ a {
 	flex-direction: row; -webkit-flex-direction: row;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	opacity: 0.5;
+	opacity: 0.9;
 }
 .menu a {
 	width: 40px; height: 40px;
@@ -76,18 +76,19 @@ a {
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	font-size: 30px;
 	color: #000;
+	font-size: 30px;
 	text-decoration: none;
 	transform: scale(1);
 }
 .menu a:hover {
-	transform: scale(1.2);
+	transform: scale(1);
+	opacity: 0.6;
 }
 .menu a:active {
 	transform: scale(0.9);
 }
-#dice {
+.menu #icon {
 	width: 40px; height: 40px;
 	background-image: url('resource.svg');
 }
@@ -101,9 +102,9 @@ a {
 			<a href="?">Dice</a>
 		</div>
 		<div class="menu">
-			<a href="javascript:setCounts(-1);">-</a>
-			<span id="dice"></span>
-			<a href="javascript:setCounts(1);">+</a>
+			<a href="javascript:changeCounts(-1);">-</a>
+			<a href="javascript:changeMaximum();"><span id="icon"></span></a>
+			<a href="javascript:changeCounts(+1);">+</a>
 		</div>
 	</h1>
 	<div id="contents" class="cubeScreen"></div>
@@ -123,28 +124,36 @@ a {
 	var rolling = 0; // Rolling count.
 
 	// Set counts of dice.
-	var setCounts = (x=0) => {
-		counts = (counts + x > 20) ? 20 : (counts + x < 1) ? 1 : (counts + x);
+	var setCounts = (x) => {
+		counts = (x > 20) ? 20 : (x < 1) ? 1 : x;
 		rolling = -1; // Reroll.
 	};
 
 	// Set maximum of dice faces.
-	var setMaximum = (x=0) => {
-		maximum = (maximum + x > 20) ? 20 : (maximum + x < 1) ? 1 : (maximum + x);
+	var setMaximum = (x) => {
+		maximum = (x > 20) ? 20 : (x < 1) ? 1 : x;
 
 		// Reset dice icon.
-		var icon = document.getElementById("dice");
+		var icon = document.getElementById("icon");
 		if (icon) {
-			var nx = -cubeMod(maximum - 1, 5) * 40;
-			var ny = -cubeDiv(maximum - 1, 5) * 40;
+			var n = maximum <= 10 ? maximum : maximum + 10;
+			var nx = -cubeMod(n - 1, 5) * 40;
+			var ny = -cubeDiv(n - 1, 5) * 40;
 			icon.style.backgroundPosition = "" + nx + " " + ny;
 		}
 		rolling = -1; // Reroll.
 	};
 
+	var changeCounts = (x) => {
+		setCounts(counts + x);
+	};
+	var changeMaximum = () => {
+		setMaximum(maximum <= 6 ? 8 : maximum <= 8 ? 10 : 6);
+	};
+
 	// Initialize settings.
-	setCounts();
-	setMaximum();
+	setCounts(counts);
+	setMaximum(maximum);
 </script><!--/Menu-->
 <!--Main--><script>(async()=>{
 	//var params = cubeParamNumbers("d");
@@ -157,7 +166,7 @@ a {
 
 	// Create sprites.
 	var sprites = [];
-	for (var i = 0; i < 20; i++) {
+	for (var i = 0; i < 30; i++) {
 		sprites[i] = await cubeSprite("resource.svg", 40, 40);
 	}
 
@@ -171,6 +180,9 @@ a {
 		for (var i = 0; i < lines; i++) {
 			rows[i] = i > 0 ? lineMax : (cubeMod(counts - 1, lineMax) + 1);
 		}
+
+		// Sprite frame.
+		var frameMax = maximum;
 
 		// Sprite scale.
 		var scale = 5 / ((counts < lineMax ? counts : lines >= lineMax ? lines : lineMax) + 1);
@@ -219,7 +231,13 @@ a {
 				angle = (angle + 20) % 360;
 				for (var y = 0; y < lines; y++) {
 					for (var x = 0; x < rows[y]; x++) {
-						randoms[lineMax*y+x] = cubeRandom(maximum) + 1;
+						if (frameMax < 10) {
+							randoms[lineMax*y+x] = cubeRandom(frameMax) + 1;
+						} else if (frameMax == 10) {
+							randoms[lineMax*y+x] = cubeRandom(frameMax) + 10;
+						} else {
+							randoms[lineMax*y+x] = cubeMod(cubeRandom(frameMax), 20) + 11;
+						}
 					}
 				}
 			}
