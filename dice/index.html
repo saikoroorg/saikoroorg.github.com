@@ -31,13 +31,14 @@ a {
 	align-items: center; -webkit-align-items: center;
 }
 #contents {
+	position: relative;
 	width: 95%; height: 90%;
 	flex: 1 1 auto;
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	background-color: #111;
+	background-color: #eee;
 }
 #footer {
 	width: 95%; margin: 0px;
@@ -63,7 +64,7 @@ a {
     width: 40px; height: 40px; padding: 10px; margin-left: -28px;
 }
 .menu {
-	width: 120px; height: 50px;
+	width: 120px; height: 40px;
 	display: flex; display: -webkit-flex;
 	flex-direction: row; -webkit-flex-direction: row;
 	justify-content: center; -webkit-justify-content: center;
@@ -80,6 +81,7 @@ a {
 	font-size: 30px;
 	text-decoration: none;
 	transform: scale(1);
+	opacity: 1;
 }
 .menu a:hover {
 	transform: scale(1);
@@ -87,6 +89,7 @@ a {
 }
 .menu a:active {
 	transform: scale(0.9);
+	opacity: 1;
 }
 .menu #icon {
 	width: 40px; height: 40px;
