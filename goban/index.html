@@ -294,6 +294,7 @@ a {
 				let my = cubeDiv(localPos.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
 				if (my >= 0 && my < gobanSize && mx >= 0 && mx < gobanSize) {
 					focus = cubeVector(mx, my);
+					focusCount += 1;
 					focusIndex = gobanSize * my + mx;
 
 					// Check pick a piece.
@@ -336,6 +337,8 @@ a {
 								piecesIndex[focusIndex] = cubeMod(piecesIndex[focusIndex], 20) + 10;
 								pickIndex = pickIdle;
 								pickColor = pickCount = 0;
+								focus = null;
+								focusCount = 0;
 								focusIndex = -1;
 
 							// Change a piece.
@@ -344,6 +347,8 @@ a {
 								piecesIndex[focusIndex] = pickColor;
 								pickIndex = pickIdle;
 								pickColor = pickCount = 0;
+								focus = null;
+								focusCount = 0;
 								focusIndex = -1;
 
 							// Update pick.
@@ -351,6 +356,8 @@ a {
 								piecesIndex[focusIndex] = pickColor;
 								pickIndex = pickIdle;
 								pickColor = pickCount = 0;
+								focus = null;
+								focusCount = 0;
 								focusIndex = -1;
 							}
 						} else {
@@ -361,6 +368,8 @@ a {
 								piecesIndex[focusIndex] = pickColor;
 								pickIndex = pickIdle;
 								pickColor = pickCount = 0;
+								focus = null;
+								focusCount = 0;
 								focusIndex = -1;
 
 							// Cancel pick.
@@ -368,12 +377,16 @@ a {
 								piecesIndex[focusIndex] = tebanColor;
 								pickIndex = pickIdle;
 								pickColor = pickCount = 0;
+								focus = null;
+								focusCount = 0;
 								focusIndex = -1;
 
 							// Cancel pick.
 							} else {
 								pickIndex = pickIdle;
 								pickColor = pickCount = 0;
+								focus = null;
+								focusCount = 0;
 								focusIndex = -1;
 							}
 						}
@@ -388,33 +401,24 @@ a {
 					// Cancel pick.
 					pickIndex = pickIdle;
 					pickColor = pickCount = 0;
-					focusIndex = -1;
-				}
-			}
-
-			// Focus parameters.
-			let focusArea = 6, focusScale = 0;
-			let focusYmin = 0, focusYmax = 0, focysXmin = 0, focusXmax = 0;
-			if (gobanSize >= 6 && focusIndex >= 0) {
-				focusCount += 1;
-				focusYmin = focus.y - focusArea > 0 ? focus.y - focusArea : 0;
-				focusYmax = focus.y + focusArea < gobanSize ? focus.y + focusArea : gobanSize - 1;
-				focusXmin = focus.x - focusArea > 0 ? focus.x - focusArea : 0;
-				focusXmax = focus.x + focusArea < gobanSize ? focus.x + focusArea : gobanSize - 1;
-			} else if (focusCount > 0) {
-				focusCount -= 10;
-				if (focusCount <= 0) {
 					focus = null;
 					focusCount = 0;
+					focusIndex = -1;
+				}
+
+				// Update temochi piece.
+				if (pickColor > 0) {
+					cubeAnimate(pickColor + 5, sprite);
+					cubeDilute(0.5, sprite);
+					cubeExpand(scale * 1.5, sprite);
+					cubeMove(localPos.x, localPos.y, sprite);
+				} else if (pickIndex == pickNone) {
+					cubeAnimate(tebanColor + 5, sprite);
+					cubeDilute(0.5, sprite);
+					cubeExpand(scale * 1.5, sprite);
+					cubeMove(localPos.x, localPos.y, sprite);
 				}
 			}
-			if (focusCount >= 30) {
-				focusScale = focusCount < 60 ? (focusCount - 30) / 30 : 1;
-				if (focusCount >= 60) {
-					focusCount = 60;
-				}
-			}
-			let gobansScale = focusScale * (gobanSize / 6);
 
 			// Update gobans.
 			for (let y = 0; y < gobanSize; y++) {
@@ -422,35 +426,38 @@ a {
 					let gx = ox + piecesWidthScaled * x;
 					let gy = oy + piecesWidthScaled * y;
 					let index = gobanSize * y + x;
-					if (focusScale > 0) {
-						let gx2 = (x - focus.x) * piecesWidthScaled * gobansScale;
-						let gy2 = (y - focus.y) * piecesWidthScaled * gobansScale;
-						cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
-						cubeExpand(scale * (1 + gobansScale), gobans[index]);
-						cubeDilute(1, gobans[index]);
-						cubeMove(gx + gx2, gy + gy2, gobans[index]);
+					if (gobanSize >= 6 && focus && focusCount >= 60) {
+						if (x - 2 <= focus.x && focus.x <= x + 2 &&
+							y - 2 <= focus.y && focus.y <= y + 2) {
+							let focusShift = -1;
+							let focusScale = (focusCount < 65 ? (focusCount - 60) / 5 : 1)
+								* (gobanSize / 12);
+							gx += (x - focus.x) * piecesWidthScaled * focusScale;
+							gy += (y - focus.y + focusShift) * piecesWidthScaled * focusScale;
+							if (x == focus.x && y == focus.y) {
+								cubeExpand(scale * (1 + focusScale), gobans[index]);
+								cubeDilute(0.8, gobans[index]);
+								if (pickColor > 0) {
+									cubeAnimate(pickColor + 5, gobans[index]);
+								} else {
+									cubeAnimate(tebanColor + 5, gobans[index]);
+								}
+							} else {
+								cubeExpand(scale * (1 + focusScale), gobans[index]);
+								cubeDilute(0.6, gobans[index]);
+								cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
+							}
+						} else {
+							cubeExpand(scale * 1, gobans[index]);
+							cubeDilute(0.2, gobans[index]);
+							cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
+						}
 					} else {
-						cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
 						cubeExpand(scale * 1, gobans[index]);
 						cubeDilute(1, gobans[index]);
-						cubeMove(gx, gy, gobans[index]);
+						cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
 					}
-				}
-			}
-
-			// Update temochi piece.
-			if (motion) {
-				let localPos = mainScreen.posToLocalPos(motion);
-				if (pickColor > 0) {
-					cubeAnimate(pickColor + 5, sprite);
-					cubeDilute(0.5, sprite);
-					cubeExpand(scale * (1.5 + gobansScale), sprite);
-					cubeMove(localPos.x, localPos.y, sprite);
-				} else if (pickIndex == pickNone) {
-					cubeAnimate(tebanColor + 5, sprite);
-					cubeDilute(0.5, sprite);
-					cubeExpand(scale * (1.5 + gobansScale), sprite);
-					cubeMove(localPos.x, localPos.y, sprite);
+					cubeMove(gx, gy, gobans[index]);
 				}
 			}
 
@@ -499,17 +506,20 @@ a {
 			}
 
 			// Draw focused gobans.
-			if (focusScale > 0) {
-				for (let y = focusYmin; y <= focusYmax; y++) {
-					for (let x = focusXmin; x <= focusXmax; x++) {
+			if (gobanSize >= 6 && focus && focusCount >= 60) {
+				let ymin = focus.y - 1 > 0 ? focus.y - 1 : 0;
+				let ymax = focus.y + 1 < gobanSize ? focus.y + 1 : gobanSize - 1;
+				let xmin = focus.x - 1 > 0 ? focus.x - 1 : 0;
+				let xmax = focus.x + 1 < gobanSize ? focus.x + 1 : gobanSize - 1;
+				for (let y = ymin; y < ymax; y++) {
+					for (let x = xmin; x < xmax; x++) {
 						let index = gobanSize * y + x;
 						cubeDraw(gobans[index], mainScreen);
 					}
 				}
-			}
 
 			// Draw temochi piece.
-			if (motion) {
+			} else if (motion) {
 				if (pickColor > 0) {
 					cubeDraw(sprite, mainScreen);
 				} else if (pickIndex == pickNone) {
