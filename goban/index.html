@@ -235,51 +235,59 @@ a {
 	var mainScreen = cubeScreen("mainScreen", screenWidth, screenHeight);
 	const subScreenWidth = 30;
 	const subScreenHeight = 30;
+	const playerCount = 2;
 	var subScreens = [], subJoypads = [];
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < playerCount; i++) {
 		subScreens[i] = cubeScreen("subScreen" + (i + 1), subScreenWidth, subScreenHeight);
 	}
 
 	// Create sprites.
 	var sprite = await cubeSprite("resource.svg", 24, 24);
-	var gobans = [], gobansIndex = [], piecesIndex = [];
+	var gobans = [], gobansFrame = [], piecesFrame = [];
 	for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
 		gobans[i] = await cubeSprite("resource.svg", 24, 24);
 	}
 	const gobansWidth = 240;
 	const piecesWidth = 20;
 	var gokes = [];
-	for (var i = 0; i < 2; i++) {
+	for (var i = 0; i < playerCount; i++) {
 		gokes[i] = await cubeSprite("resource.svg", 24, 24);
 		cubeAnimate((i + 1) * 10 + 5, gokes[i]);
 	}
 	const gokeWidth = 10;
-	var tebanColor = 10;
-	const pickIdle = -1, pickNone = -2;
-	var pickIndex = pickIdle, pickColor = 0, pickCount = 0;
-	var focusIndex = -1;
 
 	// Main loop.
 	while (true) {
 
+		// Initialize params.
+		let scale = gobansWidth / (piecesWidth * (gobanType > 0 ? gobanSize - 1 : gobanSize));
+		let piecesWidthScaled = piecesWidth * scale;
+		let gobansPos = cubeVector(
+			(screenWidth - gobansWidth) / 2 + (gobanType > 0 ? 0 : piecesWidthScaled / 2),
+			(screenHeight - gobansWidth) / 2 + (gobanType > 0 ? 0 : piecesWidthScaled / 2));
+
 		// Initialize pieces.
 		for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
-			gobansIndex[i] = 0;
-			piecesIndex[i] = 0;
+			gobansFrame[i] = 0;
+			piecesFrame[i] = 0;
 		}
+
+		// Initialize gobans animation frames for igo-ban.
 		if (gobanType > 0) {
 			for (let y = 0; y < gobanSize; y++) {
-				let oy = y == 0 ? 1 : y == gobanSize - 1 ? 7 : 4;
+				let frame1 = y == 0 ? 1 : y == gobanSize - 1 ? 7 : 4;
 				for (let x = 0; x < gobanSize; x++) {
-					let ox = x == 0 ? 0 : x == gobanSize - 1 ? 2 : 1;
-					gobansIndex[gobanSize*y+x] = ox + oy;
+					let frame2 = x == 0 ? 0 : x == gobanSize - 1 ? 2 : 1;
+					gobansFrame[gobanSize * y + x] = frame1 + frame2;
 				}
 			}
 		}
-		let scale = gobansWidth / (piecesWidth * (gobanType > 0 ? gobanSize - 1 : gobanSize));
-		let piecesWidthScaled = piecesWidth * scale;
-		let ox = (screenWidth - gobansWidth) / 2 + (gobanType > 0 ? 0 : piecesWidthScaled / 2);
-		let oy = (screenHeight - gobansWidth) / 2 + (gobanType > 0 ? 0 : piecesWidthScaled / 2);
+
+		// Initialize status.
+		const pickIdle = -1, pickNone = -2;
+		var pickIndex = pickIdle, pickColor = 0, pickCount = 0;
+		var tebanColor = 10;
+		var gobansIndex = -1;
 
 		for (playing = 1; playing >= 1; ) {
 
@@ -288,180 +296,182 @@ a {
 			let motion = cubeJoypadMotion(joypad);
 			let action = cubeJoypadAction(joypad);
 
+			// Parse input.
+			let motionPos = motion ? mainScreen.posToLocalPos(motion) : null;
+			let gokesIndex = -1;
 			if (motion) {
-				let localPos = mainScreen.posToLocalPos(motion);
-				let mx = cubeDiv(localPos.x - (ox - piecesWidthScaled / 2), piecesWidthScaled);
-				let my = cubeDiv(localPos.y - (oy - piecesWidthScaled / 2), piecesWidthScaled);
-				if (my >= 0 && my < gobanSize && mx >= 0 && mx < gobanSize) {
-					focusIndex = gobanSize * my + mx;
 
-					// Check pick a piece.
-					if (pickIndex == pickIdle) {
-
-						// Start to pick a piece.
-						if (piecesIndex[focusIndex] > 0) {
-							pickIndex = focusIndex;
-
-						// Touch gobans.
-						} else {
-							pickIndex = pickNone;
-							pickColor = pickCount = 0;
-						}
-
-					// Check hold a piece.
-					} else if (pickIndex >= 0 && pickColor == 0) {
-
-						// Start to hold a piece.
-						if (focusIndex != pickIndex) {
-							pickColor = piecesIndex[pickIndex];
-							piecesIndex[pickIndex] = 0;
-
-						// Check timeout.
-						} else if (pickCount++ >= 30) {
-							pickColor = piecesIndex[pickIndex];
-							piecesIndex[pickIndex] = 0;
-						}
-					}
-
-					// Set touching place.
-					cubeDilute(0.5, gobans[focusIndex]);
-
-					// Check release a piece.
-					if (action) {
-						if (piecesIndex[focusIndex] > 0) {
-
-							// Flip a piece.
-							if (pickIndex == focusIndex && pickColor == 0) {
-								piecesIndex[focusIndex] = cubeMod(piecesIndex[focusIndex], 20) + 10;
-								pickIndex = pickIdle;
-								pickColor = pickCount = 0;
-								focusIndex = -1;
-
-							// Change a piece.
-							} else if (pickIndex >= 0) {
-								piecesIndex[pickIndex] = piecesIndex[focusIndex];
-								piecesIndex[focusIndex] = pickColor;
-								pickIndex = pickIdle;
-								pickColor = pickCount = 0;
-								focusIndex = -1;
-							}
-						} else {
-
-							// Move a piece.
-							if (pickIndex >= 0) {
-								piecesIndex[pickIndex] = 0;
-								piecesIndex[focusIndex] = pickColor;
-								pickIndex = pickIdle;
-								pickColor = pickCount = 0;
-								focusIndex = -1;
-
-							// Cancel pick.
-							} else if (pickIndex == pickNone) {
-								piecesIndex[focusIndex] = tebanColor;
-								pickIndex = pickIdle;
-								pickColor = pickCount = 0;
-								focusIndex = -1;
-							}
-						}
-					}
+				// Check focusing piece index of gobans.
+				let mx = cubeDiv(motionPos.x - (gobansPos.x - piecesWidthScaled / 2), piecesWidthScaled);
+				let my = cubeDiv(motionPos.y - (gobansPos.y - piecesWidthScaled / 2), piecesWidthScaled);
+				if (0 <= mx && mx < gobanSize && 0 <= my && my < gobanSize) {
+					gobansIndex = gobanSize * my + mx;
 				} else {
-
-					// Remove a piece.
-					if (pickIndex >= 0 && pickColor == 0) {
-						piecesIndex[pickIndex] = 0;
-					}
-
-					// Cancel pick.
-					pickIndex = pickIdle;
-					pickColor = pickCount = 0;
-					focusIndex = -1;
+					gobansIndex = -1;
 				}
 
-				// Update temochi piece.
+				// Check focusing piece index of gokes.
+				for (var i = 0; i < 2; i++) {
+					let localPos = subScreens[i].posToLocalPos(motion);
+					let mx = localPos.x - subScreenWidth / 2;
+					let my = localPos.y - subScreenHeight / 2;
+					if (-gokeWidth <= mx && mx <= gokeWidth && -gokeWidth <= my && my <= gokeWidth) {
+						gokesIndex = i;
+					}
+				}
+			}
+
+			// Check user control status.
+			if (gobansIndex >= 0) {
+
+				// Check pick a piece.
+				if (pickIndex == pickIdle) {
+
+					// Start to pick a piece.
+					if (piecesFrame[gobansIndex] > 0) {
+						pickIndex = gobansIndex;
+
+					// Touch gobans.
+					} else {
+						pickIndex = pickNone;
+						pickColor = pickCount = 0;
+					}
+
+				// Check hold a piece.
+				} else if (pickIndex >= 0 && pickColor == 0) {
+
+					// Start to hold a piece.
+					if (gobansIndex != pickIndex) {
+						pickColor = piecesFrame[pickIndex];
+						piecesFrame[pickIndex] = 0;
+
+					// Check timeout.
+					} else if (pickCount++ >= 30) {
+						pickColor = piecesFrame[pickIndex];
+						piecesFrame[pickIndex] = 0;
+					}
+				}
+
+				// Check release a piece.
+				if (action) {
+					if (piecesFrame[gobansIndex] > 0) {
+
+						// Flip a piece.
+						if (pickIndex == gobansIndex && pickColor == 0) {
+							piecesFrame[gobansIndex] = cubeMod(piecesFrame[gobansIndex], 20) + 10;
+							pickIndex = pickIdle;
+							pickColor = pickCount = 0;
+							gobansIndex = -1;
+
+						// Change a piece.
+						} else if (pickIndex >= 0) {
+							piecesFrame[pickIndex] = piecesFrame[gobansIndex];
+							piecesFrame[gobansIndex] = pickColor;
+							pickIndex = pickIdle;
+							pickColor = pickCount = 0;
+							gobansIndex = -1;
+						}
+					} else {
+
+						// Move a piece.
+						if (pickIndex >= 0) {
+							piecesFrame[pickIndex] = 0;
+							piecesFrame[gobansIndex] = pickColor;
+							pickIndex = pickIdle;
+							pickColor = pickCount = 0;
+							gobansIndex = -1;
+
+						// Cancel pick.
+						} else if (pickIndex == pickNone) {
+							piecesFrame[gobansIndex] = tebanColor;
+							pickIndex = pickIdle;
+							pickColor = pickCount = 0;
+							gobansIndex = -1;
+						}
+					}
+				}
+
+			// Check pick from gokes.
+			} else if (motion) {
+				for (var i = 0; i < playerCount; i++) {
+					if (i == gokesIndex) {
+						if (pickColor == 0) {
+							pickColor = tebanColor = (i + 1) * 10;
+						}
+					}
+				}
+
+			// Check release out of a board.
+			} else if (action) {
+
+				// Remove a piece.
+				if (pickIndex >= 0 && pickColor == 0) {
+					piecesFrame[pickIndex] = 0;
+				}
+
+				// Cancel pick.
+				pickIndex = pickIdle;
+				pickColor = pickCount = 0;
+			}
+
+			// Update temochi piece.
+			if (motion) {
 				if (pickColor > 0) {
 					cubeAnimate(pickColor + 5, sprite);
 					cubeDilute(0.5, sprite);
 					cubeExpand(scale * 1.5, sprite);
-					cubeMove(localPos.x, localPos.y, sprite);
+					cubeMove(motionPos.x, motionPos.y, sprite);
 				} else if (pickIndex == pickNone) {
 					cubeAnimate(tebanColor + 5, sprite);
 					cubeDilute(0.5, sprite);
 					cubeExpand(scale * 1.5, sprite);
-					cubeMove(localPos.x, localPos.y, sprite);
+					cubeMove(motionPos.x, motionPos.y, sprite);
 				}
 			}
 
 			// Update gobans.
-			for (let y = 0; y < gobanSize; y++) {
-				for (let x = 0; x < gobanSize; x++) {
-					let gx = ox + piecesWidthScaled * x;
-					let gy = oy + piecesWidthScaled * y;
-					let index = gobanSize * y + x;
-					if (index == pickIndex) {
-						cubeExpand(scale * 0.9, gobans[index]);
-						cubeDilute(0.8, gobans[index]);
-					} else if (index == focusIndex) {
-						cubeExpand(scale * 0.9, gobans[index]);
-						cubeDilute(0.8, gobans[index]);
-					} else {
-						cubeExpand(scale * 1, gobans[index]);
-						cubeDilute(1, gobans[index]);
-					}
-					cubeMove(gx, gy, gobans[index]);
-					cubeAnimate(gobansIndex[index] + piecesIndex[index], gobans[index]);
+			for (var i = 0; i < gobanSize * gobanSize; i++) {
+				if (i == pickIndex) {
+					cubeExpand(scale * 0.9, gobans[i]);
+					cubeDilute(0.8, gobans[i]);
+				} else if (i == gobansIndex) {
+					cubeExpand(scale * 0.9, gobans[i]);
+					cubeDilute(0.8, gobans[i]);
+				} else {
+					cubeExpand(scale * 1, gobans[i]);
+					cubeDilute(1, gobans[i]);
 				}
+				cubeMove(
+					gobansPos.x + piecesWidthScaled * cubeMod(i, gobanSize),
+					gobansPos.y + piecesWidthScaled * cubeDiv(i, gobanSize), gobans[i]);
+				cubeAnimate(gobansFrame[i] + piecesFrame[i], gobans[i]);
 			}
 
 			// Update gokes.
 			for (var i = 0; i < 2; i++) {
-				let pos = cubeVector(subScreenWidth / 2, subScreenHeight / 2);
-				let scale = 1;
-
-				if (motion) {
-					let localPos = subScreens[i].posToLocalPos(motion);
-					let mx = localPos.x - subScreenWidth / 2;
-					let my = localPos.y - subScreenHeight / 2;
-					if (-gokeWidth <= mx && mx <= gokeWidth
-					 && -gokeWidth <= my && my <= gokeWidth) {
-						//if (action) {
-							tebanColor = (i + 1) * 10;
-							pickIndex = pickIdle;
-							pickColor = pickCount = 0;
-						//}
-						//if (pickIndex == pickIdle) {
-							scale = 0.9;
-						//}
-					}
+				if (i == gokesIndex) {
+					cubeExpand(0.9, gokes[i]);
+				} else {
+					cubeExpand(1, gokes[i]);
 				}
-
-				// Update gokes.
 				cubeDilute((i + 1) * 10 == tebanColor ? 1 : 0.2, gokes[i]);
-				cubeExpand(scale, gokes[i]);
-				cubeMove(pos.x, pos.y, gokes[i]);
+				cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokes[i]);
 			}
 
-			// Clear sub screens.
-			for (var i = 0; i < 2; i++) {
+			// Draw screens
+			for (var i = 0; i < playerCount; i++) {
 				cubeClear(subScreens[i]);
-
-				// Draw gokes.
-				cubeDraw(gokes[i], subScreens[i]);
+				cubeDraw(gokes[i], subScreens[i]); // Gokes.
 			}
-
-			// Clear main screen.
 			cubeClear(mainScreen);
-
-			// Draw gobans
 			for (var i = 0; i < gobanSize * gobanSize; i++) {
-				cubeDraw(gobans[i], mainScreen);
+				cubeDraw(gobans[i], mainScreen); // Gobans.
 			}
-
-			// Draw temochi piece.
 			if (motion) {
 				if (pickColor > 0) {
-					cubeDraw(sprite, mainScreen);
+					cubeDraw(sprite, mainScreen); // Picked piece.
 				} else if (pickIndex == pickNone) {
-					cubeDraw(sprite, mainScreen);
+					cubeDraw(sprite, mainScreen); // New piece.
 				}
 			}
 
