@@ -134,6 +134,40 @@ a {
 	transform: scale(1);
 	opacity: 1;
 }
+@media (min-height: 480px) {
+	.logo {
+		height: 40px;
+		font-size: 24px;
+	}
+	.menu {
+		width: 120px; hheight: 40px;
+	}
+	.menu a {
+		width: 40px; height: 40px;
+		font-size: 30px;
+	}
+	.menu a #icon {
+		width: 40px; height: 40px;
+		transform: scale(1);
+	}
+}
+@media (max-height: 479px) {
+	.logo {
+		height: 20px;
+		font-size: 18px;
+	}
+	.menu {
+		width: 60px; height: 20px;
+	}
+	.menu a {
+		width: 20px; height: 20px;
+		font-size: 20px;
+	}
+	.menu a #icon {
+		width: 20px; height: 20px;
+		transform: scale(0.5);
+	}
+}
 .menu a:hover {
 	transform: scale(1);
 	opacity: 0.6;
@@ -230,7 +264,7 @@ a {
 	// Create screens.
 	var touchScreen = cubeScreen("touchScreen");
 	var joypad = cubeJoypad(touchScreen);
-	const screenWidth = 300, screenHeight = 300;
+	const screenWidth = 300, screenHeight = 280;
 	var mainScreen = cubeScreen("mainScreen", screenWidth, screenHeight);
 	const subScreenWidth = 30, subScreenHeight = 30;
 	const playerCount = 2;
@@ -441,16 +475,22 @@ a {
 				// Place for touching.
 				if (i == pickingIndex - 1) {
 
+					// Holding.
+					if (motionIndex == pickingIndex) {
+						cubeExpand(scale * 0.6, gobanSprites[i]);
+						cubeDilute(0.2, gobanSprites[i]);
+						cubeAnimate(gobanFrames[i] + pieceFrames[i], gobanSprites[i]);
+
 					// Swapping from.
-					if (motionIndex > 0 && motionIndex != pickingIndex && pieceFrames[motionIndex - 1] > 0) {
+					} else if (pieceFrames[motionIndex - 1] > 0) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.6, gobanSprites[i]);
 						cubeAnimate(gobanFrames[i] + pieceFrames[motionIndex - 1], gobanSprites[i]);
 
-					// Holding.
+					// Moving from.
 					} else {
-						cubeExpand(scale * 0.6, gobanSprites[i]);
-						cubeDilute(0.2, gobanSprites[i]);
+						cubeExpand(scale * 0.9, gobanSprites[i]);
+						cubeDilute(0.6, gobanSprites[i]);
 						cubeAnimate(gobanFrames[i] + pieceFrames[i], gobanSprites[i]);
 					}
 					cubeMove(gobanPos.x + pieceWidth * x, gobanPos.y + pieceWidth * y, gobanSprites[i]);
@@ -464,7 +504,7 @@ a {
 						cubeDilute(0.4, gobanSprites[i]);
 						cubeAnimate(gobanFrames[i] + pieceFrames[pickingIndex - 1], gobanSprites[i]);
 
-					// Moving.
+					// Moving to.
 					} else {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.4, gobanSprites[i]);
