@@ -460,7 +460,7 @@ a {
 					cubeMove(motionPos.x, motionPos.y, handSprite);
 
 				// New piece.
-				} else if (focusingIndex <= 0) {
+				} else if (focusingIndex != motionIndex) {
 					cubeAnimate(tebanColor + 5, handSprite);
 					cubeDilute(0.2, handSprite);
 					cubeExpand(scale * 1.5, handSprite);
@@ -544,7 +544,7 @@ a {
 			if (motion) {
 				if (pickingIndex > 0 && pieceFrames[pickingIndex - 1] > 0) {
 					cubeDraw(handSprite, mainScreen); // Hand piece.
-				} else if (focusingIndex <= 0) {
+				} else if (focusingIndex != motionIndex) {
 					cubeDraw(handSprite, mainScreen); // Hand piece.
 				}
 			}
