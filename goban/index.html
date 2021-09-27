@@ -353,7 +353,7 @@ a {
 			// Check hold a piece.
 			if (pickingIndex == 0) {
 
-				// Pick from goban.
+				// Touch inside goban.
 				if (motionIndex > 0) {
 					if (pieceFrames[motionIndex - 1] > 0) {
 
@@ -391,11 +391,21 @@ a {
 						}
 					}
 
-				// Pick from goke.
-				} else if (motionIndex < 0 && focusingIndex == 0) {
-					pickingIndex = motionIndex;
-					focusingIndex = 0;
-					tebanColor = -motionIndex * 10;
+				// Touch outside goban.
+				} else {
+
+					// Pick from goke.
+					if (motionIndex < 0 && focusingIndex == 0) {
+						pickingIndex = motionIndex;
+						focusingIndex = 0;
+						tebanColor = -motionIndex * 10;
+
+					// Start moving a piece.
+					} else if (focusingIndex > 0) {
+						pickingIndex = focusingIndex;
+						focusingIndex = 0;
+						focusingCount = 0;
+					}
 				}
 			}
 
