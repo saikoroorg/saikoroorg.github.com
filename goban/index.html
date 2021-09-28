@@ -61,11 +61,13 @@ a {
 	}
 	.subScreen1 {
 		order: 3;
-		width: 100%;
+		width: 90%;
+		margin: 5%;
 	}
 	.subScreen2 {
 		order: 1;
-		width: 100%;
+		width: 90%;
+		margin: 5%;
 	}
 }
 @media (max-width: 479px) {
@@ -119,7 +121,6 @@ a {
 	flex-direction: row; -webkit-flex-direction: row;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	background-color: #888;
 	opacity: 0.9;
 }
 .menu a {
@@ -128,7 +129,7 @@ a {
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
-	color: #fff;
+	color: #888;
 	font-size: 30px;
 	text-decoration: none;
 	transform: scale(1);
@@ -166,6 +167,10 @@ a {
 	.menu a #icon {
 		width: 20px; height: 20px;
 		transform: scale(0.5);
+	}
+	#version {
+		height: 10px;
+		font-size: 8px;
 	}
 }
 .menu a:hover {
@@ -221,7 +226,7 @@ a {
 	var params = cubeParamNumbers("x");
 	var gobanSizeMin = 4;
 	var gobanSizeMax = params[1] > 9 ? params[1] : 9;
-	var gobanSize = params[1] ? params[1] : 6; // Goban lines.
+	var gobanSize = params[1] ? params[1] : 5; // Goban lines.
 	var gobanType = cubeMod(gobanSize, 2); // Goban type 0=Checker/Reversi, 1=Go.
 	var playing = 0; // Playing count.
 
@@ -240,8 +245,8 @@ a {
 		}
        	let icon = document.getElementById("icon");
         if (icon) {
-			icon.style.filter = gobanType > 0 ? "invert(75%) brightness(200%)" : "";
-			icon.style.scale = gobanType > 0 ? "0.8" : "1";
+			icon.style.filter = gobanType == 0 ? "invert(75%) brightness(200%)" : "";
+			//icon.style.scale = gobanType > 0 ? "0.8" : "1";
 		}
 		playing = -1; // Replay.
 	};
@@ -264,7 +269,7 @@ a {
 	// Create screens.
 	var touchScreen = cubeScreen("touchScreen");
 	var joypad = cubeJoypad(touchScreen);
-	const screenWidth = 300, screenHeight = 280;
+	const screenWidth = 280, screenHeight = 280;
 	var mainScreen = cubeScreen("mainScreen", screenWidth, screenHeight);
 	const subScreenWidth = 30, subScreenHeight = 30;
 	const playerCount = 2;
@@ -279,7 +284,7 @@ a {
 	for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
 		gobanSprites[i] = await cubeSprite("resource.svg", 24, 24);
 	}
-	const gobanWidth = 240;
+	const gobanWidth = 220;
 	const pieceRawWidth = 20;
 	var gokeSprites = [];
 	for (var i = 0; i < playerCount; i++) {
@@ -370,7 +375,7 @@ a {
 							}
 
 						// Start moving a piece.
-						} else {
+						} else if (focusingIndex > 0) {
 							pickingIndex = focusingIndex;
 							focusingIndex = 0;
 							focusingCount = 0;
@@ -459,30 +464,11 @@ a {
 				pickingIndex = 0;
 			}
 
-			// Update hand piece.
-			if (motion) {
-
-				// Moving a picked piece.
-				if (pickingIndex > 0 && pieceFrames[pickingIndex - 1] > 0) {
-					cubeAnimate(pieceFrames[pickingIndex - 1] + 5, handSprite);
-					cubeDilute(0.6, handSprite);
-					cubeExpand(scale * 1.5, handSprite);
-					cubeMove(motionPos.x, motionPos.y, handSprite);
-
-				// New piece.
-				} else if (focusingIndex != motionIndex) {
-					cubeAnimate(tebanColor + 5, handSprite);
-					cubeDilute(0.2, handSprite);
-					cubeExpand(scale * 1.5, handSprite);
-					cubeMove(motionPos.x, motionPos.y, handSprite);
-				}
-			}
-
 			// Update goban.
 			for (var i = 0; i < gobanSize * gobanSize; i++) {
 				let x = cubeMod(i, gobanSize), y = cubeDiv(i, gobanSize);
 
-				// Place for touching.
+				// Moving/Swapping source.
 				if (i == pickingIndex - 1) {
 
 					// Holding.
@@ -493,31 +479,37 @@ a {
 
 					// Swapping from.
 					} else if (pieceFrames[motionIndex - 1] > 0) {
-						cubeExpand(scale * 0.9, gobanSprites[i]);
+						cubeExpand(scale * 0.8, gobanSprites[i]);
 						cubeDilute(0.6, gobanSprites[i]);
 						cubeAnimate(gobanFrames[i] + pieceFrames[motionIndex - 1], gobanSprites[i]);
 
 					// Moving from.
 					} else {
 						cubeExpand(scale * 0.8, gobanSprites[i]);
-						cubeDilute(0.4, gobanSprites[i]);
+						cubeDilute(0.1, gobanSprites[i]);
 						cubeAnimate(gobanFrames[i] + pieceFrames[i], gobanSprites[i]);
 					}
 					cubeMove(gobanPos.x + pieceWidth * x, gobanPos.y + pieceWidth * y, gobanSprites[i]);
 
-				// Place for moving.
+				// Touch target.
 				} else if (i == motionIndex - 1) {
 
 					// Swapping to.
 					if (pickingIndex > 0 && motionIndex != pickingIndex && pieceFrames[motionIndex - 1] > 0) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
-						cubeDilute(0.4, gobanSprites[i]);
+						cubeDilute(0.6, gobanSprites[i]);
 						cubeAnimate(gobanFrames[i] + pieceFrames[pickingIndex - 1], gobanSprites[i]);
 
 					// Moving to.
+					} else if (pickingIndex != 0) {
+						cubeExpand(scale * 0.9, gobanSprites[i]);
+						cubeDilute(0.6, gobanSprites[i]);
+						cubeAnimate(gobanFrames[i] + pieceFrames[i], gobanSprites[i]);
+
+					// Putting new piece to.
 					} else {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
-						cubeDilute(0.4, gobanSprites[i]);
+						cubeDilute(0.6, gobanSprites[i]);
 						cubeAnimate(gobanFrames[i] + pieceFrames[i], gobanSprites[i]);
 					}
 					cubeMove(gobanPos.x + pieceWidth * x, gobanPos.y + pieceWidth * y, gobanSprites[i]);
@@ -531,14 +523,53 @@ a {
 				}
 			}
 
+			// Update hand piece.
+			{
+
+				// Moving a picked piece.
+				if (pickingIndex > 0) {
+					cubeAnimate(pieceFrames[pickingIndex - 1] + 5, handSprite);
+					cubeDilute(0.6, handSprite);
+					cubeExpand(scale * 1.5, handSprite);
+					cubeMove(motionPos.x, motionPos.y, handSprite);
+
+				// Moving from goke.
+				} else if (pickingIndex < 0) {
+					cubeAnimate(tebanColor + 5, handSprite);
+					cubeDilute(0.6, handSprite);
+					cubeExpand(scale * 1.5, handSprite);
+					cubeMove(motionPos.x, motionPos.y, handSprite);
+				}
+			}
+
 			// Update goke.
 			for (var i = 0; i < playerCount; i++) {
-				if (motionIndex < 0 && i == -(motionIndex + 1)) {
+
+				// Moving to goke.
+				if (motionIndex < 0 && i == -(motionIndex + 1) && pickingIndex > 0) {
+					cubeExpand(1.2, gokeSprites[i]);
+					cubeDilute((i + 1) * 10 == tebanColor ? 1 : 0.2, gokeSprites[i]);
+
+				// Touching goke.
+				} else if (motionIndex < 0 && i == -(motionIndex + 1) && focusingIndex >= 0) {
 					cubeExpand(0.9, gokeSprites[i]);
+					cubeDilute((i + 1) * 10 == tebanColor ? 1 : 0.2, gokeSprites[i]);
+
+				// Moving from goke.
+				} else if (i == -(pickingIndex + 1)) {
+					cubeExpand(0.8, gokeSprites[i]);
+					cubeDilute(0.6, gokeSprites[i]);
+
+				// Putting new piece from goke.
+				} else if (focusingIndex < 0 && (i + 1) * 10 == tebanColor) {
+					cubeExpand(1.2, gokeSprites[i]);
+					cubeDilute(1, gokeSprites[i]);
+
+				// Stable goke.
 				} else {
 					cubeExpand(1, gokeSprites[i]);
+					cubeDilute((i + 1) * 10 == tebanColor ? 1 : 0.2, gokeSprites[i]);
 				}
-				cubeDilute((i + 1) * 10 == tebanColor ? 1 : 0.2, gokeSprites[i]);
 				cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokeSprites[i]);
 			}
 
@@ -551,12 +582,8 @@ a {
 			for (var i = 0; i < gobanSize * gobanSize; i++) {
 				cubeDraw(gobanSprites[i], mainScreen); // Goban.
 			}
-			if (motion) {
-				if (pickingIndex > 0 && pieceFrames[pickingIndex - 1] > 0) {
-					cubeDraw(handSprite, mainScreen); // Hand piece.
-				} else if (focusingIndex != motionIndex) {
-					cubeDraw(handSprite, mainScreen); // Hand piece.
-				}
+			if (pickingIndex != 0) {
+				cubeDraw(handSprite, mainScreen); // Hand piece.
 			}
 
 			await cubeWait(10);
