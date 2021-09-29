@@ -146,21 +146,19 @@ a {
 .menu a #icon {
 	width: 40px; height: 40px;
 }
-@media (max-height: 479px) {
+@media (max-height: 379px) {
 	.logo {
 		height: 20px;
 		font-size: 18px;
 	}
 	.menu {
-		width: 60px; height: 20px;
+		height: 20px;
 	}
 	.menu a {
-		width: 20px; height: 20px;
 		font-size: 20px;
 	}
 	.menu a #icon {
-		width: 20px; height: 20px;
-		transform: scale(0.8);
+		transform: scale(0.4);
 	}
 	#version {
 		height: 10px;
@@ -169,7 +167,7 @@ a {
 }
 </style>
 </head>
-<body ontouchstart="">
+<body>
 <div id="container">
 	<h1 id="header">
 		<div class="logo">
@@ -181,12 +179,6 @@ a {
 			<a href="javascript:changeType();"><img id="icon" src="icon.svg"/></a>
 			<a href="javascript:changeSize(1);">+</a>
 		</div>
-		<!--div class="menu">
-			<a id="x6" href="javascript:setSize(6);">¡Á6</a>
-			<a id="x7" href="javascript:setSize(7);">¡Á7</a>
-			<a id="x8" href="javascript:setSize(8);">¡Á8</a>
-			<a id="x9" href="javascript:setSize(9);">¡Á9</a>
-		</div!-->
 	</h1>
 	<div id="contents">
 		<div class="screen touchScreen"></div>
@@ -417,6 +409,7 @@ a {
 						// Overwrite by new piece.
 						} else {
 							pieceFrames[motionIndex - 1] = tebanColor;
+							tebanColor = cubeMod(tebanColor, 20) + 10;
 						}
 					} else {
 
@@ -428,6 +421,7 @@ a {
 						// Put a new piece.
 						} else {
 							pieceFrames[motionIndex - 1] = tebanColor;
+							tebanColor = cubeMod(tebanColor, 20) + 10;
 						}
 					}
 				}
