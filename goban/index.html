@@ -201,9 +201,20 @@ a {
 	var params = cubeParamNumbers("x");
 	var gobanSizeMin = 4;
 	var gobanSizeMax = params[1] > 9 ? params[1] : 9;
-	var gobanSize = params[1] ? params[1] : 5; // Goban lines.
+	var gobanSize = params[1] > 0 ? params[1] : 5; // Goban lines.
 	var gobanType = cubeMod(gobanSize, 2); // Goban type 0=Checker/Reversi, 1=Go.
 	var playing = 0; // Playing count.
+	var playlogs = [];
+
+	if (params[2]) {
+		var playlog = "" + params[2];
+		for (var i = 0; i < playlog.length / 3; i++) {
+			var color = playlog.substr(i * 3, 1);
+			var x = playlog.substr(i * 3 + 1, 1);
+			var y = playlog.substr(i * 3 + 2, 1);
+			playlogs.push([color, x, y]);
+		}
+	}
 
 	// Set goban type and size.
 	var setGoban = (size, type) => {
@@ -330,6 +341,17 @@ a {
 				}
 			}
 
+			// Parse playlogs.
+			if (playlogs.length > 0){
+				let playlog = playlogs.shift();
+				if (playlog[0] > 0 && playlog[1] > 0 && playlog[2] > 0) {
+					tebanColor = playlog[0] * 10;
+					motion = true;
+					action = true;
+					motionIndex = (playlog[1] - 1) + (playlog[2] - 1) * gobanSize + 1;
+				}
+			}
+
 			// Check hold a piece.
 			if (pickingIndex == 0) {
 
@@ -360,7 +382,7 @@ a {
 					} else {
 
 						// Idling.
-						if (focusingIndex == 0) {
+						if (focusingIndex == 0 && tebanColor > 0) {
 							focusingIndex = -1;
 
 						// Start moving a piece.
@@ -407,7 +429,7 @@ a {
 							pieceFrames[pickingIndex - 1] = pieceFrame;
 
 						// Overwrite by new piece.
-						} else {
+						} else if (tebanColor > 0) {
 							pieceFrames[motionIndex - 1] = tebanColor;
 							tebanColor = cubeMod(tebanColor, 20) + 10;
 						}
@@ -419,7 +441,7 @@ a {
 							pieceFrames[pickingIndex - 1] = 0;
 
 						// Put a new piece.
-						} else {
+						} else if (tebanColor > 0) {
 							pieceFrames[motionIndex - 1] = tebanColor;
 							tebanColor = cubeMod(tebanColor, 20) + 10;
 						}
