@@ -95,9 +95,28 @@ a {
 	width: 40px; height: 40px;
 	background-image: url('resource.svg');
 }
+@media (max-height: 379px) {
+	.logo {
+		height: 20px;
+		font-size: 18px;
+	}
+	.menu {
+		height: 20px;
+	}
+	.menu a {
+		font-size: 20px;
+	}
+	.menu a #icon {
+		transform: scale(0.4);
+	}
+	#version {
+		height: 10px;
+		font-size: 8px;
+	}
+}
 </style>
 </head>
-<body ontouchstart="">
+<body>
 <div id="container">
 	<h1 id="header">
 		<div class="logo">
@@ -165,15 +184,19 @@ a {
 	//var rolling = 0; // Rolling count.
 
 	// Resize screen.
-	cubeResizeScreen(300, 200);
+	cubeResizeScreen(300, 240);
 
 	// Create sprites.
+	var sprite = await cubeSprite("resource.svg", 40, 40);
+	cubeDilute(0.1, sprite);
+	cubeExpand(0.5, sprite);
 	var sprites = [];
 	for (var i = 0; i < 30; i++) {
 		sprites[i] = await cubeSprite("resource.svg", 40, 40);
 	}
 
 	// Main loop.
+	var number = -1;
 	while (true) {
 
 		// Sprite lines and rows.
@@ -192,7 +215,6 @@ a {
 
 		// Rolling dice.
 		var result = 0;
-		var angle = 0;
 		var randoms = [];
 		for (rolling = 1; rolling >= 1; rolling++) {
 
@@ -207,7 +229,6 @@ a {
 				if (cubeJoypadMotion()) {
 					if (rolling > 10) {
 						result = 0;
-						angle = 0;
 						rolling = 0;
 					}
 				}
@@ -224,14 +245,13 @@ a {
 							result += randoms[lineMax*y+x];
 						}
 					}
-					angle = 0;
 					rolling = 1;
+					number++;
 				}
 			}
 
 			// Roll sprites.
 			if (result <= 0) {
-				angle = (angle + 20) % 360;
 				for (var y = 0; y < lines; y++) {
 					for (var x = 0; x < rows[y]; x++) {
 						if (frameMax <= 2) {
@@ -248,17 +268,17 @@ a {
 			}
 
 			// Update sprites.
-			var mx = size.x * 0.8, my = size.y * 1.2;
+			var mx = size.x * 0.8, my = size.y * 1;
 			var ox = (size.x - mx) * 0.5, oy = (size.y - my) * 0.5;
+			cubeAnimate(number > 0 ? cubeMod(number - 1, 20) + 10 : 9, sprite);
+			cubeMove(ox + mx / 2, 20, sprite);
+			var s = rolling < 5 ? scale * (0.8 + 0.04 * rolling) : scale;
+			var a = result <= 0 ? cubeMod(rolling * 20, 360) : 0;
 			for (var y = 0; y < lines; y++) {
 				for (var x = 0; x < rows[y]; x++) {
 					cubeAnimate(randoms[lineMax*y+x] - 1, sprites[lineMax*y+x]);
-					if (rolling < 5) {
-						cubeExpand(scale * (0.8 + 0.04 * rolling), sprites[lineMax*y+x]);
-					} else {
-						cubeExpand(scale, sprites[lineMax*y+x]);
-					}
-					cubeRotate(angle, sprites[lineMax*y+x]);
+					cubeExpand(s, sprites[lineMax*y+x]);
+					cubeRotate(a, sprites[lineMax*y+x]);
 					var sx = ox + mx * (x + 1) / (rows[y] + 1);
 					var sy = oy + my * (y + 1) / (lines + 1);
 					cubeMove(sx, sy, sprites[lineMax*y+x]);
@@ -269,6 +289,7 @@ a {
 			cubeClear();
 
 			// Draw sprites.
+			cubeDraw(sprite);
 			for (var y = 0; y < lines; y++) {
 				for (var x = 0; x < rows[y]; x++) {
 					cubeDraw(sprites[lineMax*y+x]);
