@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.42";
-cube.timestamp = "210917";
+cube.version = "0.8.43";
+cube.timestamp = "210930";
 /************************************* /VERSION*
 
 
@@ -336,14 +336,6 @@ function cubeSaveParam(fileName=null, param=null) {
 	param.save(fileName);
 }
 
-// Get interger numbers by parameter.
-function cubeParamNumbers(separator=",", param=null) {
-	if (!param) {
-		param = cube.param;
-	}
-	return param.numbers(separator);
-}
-
 // Get all keys of parameter.
 function cubeParamKeys(param=null) {
 	if (!param) {
@@ -353,7 +345,7 @@ function cubeParamKeys(param=null) {
 }
 
 // Get or set value of parameter.
-function cubeParamValue(key, value=null, param=null) {
+function cubeParamValue(key=0, value=null, param=null) {
 	if (!param) {
 		param = cube.param;
 	}
@@ -361,6 +353,14 @@ function cubeParamValue(key, value=null, param=null) {
 		return param.setValue(key, value);
 	}
 	return param.value(key);
+}
+
+// Get interger numbers of parameter.
+function cubeParamNumbers(key=0, param=null) {
+    if (!param) {
+        param = cube.param;
+    }
+    return param.numbers(key);
 }
 
 /**/
@@ -873,19 +873,23 @@ cube.Params = class {
 
     // Get value.
     value(key) {
-        return this.keyvalues[key];
+        return this.keyvalues[key] ? this.keyvalues[key] : "";
     }
 
-    // Get numbers.
-    numbers(separator=",") {
-        let numbers = [];
-        let params = this.serialize().split(separator);
-        for (var i = 0; i < params.length; i++) {
-            if (params[i]) {
-                numbers[i] = parseInt(params[i], 10);
+    // Get value by integer numbers.
+    numbers(key) {
+        let n = [];
+        for (let i = 0; i < this.keyvalues[key].length; i++) {
+            let c = this.keyvalues[key].charCodeAt(i);
+            if ("0".charCodeAt(0) <= c && c <= "9".charCodeAt(0)) {
+                n[i] = c - "0".charCodeAt(0);
+            } else if ("a".charCodeAt(0) <= c && c <= "z".charCodeAt(0)) {
+                n[i] = c - "a".charCodeAt(0) + 1;
+            } else if ("A".charCodeAt(0) <= c && c <= "Z".charCodeAt(0)) {
+                n[i] = c - "A".charCodeAt(0) + 1;
             }
         }
-        return numbers;
+        return n;
     }
 
     // Set  or delete value.
@@ -909,13 +913,11 @@ cube.Params = class {
         } else {
             this.keyvalues = {};
         }
-        this.text = null;
     }
 
     // Deserialize a text to parameters.
     deserialize(text) {
         this.keyvalues = {};
-        this.text = null;
         if (text != null) {
             if (text.includes('&')) {
                 text.split('&').forEach((q) => {
@@ -931,25 +933,23 @@ cube.Params = class {
                     this.keyvalues[keyvalue[0]] = keyvalue[1];
                     // console.log("parameter:" + kv[0] + " = " + kv[1]);
                 }
+            } else if (text.includes('+')) {
+                this.keyvalues = text.split('+');
             } else {
-                this.text = text;
+                this.keyvalues[0] = text;
             }
         }
     }
 
     // Serialize parameters to a text.
     serialize() {
-        if (this.text == null) {
-            let keyvalues = [];
-            for (let key in this.keyvalues) {
-                if (key != null && this.keyvalues[key] != null) {
-                    keyvalues.push(key + "=" + this.keyvalues[key]);
-                }
+        let keyvalues = [];
+        for (let key in this.keyvalues) {
+            if (key != null && this.keyvalues[key] != null) {
+                keyvalues.push(key + "=" + this.keyvalues[key]);
             }
-            return keyvalues.join("&");
-        } else {
-            return this.text;
         }
+        return keyvalues.join("&");
     }
 
     // Wait updating value.

@@ -140,7 +140,7 @@ a {
 	document.getElementById("version").innerText = manifest.version.substr(-4);
 
 	// Get query parameters.
-	var params = cubeParamNumbers("d");
+	var params = cubeParamValue().split("d");
 	var counts = params[0] > 0 ? params[0] : 1; // Counts of dice.
 	var maximum = params[1] > 0 ? params[1] : 6; // Maximum of dice faces.
 	var rolling = 0; // Rolling count.
