@@ -194,7 +194,7 @@ a {
 </div>
 <script src="cube-api-0.8.js"></script>
 <!--Menu--><script>
-	//console.log = () => {};
+	console.log = () => {};
 	document.getElementById("version").innerText = manifest.version.substr(-4);
 
 	// Get query parameters.
@@ -479,16 +479,22 @@ a {
 						cubeDilute(0.6, gobanSprites[i]);
 						cubeAnimate(placements[pickedIndex - 1] * 10 + f, gobanSprites[i]);
 
-					// Moving to.
-					} else if (pickedIndex != 0) {
+					// Moving a picked piece to.
+					} else if (pickedIndex > 0) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.6, gobanSprites[i]);
 						cubeAnimate(placements[i] * 10 + f, gobanSprites[i]);
 
-					// Putting new piece to.
+					// Moving from goke to.
+					} else if (pickedIndex < 0) {
+						cubeExpand(scale * 0.9, gobanSprites[i]);
+						cubeDilute(0.2, gobanSprites[i]);
+						cubeAnimate(placements[i] * 10 + f, gobanSprites[i]);
+
+					// Putting a new piece to.
 					} else {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
-						cubeDilute(0.6, gobanSprites[i]);
+						cubeDilute(0.2, gobanSprites[i]);
 						cubeAnimate(placements[i] * 10 + f, gobanSprites[i]);
 					}
 					cubeMove(gobanPos.x + pieceWidth * x, gobanPos.y + pieceWidth * y, gobanSprites[i]);
