@@ -879,14 +879,16 @@ cube.Params = class {
     // Get value by integer numbers.
     numbers(key) {
         let n = [];
-        for (let i = 0; i < this.keyvalues[key].length; i++) {
-            let c = this.keyvalues[key].charCodeAt(i);
-            if ("0".charCodeAt(0) <= c && c <= "9".charCodeAt(0)) {
-                n[i] = c - "0".charCodeAt(0);
-            } else if ("a".charCodeAt(0) <= c && c <= "z".charCodeAt(0)) {
-                n[i] = c - "a".charCodeAt(0) + 1;
-            } else if ("A".charCodeAt(0) <= c && c <= "Z".charCodeAt(0)) {
-                n[i] = c - "A".charCodeAt(0) + 1;
+        if (this.keyvalues[key]) {
+            for (let i = 0; i < this.keyvalues[key].length; i++) {
+                let c = this.keyvalues[key].charCodeAt(i);
+                if ("0".charCodeAt(0) <= c && c <= "9".charCodeAt(0)) {
+                    n[i] = c - "0".charCodeAt(0);
+                } else if ("a".charCodeAt(0) <= c && c <= "z".charCodeAt(0)) {
+                    n[i] = c - "a".charCodeAt(0) + 1;
+                } else if ("A".charCodeAt(0) <= c && c <= "Z".charCodeAt(0)) {
+                    n[i] = c - "A".charCodeAt(0) + 1;
+                }
             }
         }
         return n;
