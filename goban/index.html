@@ -204,15 +204,16 @@ a {
 	var gobanSize = params[1] > 0 ? params[1] : 5; // Goban lines.
 	var gobanType = cubeMod(gobanSize, 2); // Goban type 0=Checker/Reversi, 1=Go.
 	var playing = 0; // Playing count.
-	var playlogs = [];
+	var placements = [];
 
+	// Set placement pieces.
 	if (params[2]) {
-		var playlog = "" + params[2];
-		for (var i = 0; i < playlog.length / 3; i++) {
-			var color = playlog.substr(i * 3, 1);
-			var x = playlog.substr(i * 3 + 1, 1);
-			var y = playlog.substr(i * 3 + 2, 1);
-			playlogs.push([color, x, y]);
+		let placement = "" + params[2];
+		for (let i = 0; i < placement.length / 3; i++) {
+			let color = placement.substr(i * 3, 1);
+			let x = placement.substr(i * 3 + 1, 1);
+			let y = placement.substr(i * 3 + 2, 1);
+			placements.push([color, x, y]);
 		}
 	}
 
@@ -260,20 +261,20 @@ a {
 	const subScreenWidth = 30, subScreenHeight = 30;
 	const playerCount = 2;
 	var subScreens = [], subJoypads = [];
-	for (var i = 0; i < playerCount; i++) {
+	for (let i = 0; i < playerCount; i++) {
 		subScreens[i] = cubeScreen("subScreen" + (i + 1), subScreenWidth, subScreenHeight);
 	}
 
 	// Create sprites.
 	var handSprite = await cubeSprite("resource.svg", 24, 24);
 	var gobanSprites = [], gobanFrames = [], pieceFrames = [];
-	for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
+	for (let i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
 		gobanSprites[i] = await cubeSprite("resource.svg", 24, 24);
 	}
 	const gobanWidth = 220;
 	const pieceRawWidth = 20;
 	var gokeSprites = [];
-	for (var i = 0; i < playerCount; i++) {
+	for (let i = 0; i < playerCount; i++) {
 		gokeSprites[i] = await cubeSprite("resource.svg", 24, 24);
 		cubeAnimate((i + 1) * 10 + 5, gokeSprites[i]);
 	}
@@ -289,8 +290,8 @@ a {
 			(screenWidth - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2),
 			(screenHeight - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2));
 
-		// Initialize pieces.
-		for (var i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
+		// Initialize goban and pieces.
+		for (let i = 0; i < gobanSizeMax * gobanSizeMax; i++) {
 			gobanFrames[i] = 0;
 			pieceFrames[i] = 0;
 		}
@@ -306,10 +307,20 @@ a {
 			}
 		}
 
+		// Initialize placement pieces.
+		for (let i = 0; i < placements.length; i++){
+			if (placements[i].length >= 3) {
+				if (placements[i][1] > 0 && placements[i][2] > 0) {
+					let index = (placements[i][1] - 1) + (placements[i][2] - 1) * gobanSize;
+					pieceFrames[index] = placements[i][0] * 10;
+				}
+			}
+		}
+
 		// Initialize status.
-		var tebanColor = 10;
-		var focusingIndex = 0, focusingCount = 0;
-		var pickingIndex = 0;
+		let tebanColor = 10;
+		let focusingIndex = 0, focusingCount = 0;
+		let pickingIndex = 0;
 
 		for (playing = 1; playing >= 1; ) {
 
@@ -331,24 +342,13 @@ a {
 				}
 
 				// Check focusing piece index of goke.
-				for (var i = 0; i < playerCount; i++) {
+				for (let i = 0; i < playerCount; i++) {
 					let localPos = subScreens[i].posToLocalPos(motion);
 					let mx = localPos.x - subScreenWidth / 2;
 					let my = localPos.y - subScreenHeight / 2;
 					if (-gokeWidth <= mx && mx <= gokeWidth && -gokeWidth <= my && my <= gokeWidth) {
 						motionIndex = -(i + 1);
 					}
-				}
-			}
-
-			// Parse playlogs.
-			if (playlogs.length > 0){
-				let playlog = playlogs.shift();
-				if (playlog[0] > 0 && playlog[1] > 0 && playlog[2] > 0) {
-					tebanColor = playlog[0] * 10;
-					motion = true;
-					action = true;
-					motionIndex = (playlog[1] - 1) + (playlog[2] - 1) * gobanSize + 1;
 				}
 			}
 
@@ -464,7 +464,7 @@ a {
 			}
 
 			// Update goban.
-			for (var i = 0; i < gobanSize * gobanSize; i++) {
+			for (let i = 0; i < gobanSize * gobanSize; i++) {
 				let x = cubeMod(i, gobanSize), y = cubeDiv(i, gobanSize);
 
 				// Moving/Swapping source.
@@ -542,7 +542,7 @@ a {
 			}
 
 			// Update goke.
-			for (var i = 0; i < playerCount; i++) {
+			for (let i = 0; i < playerCount; i++) {
 
 				// Moving to goke.
 				if (motionIndex < 0 && i == -(motionIndex + 1) && pickingIndex > 0) {
@@ -573,12 +573,12 @@ a {
 			}
 
 			// Draw screens
-			for (var i = 0; i < playerCount; i++) {
+			for (let i = 0; i < playerCount; i++) {
 				cubeClear(subScreens[i]);
 				cubeDraw(gokeSprites[i], subScreens[i]); // Goke.
 			}
 			cubeClear(mainScreen);
-			for (var i = 0; i < gobanSize * gobanSize; i++) {
+			for (let i = 0; i < gobanSize * gobanSize; i++) {
 				cubeDraw(gobanSprites[i], mainScreen); // Goban.
 			}
 			if (pickingIndex != 0) {
