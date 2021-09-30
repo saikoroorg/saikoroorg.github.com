@@ -475,11 +475,17 @@ a {
 						cubeDilute(0.2, gobanSprites[i]);
 						cubeAnimate(placements[i] * 10 + f, gobanSprites[i]);
 
-					// Putting a new piece to.
+					// Flipping a piece.
+					} else if (placements[motionIndex - 1] > 0) {
+						cubeExpand(scale * 0.9, gobanSprites[i]);
+						cubeDilute(0.4, gobanSprites[i]);
+						cubeAnimate(placements[motionIndex - 1] * 10 + f, gobanSprites[i]);
+
+					// Putting a new piece.
 					} else {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
-						cubeDilute(0.2, gobanSprites[i]);
-						cubeAnimate(placements[i] * 10 + f, gobanSprites[i]);
+						cubeDilute(0.1, gobanSprites[i]);
+						cubeAnimate(player * 10 + f, gobanSprites[i]);
 					}
 					cubeMove(gobanPos.x + pieceWidth * x, gobanPos.y + pieceWidth * y, gobanSprites[i]);
 
@@ -532,7 +538,7 @@ a {
 					cubeDilute(0.6, gokeSprites[i]);
 
 				// Putting new piece from goke.
-				} else if (touchingIndex < 0 && active) {
+				} else if (touchingIndex > 0 && placements[touchingIndex - 1] == 0 && active) {
 					cubeExpand(1.2, gokeSprites[i]);
 					cubeDilute(1, gokeSprites[i]);
 
