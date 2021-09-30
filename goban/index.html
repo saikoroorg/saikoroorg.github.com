@@ -332,40 +332,24 @@ a {
 
 				// Touch inside goban.
 				if (motionIndex > 0) {
-					if (placements[motionIndex - 1] > 0) {
 
-						// Touching a piece.
-						if (touchingIndex == 0) {
-							touchingIndex = motionIndex;
-							touchingCount = 30;
+					// Touching a piece.
+					if (touchingIndex == 0) {
+						touchingIndex = motionIndex;
+						touchingCount = 30;
 
-						// Start holding a piece.
-						} else if (touchingIndex == motionIndex) {
-							if (touchingCount-- <= 0) {
-								pickedIndex = touchingIndex;
-								touchingIndex = 0;
-							}
-
-						// Start moving a piece.
-						} else if (touchingIndex > 0) {
+					// Start holding a piece.
+					} else if (touchingIndex == motionIndex) {
+						if (touchingCount-- <= 0) {
 							pickedIndex = touchingIndex;
 							touchingIndex = 0;
-							touchingCount = 0;
 						}
 
-					// No pieces.
-					} else {
-
-						// Idling.
-						if (touchingIndex == 0 && player > 0) {
-							touchingIndex = -1;
-
-						// Start moving a piece.
-						} else if (touchingIndex > 0) {
-							pickedIndex = touchingIndex;
-							touchingIndex = 0;
-							touchingCount = 0;
-						}
+					// Start moving a piece.
+					} else if (touchingIndex > 0) {
+						pickedIndex = touchingIndex;
+						touchingIndex = 0;
+						touchingCount = 0;
 					}
 
 				// Touch outside goban.
@@ -514,8 +498,8 @@ a {
 				// Moving a picked piece.
 				if (pickedIndex > 0) {
 					cubeAnimate(placements[pickedIndex - 1] * 10 + 5, handSprite);
-					cubeDilute(0.6, handSprite);
-					cubeExpand(scale * 1.5, handSprite);
+					cubeDilute(0.4, handSprite);
+					cubeExpand(scale * 1.2, handSprite);
 					cubeMove(motionPos.x, motionPos.y, handSprite);
 
 				// Moving from goke.
