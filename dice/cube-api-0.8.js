@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.43";
-cube.timestamp = "210930";
+cube.version = "0.8.44";
+cube.timestamp = "211001";
 /************************************* /VERSION*
 
 
@@ -356,11 +356,19 @@ function cubeParamValue(key=0, value=null, param=null) {
 }
 
 // Get interger numbers of parameter.
-function cubeParamNumbers(key=0, param=null) {
+function cubeParamNumbers(key=0, separator=",", param=null) {
     if (!param) {
         param = cube.param;
     }
-    return param.numbers(key);
+    return param.numbers(key, separator);
+}
+
+// Get data set of parameter.
+function cubeParamData(key=0, param=null) {
+    if (!param) {
+        param = cube.param;
+    }
+    return param.data(key);
 }
 
 /**/
@@ -877,19 +885,37 @@ cube.Params = class {
     }
 
     // Get value by integer numbers.
-    numbers(key) {
-        let n = [];
-        for (let i = 0; i < this.keyvalues[key].length; i++) {
-            let c = this.keyvalues[key].charCodeAt(i);
-            if ("0".charCodeAt(0) <= c && c <= "9".charCodeAt(0)) {
-                n[i] = c - "0".charCodeAt(0);
-            } else if ("a".charCodeAt(0) <= c && c <= "z".charCodeAt(0)) {
-                n[i] = c - "a".charCodeAt(0) + 1;
-            } else if ("A".charCodeAt(0) <= c && c <= "Z".charCodeAt(0)) {
-                n[i] = c - "A".charCodeAt(0) + 1;
+    numbers(key, separator=",") {
+        let result = [];
+        if (this.keyvalues[key]) {
+            let params = this.keyvalues[key].split(separator);
+            for (var i = 0; i < params.length; i++) {
+                if (params[i]) {
+                    result[i] = parseInt(params[i], 10);
+                }
             }
         }
-        return n;
+        return result;
+    }
+
+    // Get value by data set.
+    //  0 .. 9 =  0 ..  9
+    //  A .. Z = 10 .. 35
+    data(key) {
+        let result = [];
+        if (this.keyvalues[key]) {
+            for (let i = 0; i < this.keyvalues[key].length; i++) {
+                let c = this.keyvalues[key].charCodeAt(i);
+                if ("0".charCodeAt(0) <= c && c <= "9".charCodeAt(0)) {
+                    result[i] = c - "0".charCodeAt(0);
+                } else if ("A".charCodeAt(0) <= c && c <= "Z".charCodeAt(0)) {
+                    result[i] = c - "A".charCodeAt(0) + 10;
+                } else if ("a".charCodeAt(0) <= c && c <= "z".charCodeAt(0)) {
+                    result[i] = c - "a".charCodeAt(0) + 10;
+                }
+            }
+        }
+        return result;
     }
 
     // Set  or delete value.

@@ -198,27 +198,18 @@ a {
 	document.getElementById("version").innerText = manifest.version.substr(-4);
 
 	// Get query parameters.
-	var param0 = cubeParamValue().substr(1);
 	var gobanSizeMin = 4;
-	var gobanSizeMax = param0 > 9 ? param0 : 9;
-	var gobanSize = param0 > 0 ? param0 : 5; // Goban lines.
-	var gobanType = cubeMod(gobanSize, 2); // Goban type 0=Checker/Reversi, 1=Go.
+	var gobanType = cubeParamValue().charAt(0) == "o" ? 0 : 1; // Goban type o=0=Checker/Reversi, x=1=Go.
+	var param0 = cubeParamNumbers(0, cubeParamValue().charAt(0));
+ 	var gobanSizeMax = (param0[1] > 9 ? param0[1] : 9) + gobanType;
+	var gobanSize = param0[1] > 0 ? param0[1] : 5; // Goban lines.
 	var placements = []; // Placement pieces.
 	var playing = 0; // Playing count.
 
 	// Set goban type and size.
 	var setGoban = (size, type) => {
 		gobanType = type > 0 ? 1 : 0;
-		size = (size > gobanSizeMax) ? gobanSizeMax : (size < gobanSizeMin) ? gobanSizeMin : size;
-		if (gobanType != cubeMod(size, 2)) {
-			if (size != gobanSize || gobanType > 0) {
-				gobanSize = size + 1 <= gobanSizeMax ? size + 1 : size - 1;
-			} else {
-				gobanSize = size - 1 >= gobanSizeMin ? size - 1 : size + 1;
-			}
-		} else {
-			gobanSize = size;
-		}
+		gobanSize = (size > gobanSizeMax) ? gobanSizeMax : (size < gobanSizeMin) ? gobanSizeMin : size;
        	let icon = document.getElementById("icon");
         if (icon) {
 			icon.style.filter = gobanType == 0 ? "invert(75%) brightness(200%)" : "";
@@ -232,7 +223,7 @@ a {
 
 	// Change goban size.
 	var changeSize = (x=0) => {
-		setGoban(gobanSize + x * 2, gobanType);
+		setGoban(gobanSize + x, gobanType);
 	};
 
 	// Change goban type.
@@ -244,11 +235,13 @@ a {
 	setGoban(gobanSize, gobanType);
 
 	// Initialize placement pieces.
-	var param1 = cubeParamNumbers(1);
+	var param1 = cubeParamData(1);
 	for (let i = 0; i < param1.length / 3; i++) {
 		if (param1[i * 3 + 1] > 0 && param1[i * 3 + 2] > 0) {
-			let index = (param1[i * 3 + 1] - 1) + (param1[i * 3 + 2] - 1) * gobanSize;
-			placements[index] = param1[i * 3];
+			let x = param1[i * 3 + 1] >= 10 ? param1[i * 3 + 1] - 9 : param1[i * 3 + 1];
+			let y = param1[i * 3 + 2] >= 10 ? param1[i * 3 + 2] - 9 : param1[i * 3 + 2];
+			let index = (x - 1) + (y - 1) * gobanSize;
+			placements[index] = param1[i * 3] >= 10 ? param1[i * 3] - 9 : param1[i * 3];
 		}
 	}
 </script><!--/Menu-->
