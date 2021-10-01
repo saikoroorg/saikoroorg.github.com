@@ -91,7 +91,7 @@ a {
 	transform: scale(0.9);
 	opacity: 1;
 }
-#menu #icon {
+#icon {
 	width: 40px; height: 40px;
 	background-image: url('resource.svg');
 }
@@ -158,19 +158,19 @@ a {
 	};
 
 	// Set maximum of dice faces.
-	var setMaximum = (x, user=false) => {
+	var setMaximum = (x, original=false) => {
 		maximum = (x > 20) ? 20 : (x < 1) ? 1 : x;
 
 		// Reset dice icon.
 		var icon = document.getElementById("icon");
 		if (icon) {
-			if (!user) {
+			if (!original) {
 				var n = maximum <= 2 || maximum >= 10 ? maximum + 10 : maximum;
 				var nx = -cubeMod(n - 1, 5) * 40;
 				var ny = -cubeDiv(n - 1, 5) * 40;
 				icon.style.backgroundPosition = "" + nx + " " + ny;
 			} else {
-				icon.parentElement.style.display = "none";
+				icon.parentElement.href = window.location.search;
 			}
 		}
 		rolling = -1; // Reroll.
@@ -212,7 +212,7 @@ a {
 	if (designs.length > 0) {
 		buffer = cubeBuffer(9, 9, 40/9, designs.length);
 		var rects = [[0,0,8,8, 255,255,255]];
-		//var lines = [[0,0,8,0],[8,0,8,8],[8,8,0,8],[0,8,0,0]];
+		var lines = [[0,0,8,0],[8,0,8,8],[8,8,0,8],[0,8,0,0]];
 		for (let i = 0; i < designs.length; i++) {
 			cubeBufferRects(rects, i, buffer);
 			//cubeBufferLines(lines, i, buffer);
@@ -220,15 +220,20 @@ a {
 		}
 		setMaximum(designs.length, true);
 
-		// User design dice.
-		var icon = document.getElementById("icon");
-		if (icon) {
-			icon.style.display = "none";
-			var menu = document.getElementById("menu");
-			if (menu) {
-				menu.style.width = "80px";
-			}
-		}
+		var iconBuffer = cubeBuffer(9, 9, 40/9, 1);
+		cubeBufferRects(rects, 0, iconBuffer);
+		cubeBufferLines(lines, 0, iconBuffer);
+		cubeBufferPixels(designs[0], 0, iconBuffer);
+
+		let style = document.createElement('style');
+		document.head.appendChild(style);
+		let rule = "#icon {" +
+		    "background-image:url(\"" + iconBuffer.toImage() + "\");" +
+		    "background-position:(\"-" + iconBuffer.width + "px,0px\");" +
+		    "width:" + (iconBuffer.width * iconBuffer.scale) + ";" +
+		    "height:" + (iconBuffer.height * iconBuffer.scale) + ";" +
+		    "}";
+		style.sheet.insertRule(rule);
 	}
 
 </script><!--/Resource-->
