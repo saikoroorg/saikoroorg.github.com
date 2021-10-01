@@ -104,7 +104,7 @@ a {
 	font-size: 12px;
 	opacity: 0.1;
 }
-.logo {
+#logo {
 	width: 160px; height: 60px; margin: 0px 16px;
 	display: flex; display: -webkit-flex;
 	flex-direction: row; -webkit-flex-direction: row;
@@ -112,10 +112,10 @@ a {
 	align-items: center; -webkit-align-items: center;
 	font-size: 24px;
 }
-.logo .icon {
+#logo .icon {
     width: 40px; height: 40px; padding: 10px; margin-left: -28px;
 }
-.menu {
+#menu {
 	width: 120px; height: 40px;
 	display: flex; display: -webkit-flex;
 	flex-direction: row; -webkit-flex-direction: row;
@@ -123,7 +123,7 @@ a {
 	align-items: center; -webkit-align-items: center;
 	opacity: 0.9;
 }
-.menu a {
+#menu a {
 	width: 40px; height: 40px;
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
@@ -135,29 +135,29 @@ a {
 	transform: scale(1);
 	opacity: 1;
 }
-.menu a:hover {
+#menu a:hover {
 	transform: scale(1);
 	opacity: 0.6;
 }
-.menu a:active {
+#menu a:active {
 	transform: scale(0.8);
 	opacity: 1;
 }
-.menu a #icon {
+#menu a #icon {
 	width: 40px; height: 40px;
 }
 @media (max-height: 479px) {
-	.logo {
+	#logo {
 		height: 20px;
 		font-size: 18px;
 	}
-	.menu {
+	#menu {
 		height: 20px;
 	}
-	.menu a {
+	#menu a {
 		font-size: 20px;
 	}
-	.menu a #icon {
+	#menu a #icon {
 		transform: scale(0.4);
 	}
 	#version {
@@ -170,11 +170,11 @@ a {
 <body>
 <div id="container">
 	<h1 id="header">
-		<div class="logo">
+		<div id="logo">
 			<!--img class="icon" src="icon.svg"/!-->
-			<a href="?">Goban</a>
+			<a href="?" id="title">Goban</a>
 		</div>
-		<div class="menu">
+		<div id="menu">
 			<a href="javascript:changeSize(-1);">-</a>
 			<a href="javascript:changeType();"><img id="icon" src="icon.svg"/></a>
 			<a href="javascript:changeSize(1);">+</a>
@@ -197,11 +197,17 @@ a {
 	console.log = () => {};
 	document.getElementById("version").innerText = manifest.version.substr(-4);
 
+	// Title logo.
+	var title = document.getElementById("title");
+	if (title) {
+		title.href = window.location.search;
+	}
+
 	// Get query parameters.
 	var gobanSizeMin = 4;
-	var gobanType = cubeParamValue().charAt(0) == "o" ? 0 : 1; // Goban type o=0=Checker/Reversi, x=1=Go.
-	var param0 = cubeParamNumbers(0, cubeParamValue().charAt(0));
- 	var gobanSizeMax = (param0[1] > 9 ? param0[1] : 9) + gobanType;
+	var gobanType = cubeParamValue().substr(0, 1) == "o" ? 0 : 1; // Goban type o=0=Checker/Reversi, x=1=Go.
+	var param0 = cubeParamNumbers(0, cubeParamValue().substr(0, 1));
+ 	var gobanSizeMax = param0[1] > 9 ? param0[1] : 9;
 	var gobanSize = param0[1] > 0 ? param0[1] : 5; // Goban lines.
 	var placements = []; // Placement pieces.
 	var playing = 0; // Playing count.
@@ -234,17 +240,20 @@ a {
 	// Initialize settings.
 	setGoban(gobanSize, gobanType);
 
+</script><!--/Menu-->
+<!--Resource--><script>
+
 	// Initialize placement pieces.
 	var param1 = cubeParamData(1);
 	for (let i = 0; i < param1.length / 3; i++) {
-		if (param1[i * 3 + 1] > 0 && param1[i * 3 + 2] > 0) {
-			let x = param1[i * 3 + 1] >= 10 ? param1[i * 3 + 1] - 9 : param1[i * 3 + 1];
-			let y = param1[i * 3 + 2] >= 10 ? param1[i * 3 + 2] - 9 : param1[i * 3 + 2];
-			let index = (x - 1) + (y - 1) * gobanSize;
+		let x = param1[i * 3 + 1], y = param1[i * 3 + 2];
+		if (x > 0 && y > 0) {
+			let index = (x >= 10 ? x - 10 : x - 1) + (y >= 10 ? y - 10 : y - 1) * gobanSize;
 			placements[index] = param1[i * 3] >= 10 ? param1[i * 3] - 9 : param1[i * 3];
 		}
 	}
-</script><!--/Menu-->
+
+</script><!--/Resource-->
 <!--Main--><script>(async()=>{
 
 	// Create screens.

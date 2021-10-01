@@ -52,7 +52,7 @@ a {
 	font-size: 12px;
 	opacity: 0.1;
 }
-.logo {
+#logo {
 	width: 160px; height: 60px; margin: 0px 16px;
 	display: flex; display: -webkit-flex;
 	flex-direction: row; -webkit-flex-direction: row;
@@ -60,10 +60,10 @@ a {
 	align-items: center; -webkit-align-items: center;
 	font-size: 24px;
 }
-.logo .icon {
+#logo .icon {
     width: 40px; height: 40px; padding: 10px; margin-left: -28px;
 }
-.menu {
+#menu {
 	width: 120px; height: 40px;
 	display: flex; display: -webkit-flex;
 	flex-direction: row; -webkit-flex-direction: row;
@@ -71,7 +71,7 @@ a {
 	align-items: center; -webkit-align-items: center;
 	opacity: 0.9;
 }
-.menu a {
+#menu a {
 	width: 40px; height: 40px;
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
@@ -83,30 +83,30 @@ a {
 	transform: scale(1);
 	opacity: 1;
 }
-.menu a:hover {
+#menu a:hover {
 	transform: scale(1);
 	opacity: 0.6;
 }
-.menu a:active {
+#menu a:active {
 	transform: scale(0.9);
 	opacity: 1;
 }
-.menu #icon {
+#menu #icon {
 	width: 40px; height: 40px;
 	background-image: url('resource.svg');
 }
 @media (max-height: 479px) {
-	.logo {
+	#logo {
 		height: 20px;
 		font-size: 18px;
 	}
-	.menu {
+	#menu {
 		height: 20px;
 	}
-	.menu a {
+	#menu a {
 		font-size: 20px;
 	}
-	.menu a #icon {
+	#menu a #icon {
 		transform: scale(0.4);
 	}
 	#version {
@@ -119,11 +119,11 @@ a {
 <body>
 <div id="container">
 	<h1 id="header">
-		<div class="logo">
+		<div id="logo">
 			<!--img class="icon" src="icon.svg"!-->
-			<a href="?">Dice</a>
+			<a href="?" id="title">Dice</a>
 		</div>
-		<div class="menu">
+		<div id="menu">
 			<a href="javascript:changeCounts(-1);">-</a>
 			<a href="javascript:changeMaximum();"><span id="icon"></span></a>
 			<a href="javascript:changeCounts(+1);">+</a>
@@ -139,6 +139,12 @@ a {
 	console.log = () => {};
 	document.getElementById("version").innerText = manifest.version.substr(-4);
 
+	// Title logo.
+	var title = document.getElementById("title");
+	if (title) {
+		title.href = window.location.search;
+	}
+
 	// Get query parameters.
 	var params = cubeParamNumbers(0, "d");
 	var counts = params[0] > 0 ? params[0] : 1; // Counts of dice.
@@ -152,16 +158,20 @@ a {
 	};
 
 	// Set maximum of dice faces.
-	var setMaximum = (x) => {
+	var setMaximum = (x, user=false) => {
 		maximum = (x > 20) ? 20 : (x < 1) ? 1 : x;
 
 		// Reset dice icon.
 		var icon = document.getElementById("icon");
 		if (icon) {
-			var n = maximum <= 2 || maximum >= 10 ? maximum + 10 : maximum;
-			var nx = -cubeMod(n - 1, 5) * 40;
-			var ny = -cubeDiv(n - 1, 5) * 40;
-			icon.style.backgroundPosition = "" + nx + " " + ny;
+			if (!user) {
+				var n = maximum <= 2 || maximum >= 10 ? maximum + 10 : maximum;
+				var nx = -cubeMod(n - 1, 5) * 40;
+				var ny = -cubeDiv(n - 1, 5) * 40;
+				icon.style.backgroundPosition = "" + nx + " " + ny;
+			} else {
+				icon.parentElement.style.display = "none";
+			}
 		}
 		rolling = -1; // Reroll.
 	};
@@ -176,52 +186,50 @@ a {
 	// Initialize settings.
 	setCounts(counts);
 	setMaximum(maximum);
+
 </script><!--/Menu-->
 <!--Resource--><script>
 
 	// Initialize face designs.
-	var pixels = [];
-	for (let j = 1; ; j++) {
+	var keys = cubeParamKeys();
+	var designs = [];
+	for (let j = 1; j < keys.length; j++) {
 		var param1 = cubeParamData(j);
-		if (param1.length >= 3) {
-			pixels[j - 1] = [];
-			for (let i = 0; i < param1.length / 3; i++) {
-				if (param1[i * 3 + 1] > 0 && param1[i * 3 + 2] > 0) {
-					let x = param1[i * 3 + 1] >= 10 ? param1[i * 3 + 1] - 9 : param1[i * 3 + 1];
-					let y = param1[i * 3 + 2] >= 10 ? param1[i * 3 + 2] - 9 : param1[i * 3 + 2];
-					let color = param1[i * 3] >= 10 ? param1[i * 3] - 9 : param1[i * 3];
-					pixels[j - 1].push([x, y]);
-				}
+		let design = [];
+		for (let i = 0; i < param1.length / 3; i++) {
+			let x = param1[i * 3 + 1], y = param1[i * 3 + 2];
+			if (x > 0 && y > 0) {
+				let color = param1[i * 3] >= 10 ? param1[i * 3] - 9 : param1[i * 3];
+				let pixel = [x >= 10 ? x - 10 : x - 1, y >= 10 ? y - 10 : y - 1];
+				design.push(pixel);
 			}
-		} else {
-			break;
 		}
+		designs.push(design);
 	}
 
+	// Create pixel buffer for face design.
 	var buffer = null;
-	if (pixels.length > 0) {
-		buffer = cubeBuffer(9, 9, 40/9, pixels.length);
+	if (designs.length > 0) {
+		buffer = cubeBuffer(9, 9, 40/9, designs.length);
 		var rects = [[0,0,8,8, 255,255,255]];
-		var lines = [[0,0,8,0],[8,0,8,8],[8,8,0,8],[0,8,0,0]];
-		for (let i = 0; i < pixels.length; i++) {
+		//var lines = [[0,0,8,0],[8,0,8,8],[8,8,0,8],[0,8,0,0]];
+		for (let i = 0; i < designs.length; i++) {
 			cubeBufferRects(rects, i, buffer);
 			//cubeBufferLines(lines, i, buffer);
-			cubeBufferPixels(pixels[i], i, buffer);
+			cubeBufferPixels(designs[i], i, buffer);
+		}
+		setMaximum(designs.length, true);
+
+		// User design dice.
+		var icon = document.getElementById("icon");
+		if (icon) {
+			icon.style.display = "none";
+			var menu = document.getElementById("menu");
+			if (menu) {
+				menu.style.width = "80px";
+			}
 		}
 	}
-
-	/* default designs.
-	cubeBufferPixels([[4,4, 255,0,0]], 0, buffer);
-	cubeBufferPixels([[6,2],[2,6]], 1, buffer);
-	cubeBufferPixels([[6,2],[4,4],[2,6]], 2, buffer);
-	cubeBufferPixels([[2,2],[2,6],[6,2],[6,6]], 3, buffer);
-	cubeBufferPixels([[2,2],[2,6],[4,4],[6,2],[6,6]], 4, buffer);
-	cubeBufferPixels([[2,2],[2,4],[2,6],[6,2],[6,4],[6,6]], 5, buffer);
-	cubeBufferPixels([[2,2],[2,4],[2,6],[4,4, 255,0,0],[6,2],[6,4],[6,6]], 6, buffer);
-	cubeBufferPixels([[2,2],[2,4],[2,6],[4,2],[4,6],[6,2],[6,4],[6,6]], 7, buffer);
-	cubeBufferPixels([[2,2],[2,4],[2,6],[4,2],[4,4],[4,6],[6,2],[6,4],[6,6]], 8, buffer);
-	*/
-
 
 </script><!--/Resource-->
 <!--Main--><script>(async()=>{
