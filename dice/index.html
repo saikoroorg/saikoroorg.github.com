@@ -175,7 +175,7 @@ a {
 				icon.style.backgroundPosition = "" + nx + " " + ny;
 			} else {
 				icon.style.backgroundImage = "url(\"" + buffer.toImage() + "\")";
-				original = original + 1 < maximum ? original + 1 : 0;
+				original = original + 1 <= maximum ? original + 1 : 0;
 				var nx = -cubeMod(original - 1, 5) * 40;
 				var ny = -cubeDiv(original - 1, 5) * 40;
 				icon.style.backgroundPosition = "" + nx + " " + ny;
