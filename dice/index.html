@@ -149,6 +149,8 @@ a {
 	var params = cubeParamNumbers(0, "d");
 	var counts = params[0] > 0 ? params[0] : 1; // Counts of dice.
 	var maximum = params[1] > 0 ? params[1] : 6; // Maximum of dice faces.
+	var buffer = null; // Original icon buffer.
+	var original = 0; // Original frame.
 	var rolling = 0; // Rolling count.
 
 	// Set counts of dice.
@@ -158,19 +160,25 @@ a {
 	};
 
 	// Set maximum of dice faces.
-	var setMaximum = (x, original=false) => {
-		maximum = (x > 20) ? 20 : (x < 1) ? 1 : x;
+	var setMaximum = (x) => {
+		if (!buffer) {
+			maximum = (x > 20) ? 20 : (x < 1) ? 1 : x;
+		}
 
 		// Reset dice icon.
 		var icon = document.getElementById("icon");
 		if (icon) {
-			if (!original) {
+			if (!buffer) {
 				var n = maximum <= 2 || maximum >= 10 ? maximum + 10 : maximum;
 				var nx = -cubeMod(n - 1, 5) * 40;
 				var ny = -cubeDiv(n - 1, 5) * 40;
 				icon.style.backgroundPosition = "" + nx + " " + ny;
 			} else {
-				icon.parentElement.href = window.location.search;
+				icon.style.backgroundImage = "url(\"" + buffer.toImage() + "\")";
+				original = original + 1 < maximum ? original + 1 : 0;
+				var nx = -cubeMod(original - 1, 5) * 40;
+				var ny = -cubeDiv(original - 1, 5) * 40;
+				icon.style.backgroundPosition = "" + nx + " " + ny;
 			}
 		}
 		rolling = -1; // Reroll.
@@ -208,32 +216,16 @@ a {
 	}
 
 	// Create pixel buffer for face design.
-	var buffer = null;
 	if (designs.length > 0) {
 		buffer = cubeBuffer(9, 9, 40/9, designs.length);
 		var rects = [[0,0,8,8, 255,255,255]];
 		var lines = [[0,0,8,0],[8,0,8,8],[8,8,0,8],[0,8,0,0]];
 		for (let i = 0; i < designs.length; i++) {
 			cubeBufferRects(rects, i, buffer);
-			//cubeBufferLines(lines, i, buffer);
+			cubeBufferLines(lines, i, buffer);
 			cubeBufferPixels(designs[i], i, buffer);
 		}
-		setMaximum(designs.length, true);
-
-		var iconBuffer = cubeBuffer(9, 9, 40/9, 1);
-		cubeBufferRects(rects, 0, iconBuffer);
-		cubeBufferLines(lines, 0, iconBuffer);
-		cubeBufferPixels(designs[0], 0, iconBuffer);
-
-		let style = document.createElement('style');
-		document.head.appendChild(style);
-		let rule = "#icon {" +
-		    "background-image:url(\"" + iconBuffer.toImage() + "\");" +
-		    "background-position:(\"-" + iconBuffer.width + "px,0px\");" +
-		    "width:" + (iconBuffer.width * iconBuffer.scale) + ";" +
-		    "height:" + (iconBuffer.height * iconBuffer.scale) + ";" +
-		    "}";
-		style.sheet.insertRule(rule);
+		setMaximum(designs.length);
 	}
 
 </script><!--/Resource-->
