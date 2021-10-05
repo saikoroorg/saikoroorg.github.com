@@ -225,13 +225,6 @@ a {
 		gobanType = type > 0 ? 1 : 0;
 		gobanSize = (size > gobanSizeMax + gobanType - 1) ? gobanSizeMax + gobanType - 1 :
 			(size < gobanSizeMin + gobanType - 1) ? gobanSizeMin + gobanType - 1 : size;
-		let gobanSize2 = cubeDiv(gobanSize, 2);
-		gobanCenterX = gobanCenterX < gobanSize2 ? gobanSize2 :
-			gobanCenterX > gobanSizeMax - gobanSize2 - 1 ? gobanSizeMax - gobanSize2 - 1 :
-			gobanCenterX;
-       	gobanCenterY = gobanCenterY < gobanSize2 ? gobanSize2 :
-			gobanCenterY > gobanSizeMax - gobanSize2 - 1 ? gobanSizeMax - gobanSize2 - 1 :
-			gobanCenterY;
       	let icon = document.getElementById("icon");
         if (icon) {
 			icon.style.filter = gobanType == 0 ? "invert(75%) brightness(200%)" : "";
@@ -307,20 +300,32 @@ a {
 	// Main loop.
 	while (true) {
 
-		// Initialize parameters.
+		// Initialize status.
+		let touchingIndex = 0; // Touching piece number.
+		let touchingCount = 0; // Touching piece counter.
+		let touchingPiecePos = null; // Touching piece position.
+		let touchingColor = -1; // Touching goke color.
+		let playerColor = 0; // Active player color. (0:black/1:white)
+		let movingGobanPos = null; // Moving goban position.
+		let pickedIndex = 0; // Picked piece number.
+		let pickedColor = -1; // Picked color from goke.
+		let pickedPiecePos = null; // Picked piece position.
+
 		let scale = gobanWidth / (pieceRawWidth * (gobanType > 0 ? gobanSize - 1 : gobanSize));
 		let pieceWidth = pieceRawWidth * scale;
-		let gobanPos = cubeVector(
-			(screenWidth - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2),
-			(screenHeight - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2));
-
-		// Initialize status.
-		let player = 1; // Active player number.
-		let touchingIndex = 0; // Touching piece/goke number.
-		let touchingCount = 0; // Touching piece counter.
-		let pickedIndex = 0; // Picked piece number.
+		let gobanPos = cubeVector();
+		let gobanSize2 = 0;
 
 		for (playing = 1; playing >= 1; ) {
+
+			// Update parameters.
+			if (gobanSize2 != cubeDiv(gobanSize, 2)) {
+				scale = gobanWidth / (pieceRawWidth * (gobanType > 0 ? gobanSize - 1 : gobanSize));
+				pieceWidth = pieceRawWidth * scale;
+				gobanPos = cubeVector(
+					(screenWidth - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2),
+					(screenHeight - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2));
+			}
 
 			// Read input.
 			await cubeReadJoypad(0, joypad);
@@ -329,6 +334,7 @@ a {
 
 			// Parse input.
 			let motionPos = motion ? mainScreen.posToLocalPos(motion) : null;
+			let motionPiecePos = null;
 			let motionIndex = 0;
 			if (motion) {
 
@@ -337,155 +343,172 @@ a {
 				let my = cubeDiv(motionPos.y - (gobanPos.y - pieceWidth / 2), pieceWidth);
 				if (0 <= mx && mx < gobanSize && 0 <= my && my < gobanSize) {
 					motionIndex = gobanSize * my + mx + 1;
+					motionPiecePos = cubeVector(mx + gobanCenterX - gobanSize2, my + gobanCenterY - gobanSize2);
+				} else {
+					motionPiecePos = null;
 				}
 
 				// Check touching piece index of goke.
+				touchingColor = -1;
 				for (let i = 0; i < playerCount; i++) {
 					let localPos = subScreens[i].posToLocalPos(motion);
 					let mx = localPos.x - subScreenWidth / 2;
 					let my = localPos.y - subScreenHeight / 2;
 					if (-gokeWidth <= mx && mx <= gokeWidth && -gokeWidth <= my && my <= gokeWidth) {
-						motionIndex = -(i + 1);
+						touchingColor = i;
 					}
 				}
 			}
 
 			// Check hold a piece.
-			if (pickedIndex == 0) {
-				let touchingX = cubeMod(touchingIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-				let touchingY = cubeDiv(touchingIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
+			if (pickedPiecePos == null) {
 
 				// Start touching a piece.
-				if (touchingIndex == 0 && motionIndex > 0) {
+				if (touchingPiecePos == null && motionPiecePos != null) {
 					touchingIndex = motionIndex;
+					touchingPiecePos = motionPiecePos.clone();
 					touchingCount = 30;
 
 				// Pick from goke.
-				} else if (touchingIndex == 0 && motionIndex < 0) {
+				} else if (touchingPiecePos == null && touchingColor >= 0) {
 					pickedIndex = motionIndex;
+					pickedColor = touchingColor;
+					pickedPiecePos = null;
 					touchingIndex = 0;
-					player = -motionIndex;
+					player = touchingColor + 1;
+					playerColor = touchingColor;
 
 				// Touching a piece.
-				} else if (touchingIndex == motionIndex && motionIndex > 0) {
+				} else if (touchingIndex == motionIndex && motionPiecePos != null) {
 					if (touchingCount-- <= 0) {
 
 						// Holding a piece.
-						if (placements[touchingX][touchingY] > 0) {
+						if (touchingPiecePos != null && placements[touchingPiecePos.x][touchingPiecePos.y] > 0) {
 							pickedIndex = touchingIndex;
+							pickedPiecePos = touchingPiecePos.clone();
+							touchingPiecePos = null;
 							touchingIndex = 0;
 
 						// Reset moving the goban.
 						} else {
 							touchingIndex = 0;
-							gobanSize = gobanSizeMax;
-							gobanCenterX = gobanCenterY = cubeDiv(gobanSizeMax, 2);
-
-							// Reset goban parameters.
-							scale = gobanWidth / (pieceRawWidth * (gobanType > 0 ? gobanSize - 1 : gobanSize));
-							pieceWidth = pieceRawWidth * scale;
-							gobanPos = cubeVector(
-								(screenWidth - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2),
-								(screenHeight - gobanWidth) / 2 + (gobanType > 0 ? 0 : pieceWidth / 2));
+							touchingPiecePos = null;
+							/*gobanSize = gobanSizeMax;
+							gobanCenterX = gobanCenterY = cubeDiv(gobanSizeMax, 2);*/
 						}
 					}
 
 				// Start moving a piece.
-				} else if (touchingIndex > 0 && placements[touchingX][touchingY] > 0) {
+				} else if (touchingPiecePos != null && placements[touchingPiecePos.x][touchingPiecePos.y] > 0) {
 					pickedIndex = touchingIndex;
+					pickedPiecePos = touchingPiecePos.clone();
 					touchingIndex = 0;
 					touchingCount = 0;
 
 				// Start moving the goban.
-				} else if (touchingIndex > 0) {
+				} else if (touchingPiecePos != null) {
 					touchingIndex = -touchingIndex;
+					movingGobanPos = touchingPiecePos.clone();
 					touchingCount = 0;
 
 				// Moving the goban.
-				} else if (touchingIndex < 0 && motionIndex > 0) {
-					let touchingX = cubeMod(-touchingIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-					let touchingY = cubeDiv(-touchingIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
-					let motionX = cubeMod(motionIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-					let motionY = cubeDiv(motionIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
+				} else if (movingGobanPos != null && motionPiecePos != null) {
+					/*let touchingX = cubeMod(-touchingIndex - 1, gobanSize) + gobanCenterX - gobanSize2;
+					let touchingY = cubeDiv(-touchingIndex - 1, gobanSize) + gobanCenterY - gobanSize2;
+					let motionX = cubeMod(motionIndex - 1, gobanSize) + gobanCenterX - gobanSize2;
+					let motionY = cubeDiv(motionIndex - 1, gobanSize) + gobanCenterY - gobanSize2;
 					let movingX = touchingX - motionX;
 					let movingY = touchingY - motionY;
-					let gobanSize2 = cubeDiv(gobanSize, 2);
-					gobanCenterX = gobanCenterX + movingX < gobanSize2 ? gobanSize2 :
-						gobanCenterX + movingX > gobanSizeMax - gobanSize2 - 1 ? gobanSizeMax - gobanSize2 - 1 :
-						gobanCenterX + movingX;
-			       	gobanCenterY = gobanCenterY + movingY < gobanSize2 ? gobanSize2 :
-						gobanCenterY + movingY > gobanSizeMax - gobanSize2 - 1 ? gobanSizeMax - gobanSize2 - 1 :
-						gobanCenterY + movingY;
-			       	touchingIndex = -motionIndex;
+					gobanCenterX = gobanCenterX + movingX;
+			       	gobanCenterY = gobanCenterY + movingY;
+			       	touchingIndex = -motionIndex;*/
+					touchingIndex = 0;
+					touchingCount = 0;
+
 				}
 			}
 
 			// Update on release.
 			if (action) {
-				let motionX = cubeMod(motionIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-				let motionY = cubeDiv(motionIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
-				let pickedX = cubeMod(pickedIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-				let pickedY = cubeDiv(pickedIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
 
 				// Check release a piece.
-				if (motionIndex > 0) {
-					if (placements[motionX][motionY] > 0) {
+				if (motionPiecePos != null) {
+					if (placements[motionPiecePos.x][motionPiecePos.y] > 0) {
 
 						// Flip a piece.
 						if (touchingIndex == motionIndex) {
-							placements[motionX][motionY] = cubeMod(placements[motionX][motionY], 2) + 1;
+							placements[motionPiecePos.x][motionPiecePos.y] = cubeMod(placements[motionPiecePos.x][motionPiecePos.y], 2) + 1;
+							touchingPiecePos = null;
 
 						// Change a piece.
-						} else if (pickedIndex > 0) {
-							let pieceFrame = placements[motionX][motionY];
-							placements[motionX][motionY] = placements[pickedX][pickedY];
-							placements[pickedX][pickedY] = pieceFrame;
+						} else if (pickedPiecePos != null) {
+							let pieceFrame = placements[motionPiecePos.x][motionPiecePos.y];
+							placements[motionPiecePos.x][motionPiecePos.y] = placements[pickedPiecePos.x][pickedPiecePos.y];
+							placements[pickedPiecePos.x][pickedPiecePos.y] = pieceFrame;
+							touchingPiecePos = pickedPiecePos = null;
 
 						// Overwrite by new piece.
-						} else if (player > 0 && touchingIndex >= 0) {
-							placements[motionX][motionY] = player;
+						} else if (touchingPiecePos != null) {
+							placements[motionPiecePos.x][motionPiecePos.y] = playerColor + 1;
 							//player = cubeMod(player, 2) + 1;
+							touchingPiecePos = null;
 						}
 					} else {
 
 						// Move a piece / Cancel pick.
-						if (pickedIndex > 0) {
-							placements[motionX][motionY] = placements[pickedX][pickedY];
-							placements[pickedX][pickedY] = 0;
+						if (pickedPiecePos != null) {
+							placements[motionPiecePos.x][motionPiecePos.y] = placements[pickedPiecePos.x][pickedPiecePos.y];
+							placements[pickedPiecePos.x][pickedPiecePos.y] = 0;
+							touchingPiecePos = pickedPiecePos = null;
 
 						// Put a new piece.
-						} else if (player > 0 && touchingIndex >= 0) {
-							placements[motionX][motionY] = player;
+						} else if (touchingPiecePos != null) {
+							placements[motionPiecePos.x][motionPiecePos.y] = playerColor + 1;
 							//player = cubeMod(player, 2) + 1;
+							touchingPiecePos = null;
 						}
 					}
 				}
 
 				// Check release out of a board.
-				if (motionIndex <= 0) {
+				if (motionPiecePos == null) {
 
 					// Remove a piece.
-					if (pickedIndex > 0) {
-						placements[pickedX][pickedY] = 0;
+					if (pickedPiecePos != null) {
+						placements[pickedPiecePos.x][pickedPiecePos.y] = 0;
+						pickedPiecePos = null;
+						touchingPiecePos = null;
 					}
 				}
 
 				motionIndex = 0;
 				touchingIndex = 0;
+				touchingColor = -1;
+				touchingGoban = -1;
 				touchingCount = 0;
 				pickedIndex = 0;
+				pickedColor = -1;
+			}
+
+			// Update parameters.
+			if (gobanSize2 != cubeDiv(gobanSize, 2)) {
+				gobanSize2 = cubeDiv(gobanSize, 2);
+				gobanCenterX = gobanCenterX < gobanSize2 ? gobanSize2 :
+					gobanCenterX > gobanSizeMax - gobanSize2 - 1 ? gobanSizeMax - gobanSize2 - 1 :
+					gobanCenterX;
+		       	gobanCenterY = gobanCenterY < gobanSize2 ? gobanSize2 :
+					gobanCenterY > gobanSizeMax - gobanSize2 - 1 ? gobanSizeMax - gobanSize2 - 1 :
+					gobanCenterY;
 			}
 
 			// Update goban.
-			let touchingX = cubeMod(touchingIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-			let touchingY = cubeDiv(touchingIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
-			let motionX = cubeMod(motionIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-			let motionY = cubeDiv(motionIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
-			let pickedX = cubeMod(pickedIndex - 1, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-			let pickedY = cubeDiv(pickedIndex - 1, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
 			for (let i = 0; i < gobanSize * gobanSize; i++) {
-				let x = cubeMod(i, gobanSize) + gobanCenterX - cubeDiv(gobanSize, 2);
-				let y = cubeDiv(i, gobanSize) + gobanCenterY - cubeDiv(gobanSize, 2);
+				let x = cubeMod(i, gobanSize) + gobanCenterX - gobanSize2;
+				let y = cubeDiv(i, gobanSize) + gobanCenterY - gobanSize2;
+				if (x < 0 || y < 0 || x >= gobanSizeMax || y >= gobanSizeMax) {
+					console.log("error:" + x + "," + y);
+					break;
+				}
 
 				// Shift animation frame for Go style.
 				let f = gobanType > 0 ?
@@ -502,10 +525,10 @@ a {
 						cubeAnimate(placements[x][y] * 10 + f, gobanSprites[i]);
 
 					// Swapping from. (*motionIndex > 0)
-					} else if (motionIndex > 0 && placements[motionX][motionY] > 0) {
+					} else if (motionPiecePos != null && placements[motionPiecePos.x][motionPiecePos.y] > 0) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.6, gobanSprites[i]);
-						cubeAnimate(placements[motionX][motionY] * 10 + f, gobanSprites[i]);
+						cubeAnimate(placements[motionPiecePos.x][motionPiecePos.y] * 10 + f, gobanSprites[i]);
 
 					// Moving from.
 					} else {
@@ -520,34 +543,35 @@ a {
 				} else if (i == motionIndex - 1) {
 
 					// Swapping to. (*motionIndex > 0)
-					if (pickedIndex > 0 && motionIndex != pickedIndex && motionIndex > 0 && placements[motionX][motionY] > 0) {
+					if (pickedPiecePos != null && motionIndex != pickedIndex &&
+						motionPiecePos != null && placements[motionPiecePos.x][motionPiecePos.y] > 0) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.2, gobanSprites[i]);
-						cubeAnimate(placements[pickedX][pickedY] * 10 + f, gobanSprites[i]);
+						cubeAnimate(placements[pickedPiecePos.x][pickedPiecePos.y] * 10 + f, gobanSprites[i]);
 
 					// Moving a picked piece to.
-					} else if (pickedIndex > 0) {
+					} else if (pickedPiecePos != null) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.2, gobanSprites[i]);
 						cubeAnimate(placements[x][y] * 10 + f, gobanSprites[i]);
 
 					// Moving from goke to.
-					} else if (pickedIndex < 0) {
+					} else if (pickedColor >= 0) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.2, gobanSprites[i]);
 						cubeAnimate(placements[x][y] * 10 + f, gobanSprites[i]);
 
 					// Flipping a piece. (*motionIndex > 0)
-					} else if (motionIndex > 0 && placements[motionX][motionY] > 0 && touchingIndex >= 0) {
+					} else if (motionPiecePos != null && placements[motionPiecePos.x][motionPiecePos.y] > 0 && touchingPiecePos != null) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.4, gobanSprites[i]);
-						cubeAnimate(placements[motionX][motionY] * 10 + f, gobanSprites[i]);
+						cubeAnimate(placements[motionPiecePos.x][motionPiecePos.y] * 10 + f, gobanSprites[i]);
 
 					// Putting a new piece.
-					} else if (touchingIndex >= 0) {
+					} else if (touchingPiecePos != null) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.1, gobanSprites[i]);
-						cubeAnimate(player * 10 + f, gobanSprites[i]);
+						cubeAnimate((playerColor + 1) * 10 + f, gobanSprites[i]);
 
 					// Idling.
 					} else {
@@ -572,21 +596,21 @@ a {
 			{
 
 				// Moving a picked piece.
-				if (pickedIndex > 0) {
-					cubeAnimate(placements[pickedX][pickedY] * 10 + 5, handSprite);
+				if (pickedPiecePos != null) {
+					cubeAnimate(placements[pickedPiecePos.x][pickedPiecePos.y] * 10 + 5, handSprite);
 					cubeDilute(0.6, handSprite);
 					cubeExpand(scale * 1.5, handSprite);
 					cubeMove(motionPos.x, motionPos.y, handSprite);
 
 				// Moving from goke.
-				} else if (pickedIndex < 0) {
+				} else if (pickedColor >= 0) {
 					cubeAnimate(player * 10 + 5, handSprite);
 					cubeDilute(0.6, handSprite);
 					cubeExpand(scale * 1.5, handSprite);
 					cubeMove(motionPos.x, motionPos.y, handSprite);
 
 				// Moving the goban.
-				} else if (touchingIndex < 0) {
+				} else if (touchingColor >= 0) {
 					cubeAnimate(5, handSprite);
 					cubeDilute(0.1, handSprite);
 					cubeExpand(scale * 1.5, handSprite);
@@ -596,33 +620,31 @@ a {
 
 			// Update goke.
 			for (let i = 0; i < playerCount; i++) {
-				let active = i + 1 == player;
-				let activating = i + 1 == -motionIndex;
 
 				// Moving to goke.
-				if (motionIndex < 0 && activating && pickedIndex > 0) {
+				if (touchingColor == i && pickedPiecePos != null) {
 					cubeExpand(1.2, gokeSprites[i]);
-					cubeDilute(active ? 1 : 0.2, gokeSprites[i]);
+					cubeDilute(playerColor == i ? 1 : 0.2, gokeSprites[i]);
 
 				// Touching goke.
-				} else if (motionIndex < 0 && activating && touchingIndex >= 0) {
+				} else if (touchingColor == i && touchingPiecePos != null) {
 					cubeExpand(0.9, gokeSprites[i]);
-					cubeDilute(active ? 1 : 0.2, gokeSprites[i]);
+					cubeDilute(playerColor == i ? 1 : 0.2, gokeSprites[i]);
 
 				// Moving from goke.
-				} else if (i + 1 == -pickedIndex) {
+				} else if (pickedColor == i) {
 					cubeExpand(0.8, gokeSprites[i]);
 					cubeDilute(0.6, gokeSprites[i]);
 
 				// Putting new piece from goke.
-				} else if (touchingIndex > 0 && placements[touchingX][touchingY] == 0 && active) {
+				} else if (touchingPiecePos != null && placements[touchingPiecePos.x][touchingPiecePos.y] == 0 && playerColor == i) {
 					cubeExpand(1.2, gokeSprites[i]);
 					cubeDilute(1, gokeSprites[i]);
 
 				// Stable goke.
 				} else {
 					cubeExpand(1, gokeSprites[i]);
-					cubeDilute(active ? 1 : 0.2, gokeSprites[i]);
+					cubeDilute(playerColor == i ? 1 : 0.2, gokeSprites[i]);
 				}
 				cubeMove(subScreenWidth / 2, subScreenHeight / 2, gokeSprites[i]);
 			}
@@ -636,7 +658,7 @@ a {
 			for (let i = 0; i < gobanSize * gobanSize; i++) {
 				cubeDraw(gobanSprites[i], mainScreen); // Goban.
 			}
-			if (pickedIndex != 0 || touchingIndex < 0) {
+			if (pickedPiecePos != null || pickedColor >= 0) {
 				cubeDraw(handSprite, mainScreen); // Hand piece.
 			}
 
