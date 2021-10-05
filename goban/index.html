@@ -301,13 +301,11 @@ a {
 	while (true) {
 
 		// Initialize status.
-		let touchingIndex = 0; // Touching piece number.
 		let touchingCount = 0; // Touching piece counter.
 		let touchingPiecePos = null; // Touching piece position.
 		let touchingColor = -1; // Touching goke color.
 		let playerColor = 0; // Active player color. (0:black/1:white)
 		let movingGobanPos = null; // Moving goban position.
-		let pickedIndex = 0; // Picked piece number.
 		let pickedColor = -1; // Picked color from goke.
 		let pickedPiecePos = null; // Picked piece position.
 
@@ -335,14 +333,12 @@ a {
 			// Parse input.
 			let motionPos = motion ? mainScreen.posToLocalPos(motion) : null;
 			let motionPiecePos = null;
-			let motionIndex = 0;
 			if (motion) {
 
 				// Check touching piece index of goban.
 				let mx = cubeDiv(motionPos.x - (gobanPos.x - pieceWidth / 2), pieceWidth);
 				let my = cubeDiv(motionPos.y - (gobanPos.y - pieceWidth / 2), pieceWidth);
 				if (0 <= mx && mx < gobanSize && 0 <= my && my < gobanSize) {
-					motionIndex = gobanSize * my + mx + 1;
 					motionPiecePos = cubeVector(mx + gobanCenterX - gobanSize2, my + gobanCenterY - gobanSize2);
 				} else {
 					motionPiecePos = null;
@@ -365,33 +361,27 @@ a {
 
 				// Start touching a piece.
 				if (touchingPiecePos == null && motionPiecePos != null) {
-					touchingIndex = motionIndex;
 					touchingPiecePos = motionPiecePos.clone();
 					touchingCount = 30;
 
 				// Pick from goke.
 				} else if (touchingPiecePos == null && touchingColor >= 0) {
-					pickedIndex = motionIndex;
 					pickedColor = touchingColor;
 					pickedPiecePos = null;
-					touchingIndex = 0;
 					player = touchingColor + 1;
 					playerColor = touchingColor;
 
 				// Touching a piece.
-				} else if (touchingIndex == motionIndex && motionPiecePos != null) {
+				} else if (motionPiecePos != null && motionPiecePos.eq(touchingPiecePos)) {
 					if (touchingCount-- <= 0) {
 
 						// Holding a piece.
 						if (touchingPiecePos != null && placements[touchingPiecePos.x][touchingPiecePos.y] > 0) {
-							pickedIndex = touchingIndex;
 							pickedPiecePos = touchingPiecePos.clone();
 							touchingPiecePos = null;
-							touchingIndex = 0;
 
 						// Reset moving the goban.
 						} else {
-							touchingIndex = 0;
 							touchingPiecePos = null;
 							/*gobanSize = gobanSizeMax;
 							gobanCenterX = gobanCenterY = cubeDiv(gobanSizeMax, 2);*/
@@ -400,14 +390,11 @@ a {
 
 				// Start moving a piece.
 				} else if (touchingPiecePos != null && placements[touchingPiecePos.x][touchingPiecePos.y] > 0) {
-					pickedIndex = touchingIndex;
 					pickedPiecePos = touchingPiecePos.clone();
-					touchingIndex = 0;
 					touchingCount = 0;
 
 				// Start moving the goban.
 				} else if (touchingPiecePos != null) {
-					touchingIndex = -touchingIndex;
 					movingGobanPos = touchingPiecePos.clone();
 					touchingCount = 0;
 
@@ -436,7 +423,7 @@ a {
 					if (placements[motionPiecePos.x][motionPiecePos.y] > 0) {
 
 						// Flip a piece.
-						if (touchingIndex == motionIndex) {
+						if (touchingPiecePos.eq(motionPiecePos)) {
 							placements[motionPiecePos.x][motionPiecePos.y] = cubeMod(placements[motionPiecePos.x][motionPiecePos.y], 2) + 1;
 							touchingPiecePos = null;
 
@@ -481,12 +468,9 @@ a {
 					}
 				}
 
-				motionIndex = 0;
-				touchingIndex = 0;
 				touchingColor = -1;
 				touchingGoban = -1;
 				touchingCount = 0;
-				pickedIndex = 0;
 				pickedColor = -1;
 			}
 
@@ -516,10 +500,10 @@ a {
 						 (x == 0 ? 0 : x == 0 + gobanSizeMax - 1 ? 2 : 1)) : 0;
 
 				// Moving/Swapping source.
-				if (i == pickedIndex - 1) {
+				if (pickedPiecePos != null && x == pickedPiecePos.x && y == pickedPiecePos.y) {
 
 					// Holding.
-					if (motionIndex == pickedIndex) {
+					if (pickedPiecePos.eq(motionPiecePos)) {
 						cubeExpand(scale * 0.8, gobanSprites[i]);
 						cubeDilute(0.2, gobanSprites[i]);
 						cubeAnimate(placements[x][y] * 10 + f, gobanSprites[i]);
@@ -540,11 +524,11 @@ a {
 						gobanPos.y + pieceWidth * cubeDiv(i, gobanSize), gobanSprites[i]);
 
 				// Touch target.
-				} else if (i == motionIndex - 1) {
+				} else if (motionPiecePos != null && x == motionPiecePos.x && y == motionPiecePos.y) {
 
 					// Swapping to. (*motionIndex > 0)
-					if (pickedPiecePos != null && motionIndex != pickedIndex &&
-						motionPiecePos != null && placements[motionPiecePos.x][motionPiecePos.y] > 0) {
+					if (motionPiecePos != null && placements[motionPiecePos.x][motionPiecePos.y] > 0 &&
+						pickedPiecePos != null && motionPiecePos.ne(pickedPiecePos)) {
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.2, gobanSprites[i]);
 						cubeAnimate(placements[pickedPiecePos.x][pickedPiecePos.y] * 10 + f, gobanSprites[i]);
