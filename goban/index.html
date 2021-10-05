@@ -379,7 +379,7 @@ a {
 						} else {
 							touchingIndex = 0;
 							gobanSize = gobanSizeMax;
-							gobanCenterX = gobanCenterY = 0;
+							gobanCenterX = gobanCenterY = cubeDiv(gobanSizeMax, 2);
 
 							// Reset goban parameters.
 							scale = gobanWidth / (pieceRawWidth * (gobanType > 0 ? gobanSize - 1 : gobanSize));
@@ -545,7 +545,6 @@ a {
 
 					// Putting a new piece.
 					} else if (touchingIndex >= 0) {
-						console.log("touching:" + touchingIndex);
 						cubeExpand(scale * 0.9, gobanSprites[i]);
 						cubeDilute(0.1, gobanSprites[i]);
 						cubeAnimate(player * 10 + f, gobanSprites[i]);
