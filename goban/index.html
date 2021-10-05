@@ -439,6 +439,7 @@ a {
 							placements[motionPiecePos.x][motionPiecePos.y] = playerColor + 1;
 							//player = cubeMod(player, 2) + 1;
 							touchingPiecePos = null;
+							touchingColor = pickedColor = -1;
 						}
 					} else {
 
@@ -453,6 +454,7 @@ a {
 							placements[motionPiecePos.x][motionPiecePos.y] = playerColor + 1;
 							//player = cubeMod(player, 2) + 1;
 							touchingPiecePos = null;
+							touchingColor = pickedColor = -1;
 						}
 					}
 				}
@@ -467,11 +469,6 @@ a {
 						touchingPiecePos = null;
 					}
 				}
-
-				touchingColor = -1;
-				touchingGoban = -1;
-				touchingCount = 0;
-				pickedColor = -1;
 			}
 
 			// Update parameters.
@@ -577,7 +574,7 @@ a {
 			}
 
 			// Update hand piece.
-			{
+			if (motionPos != null) {
 
 				// Moving a picked piece.
 				if (pickedPiecePos != null) {
