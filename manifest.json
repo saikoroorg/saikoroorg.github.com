@@ -4,7 +4,7 @@
     "background_color": "#888",
     "theme_color": "#888",
     "icons": [{
-        "src": "./d1ce/info/icon192.png",
+        "src": "./dice/icon.png",
         "sizes": "192x192"
     }],
     "start_url": "./?app=1",
