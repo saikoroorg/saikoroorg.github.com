@@ -15,7 +15,7 @@ const manifest = {
         "type": "image/png"
     }],
     "start_url": "./?app",
-    "scope": "/dice/",
+    "scope": "/sai/",
     "display": "standalone",
     "json": "manifest.json"
 };
