@@ -171,7 +171,7 @@ a {
 		var icon = document.getElementById("icon");
 		if (icon) {
 			if (!buffer) {
-				var n = maximum == 54 ? 1 : maximum == 52 ? 2 : maximum + 10;
+				var n = maximum == 54 ? 1 : maximum == 52 ? 6 : maximum + 10;
 				var nx = -cubeMod(n - 1, 6) * 40;
 				var ny = -cubeDiv(n - 1, 6) * 40;
 				icon.style.backgroundPosition = "" + nx + " " + ny;
@@ -331,7 +331,7 @@ a {
 			var n = result <= 0 ? number : number - 1;
 			var mx = size.x * 0.8, my = size.y * 1;
 			var ox = (size.x - mx) * 0.5, oy = (size.y - my) * 0.5;
-			cubeAnimate(n > 0 ? cubeMod(n - 1, 20) + 10 : 9, sprite);
+			cubeAnimate(n > 0 ? cubeMod(n - 1, 10) + 10 : 9, sprite);
 			cubeMove(ox + mx / 2, 16, sprite);
 
 			// Update sprites.
@@ -348,30 +348,20 @@ a {
 						cubeMove(sx, sy, sprites[lineMax*y+x]);
 					} else {
 						var m = cubeDiv(randoms[lineMax*y+x], 13);
+						var n = cubeMod(randoms[lineMax*y+x], 13);
+						cubeAnimate(m + 1, sprites[lineMax*y+x]);
 						if (m < 4) {
-							cubeAnimate(m + 1, sprites[lineMax*y+x]);
-							var n = cubeMod(randoms[lineMax*y+x], 13);
-							if (n == 0) {
-								// A
-								cubeAnimate(5, numbersSprites[lineMax*y+x]);
-							} else if (n >= 10) {
-								// J Q K
-								cubeAnimate(n - 4, numbersSprites[lineMax*y+x]);
-							} else {
-								cubeAnimate(n + 10, numbersSprites[lineMax*y+x]);
-							}
+							cubeAnimate(n + 11, numbersSprites[lineMax*y+x]);
 						} else {
-							var n = randoms[lineMax*y+x] - 13 * 4;
-							cubeAnimate(0, sprites[lineMax*y+x]);
-							cubeAnimate(n + 9, numbersSprites[lineMax*y+x]);
+							cubeAnimate(n + 7, numbersSprites[lineMax*y+x]);
 						}
 						cubeDilute(1, sprites[lineMax*y+x]);
-						cubeDilute(1, numbersSprites[lineMax*y+x]);
+						cubeDilute(0.75, numbersSprites[lineMax*y+x]);
 						cubeExpand(s, sprites[lineMax*y+x]);
-						cubeExpand(s * 0.6, numbersSprites[lineMax*y+x]);
+						cubeExpand(s * 1, numbersSprites[lineMax*y+x]);
 						cubeRotate(angle, sprites[lineMax*y+x]);					
 						cubeMove(sx, sy, sprites[lineMax*y+x]);
-						cubeMove(sx, sy, numbersSprites[lineMax*y+x]);
+						cubeMove(sx, sy - s * 8, numbersSprites[lineMax*y+x]);
 					}
 				}
 			}
