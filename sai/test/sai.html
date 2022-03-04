@@ -148,12 +148,12 @@ a {
 	}
 
 	// Get query parameters.
+	//  McN : M = Roll dice counts, N = Dice maximum number.
 	var params = cubeParamNumbers(0);
 	var counts = params[0] > 0 ? params[0] : 1; // Counts of dice.
 	var maximum = params[1] >= 0 ? params[1] : 6; // Maximum number of dice face.
-
-	var buffer = null; // Original design buffer.
-	var original = 0; // Original design icon frame.
+	var buffer = null; // Original icon buffer.
+	var original = 0; // Original frame.
 	var rolling = 0; // Rolling count.
 
 	// Set counts of dice.
@@ -169,16 +169,16 @@ a {
 		// Reset dice icon.
 		var icon = document.getElementById("icon");
 		if (icon) {
-			if (buffer) {
-				icon.style.backgroundImage = "url(\"" + buffer.toImage() + "\")";
-				original = original + 1 <= maximum ? original + 1 : 1;
-				var nx = -cubeMod(original - 1, maximum) * 40;
-				var ny = -cubeDiv(original - 1, maximum) * 40;
-				icon.style.backgroundPosition = "" + nx + " " + ny;
-			} else {
+			if (!buffer) {
 				var n = maximum == 0 ? 10 : maximum >= 10 ? maximum + 10 : maximum;
 				var nx = -cubeMod(n - 1, 6) * 40;
 				var ny = -cubeDiv(n - 1, 6) * 40;
+				icon.style.backgroundPosition = "" + nx + " " + ny;
+			} else {
+				icon.style.backgroundImage = "url(\"" + buffer.toImage() + "\")";
+				original = original + 1 <= maximum ? original + 1 : 1;
+				var nx = -cubeMod(original - 1, maximum) * 36;
+				var ny = -cubeDiv(original - 1, maximum) * 36;
 				icon.style.backgroundPosition = "" + nx + " " + ny;
 			}
 		}
@@ -189,11 +189,7 @@ a {
 		setCounts(counts + x);
 	};
 	var changeMaximum = () => {
-		if (buffer) {
-			setMaximum(maximum);
-		} else {
-			setMaximum(maximum == 6 ? 20 : maximum == 20 ? 0 : 6);
-		}
+		setMaximum(maximum == 6 ? 20 : maximum == 20 ? 0 : 6);
 	};
 
 	// Initialize settings.
@@ -203,69 +199,67 @@ a {
 </script><!--/Menu-->
 <!--Resource--><script>
 
-	// Query parameters.
-	//  McN    : M = Roll dice counts, N = Dice maximum number.
-	//  &n1~n6 = Dice face design.
-	//  &c1~c6 = Color palette.
-	var param0 = cubeParam(null, "3d6&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000");
+	// Get query sub parameters.
+	//  McN : M = Roll dice counts, N = Dice maximum number.
+	//  &n1~n6 -> Dice number design.
+	//  &c1~c6 -> Dice color design.
 
-	// Example 1: Standard 3 dice with color pips.
-	// 3d6&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000
+	// MaohDice
+	// ?3d6&n0=a11a21a31a41a51a61a71a81a91a11a12a13a14a15a16a17a18a91a92a93a94a95a96a97a98a19a29a39a49a59a69a79a89a99&n1=a33a43a45a53a56a63a65a67a73a74&n2=a34a37a44a46a54a55a63a64a65a66a67a74&n3=a34a35a44a47a53a54a57a64a67a74a75a76&n4=a35a43a45a47a53a54a55a56a63a65a75&n5=a33a37a43a47a57a66a73a74a75&n6=a33a37a43a47a53a57a63a67a73a74a75a76a77
 
-	// Example 2: 9 sided dice with color pips and frames.
-	// 5d9&n0=f11f21f31f41f51f61f71f81f91f11f12f13f14f15f16f17f18f91f92f93f94f95f96f97f98f19f29f39f49f59f69f79f89f99&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&n7=a33a73a35a55a75a37a77&n8=b33b53b73b35b75b37b57b77&n9=c33c53c73c35c55c75c37c57c77&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000
+	// ColorDice
+	// ?3d6&n0=a11a21a31a41a51a61a71a81a91a11a12a13a14a15a16a17a18a91a92a93a94a95a96a97a98a19a29a39a49a59a69a79a89a99&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&c1=000000&c2=6666DD&c3=DD6666&c4=BBBB44&c5=66BB66&c6=888888
 
-	// Example 3. Ouchinkoro
-	// 5d6&n1=b43b63b34b44b54b64b74b35b45b55b65b75b46b56b66b57&n2=a34a37a44a46a54a55a63a64a65a66a67a74&n3=a34a35a44a47a53a54a57a64a67a74a75a76&n4=a35a43a45a47a53a54a55a56a63a65a75&n5=a33a37a43a47a57a66a74a75&n6=a33a37a43a47a53a57a63a67a73a74a75a76a77&c1=000&c2=d66
-
-	// Load color palette parameters.
-	var palette = [];//[[255,255,255], [221,102,102], [102,187,102], [102,102,221], [187,187,68], [136,136,136], [0,0,0]];
+	// Initialize color palette.
+	var palette = [[255,255,255], [0,0,0]];//, [102,102,221], [221,102,102], [187,187,68], [102,187,102], [136,136,136]];
 	for (let j = 0; j <= maximum; j++) {
-		let rgb = 3, data = cubeParamData("c"+ j);
-		let depth = cubeDiv(data.length, rgb); // depth=1:RGB, depth=2:RRGGBB.
-		if (depth > 0) {
-			palette[j] = [];
-			for (let i = 0; i < rgb; i++) {
-				palette[j][i] = data[i * depth] * 16 + data[(i + 1) * depth - 1];
+		var param0 = cubeParamData("c"+ j);
+		if (param0.length > 0) {
+			for (let i = 0; i < param0.length / 6; i++) {
+				let r = param0[i * 3 + 0] * 16 + param0[i * 3 + 1];
+				let g = param0[i * 3 + 2] * 16 + param0[i * 3 + 3];
+				let b = param0[i * 3 + 4] * 16 + param0[i * 3 + 5];
+				palette[j] = [r,g,b];
 			}
 		}
 	}
 
-	// Load face design parameters.
-	var width = 2, designs = [];
+	// Initialize number designs.
+	var keys = cubeParamKeys();
+	var designs = [];
 	for (let j = 0; j <= maximum; j++) {
-		let param1 = cubeParamData("n" + j);
+		var param1 = cubeParamData("n" + j);
 		if (param1.length > 0) {
-			designs[j] = [];
-			if (designs[0]) {
-				for (let i = 0; i < designs[0].length; i++) { // i=0: Common designs.
-					designs[j].push(designs[0][i]);
-				}
-			}
-			for (let i = 0; i < param1.length; i += 3) {
-				let x = (param1[i + 1] >= 10 ? param1[i + 1] - 9 : param1[i + 1] - 1) * width + width - 1;
-				let y = (param1[i + 2] >= 10 ? param1[i + 2] - 9 : param1[i + 2] - 1) * width + width - 1;
+			let design = [];
+			for (let i = 0; i < param1.length / 3; i++) {
+				let x = param1[i * 3 + 1], y = param1[i * 3 + 2];
 				if (x > 0 && y > 0) {
-					let color = param1[i] >= 10 ? param1[i] - 9 : param1[i];
+					let color = param1[i * 3] >= 10 ? param1[i * 3] - 9 : param1[i * 3];
 					let r = palette[color] ? palette[color][0] : 0;
 					let g = palette[color] ? palette[color][1] : 0;
 					let b = palette[color] ? palette[color][2] : 0;
-					let rect = [x, y, x + width - 1, y + width - 1, r, g, b];
-					designs[j].push(rect);
+					let pixel = [x >= 10 ? x - 10 : x - 1, y >= 10 ? y - 10 : y - 1, r, g, b];
+					design.push(pixel);
 				}
 			}
+			designs[j] = design;
 		}
 	}
 
-	// Create pixel buffer for face designs.
+	// Create pixel buffer for number design.
 	if (designs.length > 1) {
-		buffer = cubeBuffer(20, 20, width, designs.length - 1);
-		var rects = [[1,1,18,18, 255,255,255]];
+		buffer = cubeBuffer(9, 9, 4, designs.length - 1);
+		var rects = [[0,0,8,8, 255,255,255]];
+		//var lines = [[0,0,8,0],[8,0,8,8],[8,8,0,8],[0,8,0,0]];
 		for (let i = 1; i < designs.length; i++) {
-			cubeBufferRects(rects, i - 1, buffer); // Base color.
-			cubeBufferRects(designs[i], i - 1, buffer);
+			cubeBufferRects(rects, i - 1, buffer);
+			//cubeBufferLines(lines, i - 1, buffer);
+			if (designs[0]) {
+				cubeBufferPixels(designs[0], i - 1, buffer);
+			}
+			cubeBufferPixels(designs[i], i - 1, buffer);
 		}
-		setMaximum(designs.length);
+		//setMaximum(designs.length);
 	}
 
 </script><!--/Resource-->
@@ -295,7 +289,7 @@ a {
 	while (true) {
 
 		// Sprite lines and rows.
-		var lineMax = maximum > 0 && !buffer ? cubeSqrt(counts - 1) + 1 : 20;
+		var lineMax = maximum == 0 ? 20 : cubeSqrt(counts - 1) + 1;
 		var lines = cubeDiv(counts - 1, lineMax) + 1;
 		var rows = [];
 		for (var i = 0; i < lines; i++) {

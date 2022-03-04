@@ -138,7 +138,7 @@ a {
 </div>
 <script src="cube-api-0.8.js"></script>
 <!--Menu--><script>
-	console.log = () => {};
+	//console.log = () => {};
 	document.getElementById("version").innerText = manifest.version.substr(-4);
 
 	// Title logo.
@@ -148,41 +148,46 @@ a {
 	}
 
 	// Get query parameters.
-	var params = cubeParamNumbers(0, "c");
-	var counts = params[0] > 0 ? params[0] : 1; // Counts of dice.
-	var maximum = params[1] >= 0 ? params[1] : 54; // Maximum of dice faces.
-	var buffer = null; // Original icon buffer.
-	var original = 0; // Original frame.
+	var params = cubeParamNumbers(0);
+	var counts = params[0] > 0 ? params[0] : 1; // Draw card counts.
+	var maximum = params[1] >= 0 ? params[1] : 52; // Deck card counts.
+	var colors = params[2] >= 0 ? params[2] : 4; // Card kind counts.
+
+	var buffers = [null, null]; // Original design buffer.
+	var original = 0; // Original design icon frame.
 	var rolling = 0; // Rolling count.
 
-	// Set counts of dice.
+	// Set counts of cards.
 	var setCounts = (x) => {
 		counts = (x > 20) ? 20 : (x < 1) ? 1 : x;
 		rolling = -1; // Reroll.
 	};
 
-	// Set maximum of dice faces.
+	// Set maximum number.
 	var setMaximum = (x) => {
-		if (!buffer) {
-			maximum = (x < 0) ? 0 : x;
-		}
+		maximum = (x > 80) ? 80 : (x < 0) ? 0 : x;
 
-		// Reset dice icon.
+		// Reset card icon.
 		var icon = document.getElementById("icon");
 		if (icon) {
-			if (!buffer) {
-				var n = maximum == 54 ? 1 : maximum == 52 ? 6 : maximum + 10;
-				var nx = -cubeMod(n - 1, 6) * 40;
-				var ny = -cubeDiv(n - 1, 6) * 40;
+			var iconFrameMax = cubeDiv(maximum, colors);
+			if (buffers[0]) {
+				icon.style.backgroundImage = "url(\"" + buffers[0].toImage() + "\")";
+				original = original + 1 <= iconFrameMax ? original + 1 : 2;
+				var nx = -cubeMod(original - 1, iconFrameMax) * 40;
+				var ny = -cubeDiv(original - 1, iconFrameMax) * 40;
+				icon.style.position = "2 0";
 				icon.style.backgroundPosition = "" + nx + " " + ny;
 			} else {
-				icon.style.backgroundImage = "url(\"" + buffer.toImage() + "\")";
-				original = original + 1 <= maximum ? original + 1 : 1;
-				var nx = -cubeMod(original - 1, maximum) * 40;
-				var ny = -cubeDiv(original - 1, maximum) * 40;
+				var n = maximum == 52 ? 1 : maximum == 54 ? 6 : maximum == 0 ? 10 :
+					maximum < 56 ? cubeDiv(maximum, 4) + 7 : cubeDiv(maximum, 4) + 10;
+				var nx = -cubeMod(n - 1, iconFrameMax) * 40;
+				var ny = -cubeDiv(n - 1, iconFrameMax) * 40;
+				icon.style.position = "0 0";
 				icon.style.backgroundPosition = "" + nx + " " + ny;
 			}
 		}
+
 		rolling = -1; // Reroll.
 	};
 
@@ -190,7 +195,11 @@ a {
 		setCounts(counts + x);
 	};
 	var changeMaximum = () => {
-		setMaximum(maximum == 54 ? 52 : 54);
+		if (buffers[0]) {
+			setMaximum(maximum);
+		} else {
+			setMaximum(maximum = maximum == 52 ? 54 : maximum == 54 ? 0 : 52);
+		}
 	};
 
 	// Initialize settings.
@@ -198,68 +207,150 @@ a {
 	setMaximum(maximum);
 
 </script><!--/Menu-->
-<!--Resource--><script>
+<!--Resource!--><script>
 
-	// Initialize face designs.
-	var keys = cubeParamKeys();
-	var designs = [];
-	for (let j = 1; j < keys.length; j++) {
-		var param1 = cubeParamData(j);
-		let design = [];
-		for (let i = 0; i < param1.length / 3; i++) {
-			let x = param1[i * 3 + 1], y = param1[i * 3 + 2];
-			if (x > 0 && y > 0) {
-				let color = param1[i * 3] >= 10 ? param1[i * 3] - 9 : param1[i * 3];
-				let pixel = [x >= 10 ? x - 10 : x - 1, y >= 10 ? y - 10 : y - 1];
-				design.push(pixel);
+	// BACK:  f21f31f41f51f61f71f81f22f42f62f82f23f33f53f73f83f24f44f64f84f25f35f55f75f85f26f46f66f86f27f37f57f77f87f28f48f68f88f29f39f49f59f69f79f89
+	// SPADE: c53c44c54c64c35c45c55c65c75c36c46c56c66c76c47c57c67
+	// HEART: a43a63a34a44a54a64a74a35a45a55a65a75a46a56a66a57
+	// DIAM:  d53d44d54d64d35d45d55d65d75d46d56d66d57  
+	// CLUB:  b43b53b63b44b54b64b35b45b55b65b75b36b46b56b66b76b57
+	// JOKER: e33e73e44e54e64e45e55e65e46e56e66e37e77
+	// JACK:  f53f63f64f65f46f66f57f67
+	// QUEEN: f43f53f63f44f64f45f65f46f56f67
+	// KING:  f43f63f44f64f45f55f46f66f47f67
+	// COLOR: fff d66 6b6 66d bb4 888 000
+
+	// Query parameters.
+	//  McN/S   : M = Draw card counts, N = Deck card counts, S = Suit counts.
+	//  &r=1234 = Random seed, p
+	//  &p=1/3  = Deck sharing identifier.
+	//  &n1~n13 = Card face number design.
+	//  &b0     = Card back design.
+	//  &f1~f4  = Card face design.
+	//  &f5     = Card face joker design.
+	//  &c1~c6  = Color palette.
+	var param0 = cubeParam(null, "5c54&b0=e21e31e41e51e61e71e81e22e42e62e82e23e33e53e73e83e24e44e64e84e25e35e55e75e85e26e46e66e86e27e37e57e77e87e28e48e68e88e29e39e49e59e69e79e89&f1=c53c44c54c64c35c45c55c65c75c36c46c56c66c76c47c57c67&f2=a43a63a34a44a54a64a74a35a45a55a65a75a46a56a66a57&f3=d53d44d54d64d35d45d55d65d75d46d56d66d57&f4=b43b53b63b44b54b64b35b45b55b65b75b36b46b56b66b76b57&f5=e33e73e44e54e64e45e55e65e46e56e66e37e77&n1=f53f63f64f65f46f66f57f67&n2=f43f53f63f44f64f45f65f46f56f67&n3=f43f63f44f64f45f55f46f66f47f67&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000");
+
+	// Example 1: Standard playing cards with 2 jokers for poker.
+	// 5c54&b0=e21e31e41e51e61e71e81e22e42e62e82e23e33e53e73e83e24e44e64e84e25e35e55e75e85e26e46e66e86e27e37e57e77e87e28e48e68e88e29e39e49e59e69e79e89&f1=c53c44c54c64c35c45c55c65c75c36c46c56c66c76c47c57c67&f2=a43a63a34a44a54a64a74a35a45a55a65a75a46a56a66a57&f3=d53d44d54d64d35d45d55d65d75d46d56d66d57&f4=b43b53b63b44b54b64b35b45b55b65b75b36b46b56b66b76b57&f5=e33e73e44e54e64e45e55e65e46e56e66e37e77&n1=f53f63f64f65f46f66f57f67&n2=f43f53f63f44f64f45f65f46f56f67&n3=f43f63f44f64f45f55f46f66f47f67&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000
+
+	// Example 2: 9 sided dice cards.
+	// 9c36&b0=e11e21e31e41e51e61e71e81e91e11e12e13e14e15e16e17e18e91e92e93e94e95e96e97e98e19e29e39e49e59e69e79e89e99e33e73e44e54e64e45e55e65e46e56e66e37e77&f0=f11f21f31f41f51f61f71f81f91f11f12f13f14f15f16f17f18f91f92f93f94f95f96f97f98f19f29f39f49f59f69f79f89f99&f1=c53c44c54c64c35c45c55c65c75c36c46c56c66c76c47c57c67&f2=a43a63a34a44a54a64a74a35a45a55a65a75a46a56a66a57&f3=d53d44d54d64d35d45d55d65d75d46d56d66d57&f4=b43b53b63b44b54b64b35b45b55b65b75b36b46b56b66b76b57&n1=f55&n2=f73f37&n3=f73f55f37&n4=f33f73f37f77&n5=f33f73f55f37f77&n6=f33f73f35f75f37f77&n7=f33f73f35f55f75f37f77&n8=f33f53f73f35f75f37f57f77&n9=f33f53f73f35f55f75f37f57f77&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000
+
+	// Load color palette parameters.
+	let palette = [[255,255,255], [221,102,102], [102,187,102], [102,102,221], [187,187,68], [136,136,136], [0,0,0]];
+	for (let j = 0; j <= maximum; j++) {
+		let rgb = 3, data = cubeParamData("c"+ j);
+		let depth = cubeDiv(data.length, rgb); // depth=1:RGB, depth=2:RRGGBB.
+		if (depth > 0) {
+			palette[j] = [];
+			for (let i = 0; i < rgb; i++) {
+				palette[j][i] = data[i * depth] * 16 + data[(i + 1) * depth - 1];
 			}
 		}
-		designs.push(design);
+	}
+
+	// Load face design parameters.
+	let width = 2, designs = [[],[],[]], keys = ["f", "n", "b"];
+	for (let k = 0; k < keys.length; k++) {
+		for (let j = 0; j < maximum; j++) {
+			let data = cubeParamData(keys[k] + j);
+			if (data.length > 0) {
+				designs[k][j] = [];
+				let w = 2;
+				if (designs[k][0]) {
+					for (let i = 0; i < designs[k][0].length; i++) { // i=0: Common designs.
+						designs[k][j].push(designs[k][0][i]);
+					}
+				}
+				for (let i = 0; i < data.length; i += 3) {
+					let x = (data[i + 1] >= 10 ? data[i + 1] - 9 : data[i + 1] - 1) * width + width - 1;
+					let y = (data[i + 2] >= 10 ? data[i + 2] - 9 : data[i + 2] - 1) * width + width - 1;
+					if (x > 0 && y > 0) {
+						let color = data[i] >= 10 ? data[i] - 9 : data[i];
+						let r = palette[color] ? palette[color][0] : 0;
+						let g = palette[color] ? palette[color][1] : 0;
+						let b = palette[color] ? palette[color][2] : 0;
+						let rect = [x, y, x + width - 1, y + width - 1, r, g, b];
+						designs[k][j].push(rect);
+					}
+				}
+			}
+		}
 	}
 
 	// Create pixel buffer for face design.
-	if (designs.length > 0) {
-		buffer = cubeBuffer(9, 9, 40/9, designs.length);
-		var rects = [[0,0,8,8, 255,255,255]];
-		var lines = [[0,0,8,0],[8,0,8,8],[8,8,0,8],[0,8,0,0]];
-		for (let i = 0; i < designs.length; i++) {
-			cubeBufferRects(rects, i, buffer);
-			cubeBufferLines(lines, i, buffer);
-			cubeBufferPixels(designs[i], i, buffer);
+	if (designs[0].length > 0 || designs[2].length > 0) {
+		buffers[0] = cubeBuffer(20, 20, width, designs[0].length);
+		var rects = [[3,1,16,18, 255,255,255]];
+		// Back design.
+		for (let i = 0; i < designs[2].length; i++) {
+			if (designs[2][i]) {
+				cubeBufferRects(rects, i, buffers[0]); // Base color.
+				cubeBufferRects(designs[2][i], i, buffers[0]);
+			}
 		}
-		setMaximum(designs.length);
+		// Face design.
+		for (let i = 1; i < designs[0].length; i++) {
+			if (designs[0][i]) {
+				cubeBufferRects(rects, i, buffers[0]); // Base color.
+				cubeBufferRects(designs[0][i], i, buffers[0]);
+			}
+		}
+	}
+	if (designs[1].length > 0) {
+		buffers[1] = cubeBuffer(20, 20, width, designs[1].length - 1);
+		// Number design.
+		for (let i = 1; i < designs[1].length; i++) {
+			if (designs[1][i]) {
+				cubeBufferRects(designs[1][i], i - 1, buffers[1]);
+			}
+		}
+		setMaximum(maximum);
 	}
 
 </script><!--/Resource-->
 <!--Main--><script>(async()=>{
-	//var counts = 1; // Counts of dice.
-	//var maximum = 6; // Maximum of dice faces.
+	//var counts = 1; // Counts of card.
+	//var maximum = 6; // Maximum number.
 	//var rolling = 0; // Rolling count.
+
+	var courts = buffers[1] ? buffers[1].frames : (maximum > 0 && maximum < 56) ? 3 : 0; // Court card kinds.
+	var jokers = maximum > 0 ? cubeMod(maximum, colors) : 0; // Joker card kinds.
+	var numbers = maximum > 0 ? cubeDiv(maximum, colors) : 10; // Card maximum number.
+	console.log("maximum=" + maximum + " colors=" + colors + " courts=" + courts + " jokers=" + jokers + " numbers=" + numbers)
 
 	// Resize screen.
 	cubeResizeScreen(300, 240);
 
 	// Create sprites.
 	var sprite = await cubeSprite("resource.svg", 40, 40);
+	var sprite0 = await cubeBufferSprite(buffers[0]);
+	var sprite1 = await cubeBufferSprite(buffers[1]);
 	cubeDilute(0.1, sprite);
+
 	cubeExpand(0.5, sprite);
-	var sprites = [];
-	var numbersSprites = [];
+	var sprites0 = [], sprites1 = [], sprites2 = [];
 	for (var i = 0; i < 30; i++) {
-		if (buffer) {
-			sprites[i] = await cubeBufferSprite(buffer);
+		if (buffers[0]) {
+			sprites0[i] = sprite0.clone();
 		} else {
-			sprites[i] = await cubeSprite("resource.svg", 40, 40);
+			sprites0[i] = sprite.clone();
 		}
-		numbersSprites[i] = await cubeSprite("resource.svg", 40, 40);
+		if (buffers[1]) {
+			sprites1[i] = sprite1.clone();
+		} else {
+			sprites1[i] = sprite.clone();
+		}
+		sprites2[i] = sprite.clone();
 	}
 
 	// Main loop.
-	var number = 0;
+	var counter = 0;
 	while (true) {
 
 		// Sprite lines and rows.
-		var lineMax = maximum == 52 ? 20 : cubeSqrt(counts - 1) + 1;
+		var lineMax = cubeSqrt(counts - 1) + 1;
 		var lines = cubeDiv(counts - 1, lineMax) + 1;
 		var rows = [];
 		for (var i = 0; i < lines; i++) {
@@ -267,15 +358,19 @@ a {
 		}
 
 		// Sprite frame.
-		var frameMax = maximum;
+		var frameMax = maximum > 0 ? maximum : 10 * colors;
+		var frameMin = maximum > 0 ? 1 : 0;
+		var colorFrameMax = colors;
+		var courtFrameMax = courts;
+		var numberFrameMax = numbers;
+		var randoms = [];
 
-		// Sprite scale.
+		// Sprite scale and angle.
 		var scale = 5 / ((counts < lineMax ? counts : lines >= lineMax ? lines : lineMax) + 1);
+		var angle = 0;
 
 		// Rolling dice.
-		var angle = 0;
 		var result = 0;
-		var randoms = [];
 		for (rolling = 1; rolling >= 1; rolling++) {
 
 			// Screen size.
@@ -300,68 +395,93 @@ a {
 
 				// Timeout and show result.
 				} else if (rolling > 60) {
+
+					// Set face numbers.
 					for (var y = 0; y < lines; y++) {
 						for (var x = 0; x < rows[y]; x++) {
-							result += randoms[lineMax*y+x];
+							var i = lineMax * y + x;
+							randoms[i] = cubeRandom(frameMax);
+						}
+					}
+					for (var y = 0; y < lines; y++) {
+						for (var x = 0; x < rows[y]; x++) {
+							var i = lineMax * y + x;
+							result += randoms[i];
 						}
 					}
 					angle = 0;
 					rolling = 1;
-					number++;
+					counter++;
 				}
 			}
 
 			// Roll sprites.
 			if (result <= 0) {
 				angle = cubeMod(angle + 20, 360);
-				for (var y = 0; y < lines; y++) {
-					for (var x = 0; x < rows[y]; x++) {
-						if (frameMax == 0) {
-							randoms[lineMax*y+x] = cubeRandom(10) + 10;
-						} else if (frameMax < 10) {
-							randoms[lineMax*y+x] = cubeRandom(frameMax) + 1;
-						} else {
-							randoms[lineMax*y+x] = cubeRandom(frameMax);
-						}
-					}
-				}
 			}
 
-			// Update number sprite.
-			var n = result <= 0 ? number : number - 1;
+			// Update counter sprite.
+			var n = result <= 0 ? counter : counter - 1;
 			var mx = size.x * 0.8, my = size.y * 1;
 			var ox = (size.x - mx) * 0.5, oy = (size.y - my) * 0.5;
-			cubeAnimate(n > 0 ? cubeMod(n - 1, 10) + 10 : 9, sprite);
+			cubeAnimate(n > 0 ? cubeMod(n - 1, 20) + 10 : 9, sprite);
 			cubeMove(ox + mx / 2, 16, sprite);
 
 			// Update sprites.
 			var s = rolling < 5 ? scale * (0.8 + 0.04 * rolling) : scale;
+			var a1 = rolling < 30 ? scale * (1.2 - 0.02 * rolling) : scale * 0.6;
+			var a2 = rolling < 60 ? scale * (-0.2 + 0.02 * rolling) : scale * 1.0;
 			for (var y = 0; y < lines; y++) {
 				for (var x = 0; x < rows[y]; x++) {
+					var i = lineMax * y + x;
 					var sx = ox + mx * (x + 1) / (rows[y] + 1);
 					var sy = oy + my * (y + 1) / (lines + 1);
 					if (result <= 0) {
-						cubeAnimate(0, sprites[lineMax*y+x]);
-						cubeDilute(1, sprites[lineMax*y+x]);
-						cubeExpand(s, sprites[lineMax*y+x]);
-						cubeRotate(angle, sprites[lineMax*y+x]);					
-						cubeMove(sx, sy, sprites[lineMax*y+x]);
+						cubeAnimate(0, sprites0[i]);
+						cubeDilute(1, sprites0[i]);
+						cubeExpand(s, sprites0[i]);
+						cubeRotate(angle, sprites0[i]);					
+						cubeMove(sx, sy, sprites0[i]);
 					} else {
-						var m = cubeDiv(randoms[lineMax*y+x], 13);
-						var n = cubeMod(randoms[lineMax*y+x], 13);
-						cubeAnimate(m + 1, sprites[lineMax*y+x]);
-						if (m < 4) {
-							cubeAnimate(n + 11, numbersSprites[lineMax*y+x]);
+
+						// Colors.
+						var m = cubeDiv(randoms[i], numberFrameMax);
+						cubeAnimate(m + 1, sprites0[i]);
+						cubeDilute(a1, sprites0[i]);
+						cubeExpand(s, sprites0[i]);
+						cubeRotate(0, sprites0[i]);					
+						cubeMove(sx, sy, sprites0[i]);
+
+						// Numbers.
+						var n = cubeMod(randoms[i], numberFrameMax);
+
+						// Number cards.
+						if (m < colorFrameMax && n >= courtFrameMax) {
+							cubeAnimate(n - courtFrameMax + frameMin + 9, sprites2[i]);
+							cubeDilute(0, sprites1[i]);
+							cubeExpand(0, sprites1[i]);
+							cubeDilute(a2, sprites2[i]);
+							cubeExpand(s, sprites2[i]);
+
+						// Court or Joker cards.
 						} else {
-							cubeAnimate(n + 7, numbersSprites[lineMax*y+x]);
+							if (buffers[1]) {
+								cubeAnimate(n, sprites1[i]);
+								cubeDilute(a2, sprites1[i]);
+								cubeExpand(s, sprites1[i]);
+								cubeDilute(0, sprites2[i]);
+								cubeExpand(0, sprites2[i]);
+							} else {
+								cubeAnimate(n + 6, sprites2[i]);
+								cubeDilute(0, sprites1[i]);
+								cubeExpand(0, sprites1[i]);
+								cubeDilute(a2, sprites2[i]);
+								cubeExpand(s, sprites2[i]);
+							}
 						}
-						cubeDilute(1, sprites[lineMax*y+x]);
-						cubeDilute(0.75, numbersSprites[lineMax*y+x]);
-						cubeExpand(s, sprites[lineMax*y+x]);
-						cubeExpand(s * 1, numbersSprites[lineMax*y+x]);
-						cubeRotate(angle, sprites[lineMax*y+x]);					
-						cubeMove(sx, sy, sprites[lineMax*y+x]);
-						cubeMove(sx, sy - s * 8, numbersSprites[lineMax*y+x]);
+
+						cubeMove(sx, sy, sprites1[i]);
+						cubeMove(sx, sy, sprites2[i]);
 					}
 				}
 			}
@@ -373,12 +493,13 @@ a {
 			cubeDraw(sprite);
 			for (var y = 0; y < lines; y++) {
 				for (var x = 0; x < rows[y]; x++) {
+					var i = lineMax * y + x;
 					if (result <= 0) {
-						cubeDraw(sprites[lineMax*y+x]);
+						cubeDraw(sprites0[i]);
 					} else {
-						cubeDraw(sprites[lineMax*y+x]);
-						cubeDraw(numbersSprites[lineMax*y+x]);
-
+						cubeDraw(sprites0[i]);
+						cubeDraw(sprites1[i]);
+						cubeDraw(sprites2[i]);
 					}
 				}
 			}

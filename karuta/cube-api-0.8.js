@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.45";
-cube.timestamp = "211001";
+cube.version = "0.8.47b";
+cube.timestamp = "220304";
 /************************************* /VERSION*
 
 
@@ -14,46 +14,46 @@ cube.timestamp = "211001";
 
 // Wait some counts.
 async function cubeWait(time) {
-	await cube.count.wait(time);
+    await cube.count.wait(time);
 }
 
 // Get a time count.
 function cubeTime() {
-	return cube.count.time();
+    return cube.count.time();
 }
 
 // Generate a random count.
 function cubeRandom(maximum=0, seed=0) {
-	if (seed) {
-		cube.count.setSeed(seed);
-	}
-	return cube.count.random(maximum);
+    if (seed) {
+        cube.count.setSeed(seed);
+    }
+    return cube.count.random(maximum);
 }
 
 // Get a seed count for random.
 function cubeSeed() {
-	return cube.count.seed();
+    return cube.count.seed();
 }
 
 // Create a vector.
 // Vector object has x,y and z variables.
 function cubeVector(x, y, z=0) {
-	return new cube.Vec(x, y, z);
+    return new cube.Vec(x, y, z);
 }
 
 // Calculate the division.
 function cubeDiv(x, y) {
-	return Math.floor(x / y);
+    return Math.floor(x / y);
 }
 
 // Calculate the remainder of the division.
 function cubeMod(x, y) {
-	return Math.floor(x % y);
+    return Math.floor(x % y);
 }
 
 // Calculate the square root.
 function cubeSqrt(x) {
-	return Math.floor(Math.sqrt(x));
+    return Math.floor(Math.sqrt(x));
 }
 
 //************************************************************/
@@ -63,88 +63,88 @@ function cubeSqrt(x) {
 
 // Get master screen or create new screen.
 function cubeScreen(name=null, width=0, height=0, unitSize=0) {
-	if (name) {
-		var screen = new cube.Screen(name);
-		if (width > 0 && height > 0) {
-			screen.resize(width, height, unitSize);
-		}
-		screen.enable();
-		return screen;
-	}
-	return cube.screen;
+    if (name) {
+        var screen = new cube.Screen(name);
+        if (width > 0 && height > 0) {
+            screen.resize(width, height, unitSize);
+        }
+        screen.enable();
+        return screen;
+    }
+    return cube.screen;
 }
 
 // Clear screen.
 function cubeClear(screen=null) {
-	if (!screen) {
-		screen = cube.screen;
-	}
-	screen.clear();
+    if (!screen) {
+        screen = cube.screen;
+    }
+    screen.clear();
 }
 
 // Write text to the screen.
 function cubeWrite(text, screen=null) {
-	if (!screen) {
-		screen = cube.screen;
-	}
-	screen.print(text);
+    if (!screen) {
+        screen = cube.screen;
+    }
+    screen.print(text);
 }
 
 // Read text from the screen.
 async function cubeRead(prompt=">", screen=null) {
-	if (!screen) {
-		screen = cube.screen;
-	}
-	let command = "";
-	screen.print(prompt, true);
-	while (true) {
-		await cube.count.wait(10);
+    if (!screen) {
+        screen = cube.screen;
+    }
+    let command = "";
+    screen.print(prompt, true);
+    while (true) {
+        await cube.count.wait(10);
 
-		// Read raw input text.
-		let line = cube.joypad.read(true);
-		let lines = line.split("\b");
-		if (lines.length >= 2) {
-			command += lines[0];
-			for (let i = 1; i < lines.length; i++) {
-				command = command.slice(0, -1) + lines[i];
-			}
-			screen.print("\n" + prompt + command, true);
-		} else if (line != null) {
-			screen.print(line, true);
-			command += line;
-		}
+        // Read raw input text.
+        let line = cube.joypad.read(true);
+        let lines = line.split("\b");
+        if (lines.length >= 2) {
+            command += lines[0];
+            for (let i = 1; i < lines.length; i++) {
+                command = command.slice(0, -1) + lines[i];
+            }
+            screen.print("\n" + prompt + command, true);
+        } else if (line != null) {
+            screen.print(line, true);
+            command += line;
+        }
 
-		// Read entered input text.
-		line = cube.joypad.read();
-		if (line != null) {
-			return line;
-		}
-	}
+        // Read entered input text.
+        line = cube.joypad.read();
+        if (line != null) {
+            return line;
+        }
+    }
 }
 
 // Move screen position.
 function cubeMoveScreen(x, y, screen=null) {
-	if (!screen) {
-		screen = cube.screen;
-	}
-	screen.move(new cube.Vec(x, y));
+    if (!screen) {
+        screen = cube.screen;
+    }
+    screen.move(new cube.Vec(x, y));
 }
 
 // Resize screen resolution.
 function cubeResizeScreen(width, height, fontSize=0, screen=null) {
-	if (!screen) {
-		screen = cube.screen;
-	}
-	screen.resize(width, height, fontSize);
-	screen.enable();
+    if (!screen) {
+        screen = cube.screen;
+    }
+    screen.resize(width, height, fontSize);
+    screen.enable();
 }
 
 // Get screen resolution size.
 function cubeScreenSize(screen=null) {
-	if (!screen) {
-		screen = cube.screen;
-	}
-	return screen.size;
+    if (!screen) {
+        screen = cube.screen;
+    }
+    return screen.size;
 }
 
 //************************************************************/
@@ -158,103 +158,103 @@ function cubeScreenSize(screen=null) {
 
 // Get master sprite or create new sprite.
 async function cubeSprite(imageName=null, width=0, height=0) {
-	if (imageName != null) {
-		var sprite = new cube.Sprite(imageName);
-		sprite.loadImage(imageName);
-		await sprite.waitLoadingImage();
-		sprite = sprite.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
-		if (width > 0 && height > 0) {
-			sprite.resize(width, height);
-		}
-		return sprite; //.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
-	}
-	return cube.sprite;
+    if (imageName != null) {
+        var sprite = new cube.Sprite(imageName);
+        sprite.loadImage(imageName);
+        await sprite.waitLoadingImage();
+        sprite = sprite.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
+        if (width > 0 && height > 0) {
+            sprite.resize(width, height);
+        }
+        return sprite; //.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
+    }
+    return cube.sprite;
 }
 
 // Load image for the sprite.
 async function cubeLoadSprite(imageName, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.loadImage(imageName);
-	await sprite.waitLoadingImage();
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.loadImage(imageName);
+    await sprite.waitLoadingImage();
 }
 
 // Set frame and frame size to sprite.
 function cubeRect(x, y, width, height, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.setFrameRect(x, y, width, height);
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.setFrameRect(x, y, width, height);
 }
 
 // Set frame to animate.
 function cubeAnimate(frame, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.setFrame(frame);
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.setFrame(frame);
 }
 
 // Move sprite to the position vector.
 function cubeMove(x, y, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.move(new cube.Vec(x, y));
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.move(new cube.Vec(x, y));
 }
 
 // Resize sprite resolution.
 function cubeResize(width, height, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	if (width > 0 && height > 0) {
-		sprite.resize(width, height);
-	}
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    if (width > 0 && height > 0) {
+        sprite.resize(width, height);
+    }
 }
 
 // Look sprite at the directional vector.
 function cubeLook(x, y, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.look(new cube.Vec(x, y));
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.look(new cube.Vec(x, y));
 }
 
 // Rotate to the angle.
 function cubeRotate(angle, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.setAngle(angle);
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.setAngle(angle);
 }
 
 // Set scale to expand sprite.
 function cubeExpand(scale, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.setScale(scale);
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.setScale(scale);
 }
 
 // Set alpha to dilute sprite.
 function cubeDilute(alpha, sprite=null) {
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.setAlpha(alpha);
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.setAlpha(alpha);
 }
 
 // Draw sprite to the screen.
 function cubeDraw(sprite=null, screen=null) {
-	if (!screen) {
-		screen = cube.screen;
-	}
-	if (!sprite) {
-		sprite = cube.sprite;
-	}
-	sprite.enable(screen);
+    if (!screen) {
+        screen = cube.screen;
+    }
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    sprite.enable(screen);
 }
 
 // Get master pixel buffer or create new pixel buffer.
@@ -295,9 +295,10 @@ async function cubeBufferSprite(buffer=null) {
     if (!buffer) {
         buffer = cube.buffer;
     }
-    return cubeSprite(buffer.toImage(),
-        buffer.width * buffer.scale,
-        buffer.height * buffer.scale);
+    return buffer.toSprite();
+//    return cubeSprite(buffer.toImage(),
+//        buffer.width * buffer.scale,
+//        buffer.height * buffer.scale);
 }
 
 //************************************************************/
@@ -309,97 +310,97 @@ async function cubeBufferSprite(buffer=null) {
 
 // Get master joypad or create new joypad.
 function cubeJoypad(screen=null) {
-	if (screen) {
-		var joypad = new cube.Input(screen);
-		return joypad;
-	}
-	return cube.joypad;
+    if (screen) {
+        var joypad = new cube.Input(screen);
+        return joypad;
+    }
+    return cube.joypad;
 }
 
 // Read and update joypad status.
 async function cubeReadJoypad(time=0, joypad=null) {
-	if (!joypad) {
-		joypad = cube.joypad;
-	}
-	await cube.count.wait(time);
-	joypad.updateDirs();
-	return joypad;
+    if (!joypad) {
+        joypad = cube.joypad;
+    }
+    await cube.count.wait(time);
+    joypad.updateDirs();
+    return joypad;
 }
 
 // Get joypad motion.
 function cubeJoypadMotion(joypad=null) {
-	if (!joypad) {
-		joypad = cube.joypad;
-	}
-	return joypad.motion();
+    if (!joypad) {
+        joypad = cube.joypad;
+    }
+    return joypad.motion();
 }
 
 // Get joypad action.
 function cubeJoypadAction(joypad=null) {
-	if (!joypad) {
-		joypad = cube.joypad;
-	}
-	return joypad.action();
+    if (!joypad) {
+        joypad = cube.joypad;
+    }
+    return joypad.action();
 }
 
 /* CUBE Param API *****************************/
 
 // Get master parameter or create new parameter.
-function cubeParam(fileName=null) {
-	if (fileName) {
-		var param = new cube.StorageParams(fileName);
-		return param;
-	}
-	return cube.param;
+function cubeParam(fileName=null, text=null) {
+    if (fileName) {
+        var param = new cube.StorageParams(fileName, text);
+        return param;
+    }
+    return cube.param;
 }
 
 // Loa parameter from local storage or query.
-function cubeLoadParam(fileName=null, param=null) {
-	if (param) {
-		if (fileName) {
-			return param = new cube.StorageParams(fileName);
-		} else {
-			return param = new cube.InitialParams(fileName);
-		}
-	} else {
-		if (fileName) {
-			return cube.param = new cube.StorageParams(fileName);
-		} else {
-			return cube.param = new cube.InitialParams(fileName);
-		}
+function cubeLoadParam(fileName=null, text=null, param=null) {
+    if (param) {
+        if (fileName) {
+            return param = new cube.StorageParams(fileName, text);
+        } else {
+            return param = new cube.InitialParams(fileName, text);
+        }
+    } else {
+        if (fileName) {
+            return cube.param = new cube.StorageParams(fileName, text);
+        } else {
+            return cube.param = new cube.InitialParams(fileName, text);
+        }
 
-	}
+    }
 }
 
 // Save parameter to local storage.
 function cubeSaveParam(fileName=null, param=null) {
-	if (!param) {
-		param = cube.param;
-	}
-	param.save(fileName);
+    if (!param) {
+        param = cube.param;
+    }
+    param.save(fileName);
 }
 
 // Get all keys of parameter.
 function cubeParamKeys(param=null) {
-	if (!param) {
-		param = cube.param;
-	}
-	return param.keys();
+    if (!param) {
+        param = cube.param;
+    }
+    return param.keys();
 }
 
 // Get or set value of parameter.
 function cubeParamValue(key=0, value=null, param=null) {
-	if (!param) {
-		param = cube.param;
-	}
-	if (value) {
-		return param.setValue(key, value);
-	}
-	return param.value(key);
+    if (!param) {
+        param = cube.param;
+    }
+    if (value) {
+        return param.setValue(key, value);
+    }
+    return param.value(key);
 }
 
 // Get interger numbers of parameter.
-function cubeParamNumbers(key=0, separator=",", param=null) {
+function cubeParamNumbers(key=0, separator=/\D/, param=null) {
     if (!param) {
         param = cube.param;
     }
@@ -928,10 +929,10 @@ cube.Params = class {
     }
 
     // Get value by integer numbers.
-    numbers(key, separator=",") {
+    numbers(key, separator=/\D/) {
         let result = [];
         if (this.keyvalues[key]) {
-            let params = this.keyvalues[key].split(separator);
+            let params = this.keyvalues[key].split(/[^-\d]/);
             for (var i = 0; i < params.length; i++) {
                 if (params[i]) {
                     result[i] = parseInt(params[i], 10);
@@ -990,10 +991,16 @@ cube.Params = class {
         if (text != null) {
             if (text.includes('&')) {
                 text.split('&').forEach((q) => {
-                    let keyvalue = q.split('=');
-                    if (keyvalue[0] != null && keyvalue[1] != null) {
-                        this.keyvalues[keyvalue[0]] = keyvalue[1];
-                        // console.log("parameter:" + kv[0] + " = " + kv[1]);
+                    if (q.includes('=')) {
+                        let keyvalue = q.split('=');
+                        if (keyvalue[0] != null && keyvalue[1] != null) {
+                            this.keyvalues[keyvalue[0]] = keyvalue[1];
+                            // console.log("parameter:" + kv[0] + " = " + kv[1]);
+                        }
+                    } else if (q.includes('+')) {
+                        this.keyvalues += q.split('+');
+                    } else {
+                        this.keyvalues[0] = q;
                     }
                 });
             } else if (text.includes('=')) {
@@ -1003,7 +1010,7 @@ cube.Params = class {
                     // console.log("parameter:" + kv[0] + " = " + kv[1]);
                 }
             } else if (text.includes('+')) {
-                this.keyvalues = text.split('+');
+                this.keyvalues += text.split('+');
             } else {
                 this.keyvalues[0] = text;
             }
@@ -1035,15 +1042,12 @@ cube.InitialParams = class extends cube.Params {
     // Constructor.
     constructor(name=null, text=null) {
 
-        // Load parameters text from local storage.
-        if (text == null) {
-            let query = window.location.search;
-            if (query != null && query != "") {
-                console.log("Load query:" + query);
-                text = query.slice(1);
-            }
+        // Load parameters text from query string.
+        let query = window.location.search;
+        if (query != null && query != "") {
+            console.log("Load query:" + query);
+            text = query.slice(1);
         }
-
         super(name, text);
     }
 
@@ -1066,11 +1070,11 @@ cube.StorageParams = class extends cube.Params {
     constructor(name=null, text=null) {
 
         // Load parameters text from local storage.
-        if (text == null) {
-            text = localStorage.getItem(name);
-            console.log("Load storage:" + text);
+        storage = localStorage.getItem(name);
+        console.log("Load storage:" + storage);
+        if (storage != null) {
+            text = storage;
         }
-
         super(name, text);
     }
 
@@ -1718,6 +1722,7 @@ cube.Buffer = class {
         this.height = height;
         this.scale = scale;
         this.frames = frames;
+        this.sprite = null;
         this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         this.svg.setAttribute("width", "" + (width * scale * frames));
@@ -1737,6 +1742,18 @@ cube.Buffer = class {
     // Resource.
     toImage() {
         return "data:image/svg+xml;base64," + btoa(this.svg.outerHTML);
+    }
+
+    // Sprite.
+    async toSprite(type=null) {
+        if (this.sprite) {
+            return this.sprite.clone();
+        }
+        this.sprite = new cube.Sprite(type);
+        this.sprite.loadImage(this.toImage());
+        await this.sprite.waitLoadingImage();
+        this.sprite.resize(this.width * this.scale, this.height * this.scale);
+        return this.sprite;
     }
 
     // Add pixels.
@@ -1777,11 +1794,10 @@ cube.Buffer = class {
     addRects(rects, frame=0) {
         for (let i = 0; i < rects.length; i++) {
             if (rects[i][0] >= 0 && rects[i][1] >= 0 && rects[i][2] >= 0 && rects[i][3] >= 0) {
-                let x0 = rects[i][0] * 2 + 1, y0 = rects[i][1] * 2 + 1;
-                let x1 = rects[i][2] * 2 + 1, y1 = rects[i][3] * 2 + 1;
+                let x0 = rects[i][0] * 2 + 0, y0 = rects[i][1] * 2 + 0;
+                let x1 = rects[i][2] * 2 + 2, y1 = rects[i][3] * 2 + 2;
                 let c = rects[i].length >= 7 ? ("rgb(" + rects[i][4] + "," + rects[i][5] + "," + rects[i][6] + ")") : "#000";
                 let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                rect.setAttribute("stroke", "none");
                 rect.setAttribute("fill", c);
                 rect.setAttribute("transform", "translate(" + (this.width * 2 * frame) + ",0)");
                 rect.setAttribute("x", x0);
