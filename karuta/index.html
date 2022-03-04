@@ -251,16 +251,19 @@ a {
 	}
 
 	// Load face design parameters.
-	let width = 2, designs = [[],[],[]], keys = ["f", "n", "b"];
+	let width = 2, designs = [[],[],[]], designsMax = [0, 0, 0], keys = ["b", "f", "n"];
 	for (let k = 0; k < keys.length; k++) {
 		for (let j = 0; j < maximum; j++) {
 			let data = cubeParamData(keys[k] + j);
 			if (data.length > 0) {
 				designs[k][j] = [];
 				let w = 2;
-				if (designs[k][0]) {
-					for (let i = 0; i < designs[k][0].length; i++) { // i=0: Common designs.
-						designs[k][j].push(designs[k][0][i]);
+				if (j > 0) {
+					designsMax[k] = j > designsMax[k] ? j : designsMax[k];
+					if (designs[k][0]) {
+						for (let i = 0; i < designs[k][0].length; i++) { // i=0: Common designs.
+							designs[k][j].push(designs[k][0][i]);
+						}
 					}
 				}
 				for (let i = 0; i < data.length; i += 3) {
@@ -280,30 +283,32 @@ a {
 	}
 
 	// Create pixel buffer for face design.
-	if (designs[0].length > 0 || designs[2].length > 0) {
-		buffers[0] = cubeBuffer(20, 20, width, designs[0].length);
+	if (designs[0].length > 0 || designs[1].length > 0) {
+		// Buffer0 for Back/Face design.
+		buffers[0] = cubeBuffer(20, 20, width, designsMax[1] + 1);
 		var rects = [[3,1,16,18, 255,255,255]];
-		// Back design.
-		for (let i = 0; i < designs[2].length; i++) {
-			if (designs[2][i]) {
-				cubeBufferRects(rects, i, buffers[0]); // Base color.
-				cubeBufferRects(designs[2][i], i, buffers[0]);
+		// Buffer0,i=0: Back design.
+		for (let i = 0; i < designs[0].length; i++) {
+			if (designs[0][i]) {
+				cubeBufferRects(rects, 0, buffers[0]); // Base color.
+				cubeBufferRects(designs[0][i], 0, buffers[0]);
 			}
 		}
-		// Face design.
-		for (let i = 1; i < designs[0].length; i++) {
-			if (designs[0][i]) {
+		// Buffer0,i=1~N: Face design.
+		for (let i = 1; i < designs[1].length; i++) {
+			if (designs[1][i]) {
 				cubeBufferRects(rects, i, buffers[0]); // Base color.
-				cubeBufferRects(designs[0][i], i, buffers[0]);
+				cubeBufferRects(designs[1][i], i, buffers[0]);
 			}
 		}
 	}
-	if (designs[1].length > 0) {
-		buffers[1] = cubeBuffer(20, 20, width, designs[1].length - 1);
-		// Number design.
-		for (let i = 1; i < designs[1].length; i++) {
-			if (designs[1][i]) {
-				cubeBufferRects(designs[1][i], i - 1, buffers[1]);
+	if (designs[2].length > 0) {
+		// Buffer1 for Number design.
+		buffers[1] = cubeBuffer(20, 20, width, designsMax[2]);
+		// Buffer1,i=1~N: Number design.
+		for (let i = 1; i < designs[2].length; i++) {
+			if (designs[2][i]) {
+				cubeBufferRects(designs[2][i], i - 1, buffers[1]);
 			}
 		}
 		setMaximum(maximum);
@@ -325,8 +330,8 @@ a {
 
 	// Create sprites.
 	var sprite = await cubeSprite("resource.svg", 40, 40);
-	var sprite0 = await cubeBufferSprite(buffers[0]);
-	var sprite1 = await cubeBufferSprite(buffers[1]);
+	var sprite0 = buffers[0] ? await cubeBufferSprite(buffers[0]) : null;
+	var sprite1 = buffers[1] ? await cubeBufferSprite(buffers[1]) : null;
 	cubeDilute(0.1, sprite);
 
 	cubeExpand(0.5, sprite);
