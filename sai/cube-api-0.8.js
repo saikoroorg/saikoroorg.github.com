@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.47b";
-cube.timestamp = "220304";
+cube.version = "0.8.48b";
+cube.timestamp = "20309";
 /************************************* /VERSION*
 
 
@@ -1758,14 +1758,15 @@ cube.Buffer = class {
 
     // Add pixels.
     addPixels(pixels, frame=0) {
+        let w = this.scale;
         for (let i = 0; i < pixels.length; i++) {
             if (pixels[i][0] >= 0 && pixels[i][1] >= 0) {
-                let x = pixels[i][0] * 2 + 0.5, y = pixels[i][1] * 2 + 0.5;
+                let x = pixels[i][0] * this.scale + w / 2, y = pixels[i][1] * this.scale + w / 2;
                 let c = pixels[i].length >= 5 ? ("rgb(" + pixels[i][2] + "," + pixels[i][3] + "," + pixels[i][4] + ")") : "#000";
                 let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.setAttribute("stroke", c);
-                path.setAttribute("transform", "translate(" + (this.width * 2 * frame) + ",0)");
-                path.setAttribute("d", "M" + x + "," + y + "h1v1h-1Z");
+                path.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
+                path.setAttribute("d", "M" + x + "," + y + "h" + w + "v" + w + "h-" + w + "Z");
                 this.svg.appendChild(path);
             }
         }
@@ -1775,15 +1776,15 @@ cube.Buffer = class {
     addLines(lines, frame=0) {
         for (let i = 0; i < lines.length; i++) {
             if (lines[i][0] >= 0 && lines[i][1] >= 0 && lines[i][2] >= 0 && lines[i][3] >= 0) {
-                let x0 = lines[i][0] * 2 + 1, y0 = lines[i][1] * 2 + 1;
-                let x1 = lines[i][2] * 2 + 1, y1 = lines[i][3] * 2 + 1;
+                let x0 = lines[i][0] * this.scale + 1, y0 = lines[i][1] * this.scale + 1;
+                let x1 = lines[i][2] * this.scale + 1, y1 = lines[i][3] * this.scale + 1;
                 let c = lines[i].length >= 7 ? ("rgb(" + lines[i][4] + "," + lines[i][5] + "," + lines[i][6] + ")") : "#000";
                 let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.setAttribute("stroke", c);
-                path.setAttribute("stroke-width", 2);
+                path.setAttribute("stroke-width", this.scale);
                 path.setAttribute("stroke-linecap", "square");
                 path.setAttribute("fill", "none");
-                path.setAttribute("transform", "translate(" + (this.width * 2 * frame) + ",0)");
+                path.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
                 path.setAttribute("d", "M" + x0 + "," + y0 + "L" + x1 + "," + y1);
                 this.svg.appendChild(path);
             }
@@ -1794,16 +1795,18 @@ cube.Buffer = class {
     addRects(rects, frame=0) {
         for (let i = 0; i < rects.length; i++) {
             if (rects[i][0] >= 0 && rects[i][1] >= 0 && rects[i][2] >= 0 && rects[i][3] >= 0) {
-                let x0 = rects[i][0] * 2 + 0, y0 = rects[i][1] * 2 + 0;
-                let x1 = rects[i][2] * 2 + 2, y1 = rects[i][3] * 2 + 2;
+                let x = rects[i][0] * this.scale;
+                let y = rects[i][1] * this.scale;
+                let w = (rects[i][2] - rects[i][0] + 1) * this.scale;
+                let h = (rects[i][3] - rects[i][1] + 1) * this.scale;
                 let c = rects[i].length >= 7 ? ("rgb(" + rects[i][4] + "," + rects[i][5] + "," + rects[i][6] + ")") : "#000";
                 let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 rect.setAttribute("fill", c);
-                rect.setAttribute("transform", "translate(" + (this.width * 2 * frame) + ",0)");
-                rect.setAttribute("x", x0);
-                rect.setAttribute("y", y0);
-                rect.setAttribute("width", x1 - x0);
-                rect.setAttribute("height", y1 - y0);
+                rect.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
+                rect.setAttribute("x", x);
+                rect.setAttribute("y", y);
+                rect.setAttribute("width", w);
+                rect.setAttribute("height", h);
                 this.svg.appendChild(rect);
             }
         }

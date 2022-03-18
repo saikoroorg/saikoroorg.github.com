@@ -1,8 +1,9 @@
 // Web app manifest for progressive web app.
 const manifest = {
     "name": "Karuta",
-    "version": "0.8.20304a",
+    "version": "0.8.20309",
     "short_name": "Karuta",
+    "author": "saikoro.org",
     "background_color": "#000",
     "theme_color": "#000",
     "icons": [{
@@ -14,7 +15,7 @@ const manifest = {
         "sizes": "192x192",
         "type": "image/png"
     }],
-    "start_url": "./?app",
+    "start_url": "./" + (window.location.search ? window.location.search + "&" : "?") + "app=1",
     "scope": "/karuta/",
     "display": "standalone",
     "json": "manifest.json"
@@ -22,13 +23,18 @@ const manifest = {
 
 // Script for client to register service worker.
 if (!self || !self.registration) {
-    navigator.serviceWorker.register("./manifest.js", {"scope": manifest.scope}).then(() => {
-        let head = document.getElementsByTagName("head")[0];
-        let link = document.createElement("link");
-        link.setAttribute("rel", "manifest");
-        link.setAttribute("href", manifest.json);
-        head.appendChild(link);
-    });
+    let head = document.querySelector("head");
+    let link = document.createElement("link");
+    link.setAttribute("rel", "manifest");
+    link.setAttribute("href", manifest.json);
+    head.appendChild(link);
+
+    //const str = JSON.stringify(manifest);
+    //const blob = new Blob([str], {type: 'application/json'});
+    //const url = URL.createObjectURL(blob);
+    //document.querySelector('#manifest').setAttribute('href', url);
+
+    navigator.serviceWorker.register("./manifest.js", {"scope": manifest.scope});
 
 // Script for service worker.
 } else {
