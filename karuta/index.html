@@ -184,7 +184,7 @@ a {
 	// 5c54&n0=gee&n1=f53f44047f64067f56&n2=f43063f64f45065f46f47067&n3=f43063f45065f47067f63067&n4=f43045f45065f63067&n5=f43063f44f45065f66f47067&n6=f43063f43047f45065f66f47067&n7=f43063f44f63067&n8=f43063f43047f55f63067f47067&n9=f43063f43045f45065f64067f47067&n10=f43047f63083f63067f83087f67087&n11=f53f63067f46f57&n12=f43063f43046f63065f56f67&n13=f43047f63064f66067f55&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff
 
 	// Example 3: Dice design cards.
-	// 9c21&f0=g11099f11091f11018f91098f19099&f1=c53c44c54c64c35c45c55c65c75c36c46c56c66c76c47c57c67&f2=a43a63a34a44a54a64a74a35a45a55a65a75a46a56a66a57&f3=d53d44d54d64d35d45d55d65d75d46d56d66d57&f4=b43b53b63b44b54b64b35b45b55b65b75b36b46b56b66b76b57&f5=f11091f11018f91098f19099&f6=f11091f11018f91098f19099e33e73e44e54e64e45e55e65e46e56e66e37e77&n1=f55&n2=f73f37&n3=f73f55f37&n4=f33f73f37f77&n5=f33f73f55f37f77&n6=f33f73f35f75f37f77&n7=f33f73f35f55f75f37f77&n8=f33f53f73f35f75f37f57f77&n9=f33f53f73f35f55f75f37f57f77&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff
+	// 3c21&f0=g11099f11091f11018f91098f19099&f1=c53c44c54c64c35c45c55c65c75c36c46c56c66c76c47c57c67&f2=a43a63a34a44a54a64a74a35a45a55a65a75a46a56a66a57&f3=d53d44d54d64d35d45d55d65d75d46d56d66d57&f4=b43b53b63b44b54b64b35b45b55b65b75b36b46b56b66b76b57&f5=f11091f11018f91098f19099&f6=f11091f11018f91098f19099e33e73e44e54e64e45e55e65e46e56e66e37e77&n1=f55&n2=f73f37&n3=f73f55f37&n4=f33f73f37f77&n5=f33f73f55f37f77&n6=f33f73f35f75f37f77&n7=f33f73f35f55f75f37f77&n8=f33f53f73f35f75f37f57f77&n9=f33f53f73f35f55f75f37f57f77&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff
 
 	// Load color palette parameters.
 	var depth = 3, palette = [[255,255,255]];
@@ -304,15 +304,16 @@ a {
 
 	// Get query parameters.
 	var params = cubeParamNumbers(0);
-	var handMaximum = params[0] > 0 ? params[0] : 5; // Hand card maximum.
+	var counts = params[0] > 0 ? params[0] : 5; // Hand card counts.
 	var deckMaximum = params[1] >= 0 ? params[1] : 52; // Deck card maximum.
+	var handMaximum = deckMaximum < 54 ? deckMaximum : 54; // Hand card maximum.
 	var colors = params[2] >= 0 ? params[2] : 4; // Card kind counts.
 	var original = 0; // Original design icon frame.
 	var rolling = 0; // Rolling count.
 
 	// Set counts of cards.
 	var setCounts = (x) => {
-		handMaximum = (x > 30) ? 30 : (x < 1) ? 1 : x;
+		counts = (x > 20) ? 20 : (x < 0) ? 0 : x;
 		rolling = -1; // Reroll.
 	};
 
@@ -341,11 +342,11 @@ a {
 			}
 		}
 
-		rolling = -1; // Reroll.
+		rolling = -2; // Restart.
 	};
 
 	var changeCounts = (x) => {
-		setCounts(handMaximum + x);
+		setCounts(counts + x);
 	};
 	var changeMaximum = () => {
 		if (buffers[0]) {
@@ -356,7 +357,7 @@ a {
 	};
 
 	// Initialize settings.
-	setCounts(handMaximum);
+	setCounts(counts);
 	setMaximum(deckMaximum);
 </script><!--/Menu-->
 
@@ -368,7 +369,7 @@ a {
 	var courts = buffers[1] ? buffers[1].frames : (deckMaximum > 0 && deckMaximum < 56) ? 3 : 0; // Court card kinds.
 	var jokers = deckMaximum > 0 ? cubeMod(deckMaximum, colors) : 0; // Joker card kinds.
 	var numberMax = deckMaximum > 0 ? cubeDiv(deckMaximum, colors) : 10; // Card deckMaximum number.
-	console.log("deckMaximum=" + deckMaximum + " colors=" + colors + " courts=" + courts + " jokers=" + jokers + " numberMax=" + numberMax)
+	//console.log("deckMaximum=" + deckMaximum + " colors=" + colors + " courts=" + courts + " jokers=" + jokers + " numberMax=" + numberMax)
 
 	// Resize screen.
 	cubeResizeScreen(300, 300);
@@ -397,35 +398,42 @@ a {
 		sprites2[i] = await cubeSprite("resource.svg", 40, 40);
 	}
 
-	// Random decks.
-	var decks = [], trashes = [];
-	for (let j = 0; j < deckMaximum; j++) {
-		decks[j] = j;
-	}
-	// Shuffle by Fisher-Yates argorythm.
-	for (let i = decks.length - 1; i > 0; i--) {
-		let j = cubeRandom(i + 1);
-		let d = decks[i];
-		decks[i] = decks[j];
-		decks[j] = d;
-	}
-
 	// Sprite frame.
 	var frameMax = deckMaximum > 0 ? deckMaximum : 10 * colors;
 	var frameMin = deckMaximum > 0 ? 1 : 0;
 	var colorFrameMax = colors;
 	var courtFrameMax = courts;
 	var numberFrameMax = numberMax;
-	var numbers = [];
 
-	// Draw handCounts.
-	var handCounts = 1;
-	var drawCounts = 1;
-	var newCounts = 0;
+	// Decks.
+	var decks = [], trashes = [], numbers = [];
+	var handCounts = drawCounts = newCounts = 0;
 
 	// Main loop.
 	var counter = 0;
 	while (true) {
+
+		// Shuffle by Fisher-Yates argorythm.
+		if (rolling < 0) {
+			frameMax = deckMaximum > 0 ? deckMaximum : 10 * colors;
+			frameMin = deckMaximum > 0 ? 1 : 0;
+
+console.log("deckMaximum=" + deckMaximum + " frameMax=" + frameMax + " counts=" + counts)
+
+			handCounts = drawCounts = newCounts = 0;
+			decks = [];
+			trashes = [];
+			numbers = [];
+			for (let j = 0; j < frameMax; j++) {
+				decks[j] = j;
+			}
+			for (let i = decks.length - 1; i > 0; i--) {
+				let j = cubeRandom(i + 1);
+				let d = decks[i];
+				decks[i] = decks[j];
+				decks[j] = d;
+			}
+		}
 
 		// Sprite lines and rows.
 		//var lineMax = cubeSqrt(handCounts - 1) + 1;
@@ -434,6 +442,28 @@ a {
 		//for (var i = 0; i < lines; i++) {
 		//	rows[i] = i > 0 ? lineMax : (cubeMod(handCounts - 1, lineMax) + 1);
 		//}
+
+		// Discard hand cards.
+		while (counts < handCounts && numbers.length > 0) {
+			trashes.push(numbers.shift());
+			handCounts = handCounts - 1;
+			newCounts = 0;
+		}
+
+		// Move trashes to decks.
+		//while (trashes.length > 0) {
+		//	let i = cubeRandom(trashes.length);
+		//	decks.push(trashes.splice(i, 1));
+		//}
+
+		// Draw initial card from decks.
+		while (counts > handCounts && decks.length - drawCounts > 0) {
+			rolling = -1;
+			handCounts += 1;
+			drawCounts += 1;
+			newCounts = 0;
+		}
+		counts = handCounts;
 
 		// Sprite scale and angle.
 		var angle = 0;
@@ -446,39 +476,73 @@ a {
 			var size = cubeScreenSize();
 			// Wait for input.
 			await cubeReadJoypad(0);
+			let action = cubeJoypadAction();
+			let motion = cubeJoypadMotion();
 			if (result > 0) {
 
-				// Draw card.
-				if (cubeJoypadMotion()) {
-					if (rolling > 10 && decks.length - drawCounts > 0) {
-						result = 0;
-						rolling = -1;
-						if (handCounts < handMaximum) {
-							handCounts += 1;
-						} else if (drawCounts < handMaximum) {
-							trashes.push(numbers.shift())
-						}
+				if (action) {
+					for (let i = 0; i < handCounts + 2; i++) {
+						if (cubeCheck(motion, sprites0[i])) {
+							
+							// Discard hand card to trashes.
+							if (i < handCounts) {
+								trashes.push(numbers.splice(i, 1));
+								counts = handCounts = handCounts - 1;
+								break;
+							}
 
-						// Add drawing card counts.
-						if (drawCounts < handCounts) {
-							drawCounts += 1;
+							// Touch decks.
+							if (i == handCounts + 1) {
+
+								// Move trashes to decks.
+								if (decks.length == 0) {
+									while (trashes.length > 0) {
+										let i = cubeRandom(trashes.length);
+										decks.push(trashes.splice(i, 1));
+									}
+
+								// Draw card from decks.
+								} else if (rolling > 10 && decks.length - drawCounts > 0) {
+									result = 0;
+									rolling = 0;
+									if (handCounts < frameMax) {
+										counts = handCounts = handCounts + 1;
+
+									// Auto trash.
+									//} else if (drawCounts < frameMax) {
+									//	trashes.push(numbers.shift())
+									//}
+									//
+									// Add drawing card counts.
+									//if (drawCounts < handCounts) {
+
+										drawCounts += 1;
+									}
+									newCounts = 0;
+								}
+
+								break;
+							}
 						}
-						newCounts = 0;
 					}
 				}
 			} else {
 
-				// Add drawing cards.
-				if (cubeJoypadMotion()) {
-					if (rolling > 5 && decks.length - drawCounts > 0) {
-						if (handCounts < handMaximum) {
-							handCounts += 1;
-						} else if (drawCounts < handMaximum) {
-							trashes.push(numbers.shift())
-						}
 
+				// Add drawing cards.
+				if (motion) {
+					if (rolling > 5 && decks.length - drawCounts > 0) {
+						if (handCounts < frameMax) {
+							counts = handCounts = handCounts + 1;
+
+						// Auto trash.
+						//} else if (drawCounts < frameMax) {
+						//	trashes.push(numbers.shift())
+						//}
+						//
 						// Add drawing card counts.
-						if (drawCounts < handCounts) {
+						//if (drawCounts < handCounts) {
+
 							drawCounts += 1;
 						}
 						newCounts = 0;
@@ -526,7 +590,7 @@ a {
 				cubeMove(sx, sy, sprites[i]);
 			}*/
 
-			let lineMax = handMaximum > 6 ? cubeSqrt(handCounts - 1) + 1 : 6;
+			let lineMax = 5;//frameMax > 7 ? cubeSqrt(handCounts - 1) + 1 : 7;
 			let lines = cubeDiv(handCounts - 1, lineMax) + 1;
 			var scale = 5 / ((handCounts < lineMax ? handCounts : lines >= lineMax ? lines : lineMax) + 1);
 
@@ -551,29 +615,30 @@ a {
 					//var sy = oy + my * (y + 1) / (lines + 1);
 
 					let sx = ox + mx * (x + 1) / (rows + 1);
-					let sy = oy + my * (y + 5) / (lines + 6); //@todo: sukoshi shita position.
+					let sy = oy + my * (y + 7) / (lines + 8); //@todo: sukoshi shita position.
 					let n = numbers[i];
 
 					if (i >= handCounts) {
 						let j = i - handCounts, m = 9;
 
-						// Deck counts.
-						if (j == 0) {
-							let c = decks.length - drawCounts;
-							m = c > 54 ? -2 : c > 0 ? c + 9 : 9;
-							s = 1.0;
-							sx = ox + mx * 5 / 6;
-							sy = oy + my * 3 / 10; //@todo sukoshi ue position.
-							n =  c > 0 ? -1 : -2;
-
 						// Trash counts.
-						} else if (j == 1) {
+						if (j == 0) {
 							let c = trashes.length;
 							m = c > 55 ? -2 : c > 0 ? c + 9 : 9;
 							s = 2.5;
 							sx = ox + mx * 3 / 6;
-							sy = oy + my * 3 / 10; //@todo sukoshi ue position.
+							sy = oy + my * 2 / 9; //@todo sukoshi ue position.
 							n =  c > 0 ? trashes[trashes.length - 1] : -2;
+						}
+						// Deck counts.
+						if (j == 1) {
+							let c = decks.length - drawCounts;
+							m = c > 54 ? -2 : c > 0 ? c + 9 : 9;
+							s = 1.0;
+							sx = ox + mx * 5 / 6;
+							sy = oy + my * 2 / 9; //@todo sukoshi ue position.
+							n =  c > 0 ? -1 : -2;
+
 						}
 
 						//if (n >= -1) {
@@ -604,6 +669,7 @@ a {
 						cubeExpand(s, sprites0[i]);
 						cubeRotate(angle, sprites0[i]);
 						cubeMove(sx, sy, sprites0[i]);
+
 						cubeDilute(0, sprites1[i]);
 						cubeExpand(0, sprites1[i]);
 						cubeDilute(0, sprites2[i]);
@@ -612,17 +678,22 @@ a {
 					// Holding/Stable cards.
 					} else {
 
+
 						// Alpha animation.
-						var a1 = 0.6, a2 = 1.0;
+						var a0 = 0.6, a1 = 1.0;
 						if (rolling < 60 && i >= handCounts - newCounts && i < handCounts) {
-							a1 = rolling < 30 ? 1 * (1.2 - 0.02 * rolling) : 1 * 0.6;
-							a2 = rolling < 60 ? 1 * (-0.2 + 0.02 * rolling) : 1 * 1.0;
+							a0 = rolling < 30 ? 1 * (1.2 - 0.02 * rolling) : 1 * 0.6;
+							a1 = rolling < 60 ? 1 * (-0.2 + 0.02 * rolling) : 1 * 1.0;
+						}
+						if (i >= handCounts) {
+							//a0 = 0.6;
+							a1 = 1.0;
 						}
 
 						// Colors.
 						var n0 = n >= 0 ? cubeDiv(n, numberFrameMax) : colorFrameMax + 2 + n;
 						cubeAnimate(n0, sprites0[i]);
-						cubeDilute(a1, sprites0[i]);
+						cubeDilute(a0, sprites0[i]);
 						cubeExpand(s, sprites0[i]);
 						cubeRotate(0, sprites0[i]);					
 						cubeMove(sx, sy, sprites0[i]);				
@@ -644,13 +715,13 @@ a {
 								cubeAnimate(n1 - courtFrameMax + frameMin + 9, sprites2[i]);
 								cubeDilute(0, sprites1[i]);
 								cubeExpand(0, sprites1[i]);
-								cubeDilute(a2, sprites2[i]);
+								cubeDilute(a1, sprites2[i]);
 								cubeExpand(s, sprites2[i]);
 
 							// Court or Joker original design cards.
 							} else if (buffers[1]) {
 								cubeAnimate(n1, sprites1[i]);
-								cubeDilute(a2, sprites1[i]);
+								cubeDilute(a1, sprites1[i]);
 								cubeExpand(s, sprites1[i]);
 								cubeDilute(0, sprites2[i]);
 								cubeExpand(0, sprites2[i]);
@@ -660,7 +731,7 @@ a {
 								cubeAnimate(n1 + 6, sprites2[i]);
 								cubeDilute(0, sprites1[i]);
 								cubeExpand(0, sprites1[i]);
-								cubeDilute(a2, sprites2[i]);
+								cubeDilute(a1, sprites2[i]);
 								cubeExpand(s, sprites2[i]);
 							}
 						}

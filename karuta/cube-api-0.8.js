@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.48b";
-cube.timestamp = "20309";
+cube.version = "0.8.49b";
+cube.timestamp = "20318";
 /************************************* /VERSION*
 
 
@@ -255,6 +255,14 @@ function cubeDraw(sprite=null, screen=null) {
         sprite = cube.sprite;
     }
     sprite.enable(screen);
+}
+
+// Check pos is in sprite rect.
+function cubeCheck(pos, sprite=null) {
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    return sprite.isInRect(pos);
 }
 
 // Get master pixel buffer or create new pixel buffer.
@@ -1374,6 +1382,7 @@ cube.Sprite = class {
         this.type = type ? type.replace(/[^0-9a-z]/gi, '') : null;
         this.root = null;
         this.sprite = null;
+        this.screen = null;
 
         this.imageType = null;
         this.imageSize = null; // Image natural size.
@@ -1510,10 +1519,12 @@ cube.Sprite = class {
             if (enable) {
                 if (!screen.screen.contains(this.root)) {
                     screen.screen.appendChild(this.root);
+                    this.screen = screen;
                 }
             } else {
                 if (screen.screen.contains(this.root)) {
                     screen.screen.removeChild(this.root);
+                    this.screen = null;
                 }
             }
         }
@@ -1586,10 +1597,13 @@ cube.Sprite = class {
 
     // Check pos is in sprite rect.
     isInRect(pos) {
-        if (pos != null) {
+        if (pos != null && this.screen != null) {
+            let localPos = this.screen.posToLocalPos(pos);
             let rect = this.root.getBoundingClientRect();
-            return pos.x > rect.left && pos.x < rect.right &&
-                   pos.y > rect.top && pos.y < rect.bottom;
+            if (rect != null) {
+                return localPos.x > rect.left && localPos.x < rect.right &&
+                       localPos.y > rect.top && localPos.y < rect.bottom;
+            }
         }
         return false;
     }
@@ -1709,6 +1723,10 @@ cube.Sprite = class {
     // Set sprite aplha.
     setAlpha(alpha) {
         this.alpha = alpha;
+
+        //@todo nazeka shokai no byouga mae ha 1 shika settei dekinai.
+        this.root.style.opacity = 1;
+
         this.root.style.opacity = this.alpha;
     }
 }
@@ -2130,19 +2148,19 @@ cube.Input = class {
 
         // On down event, only update status.
         if (this.downEvent) {
-            console.log("Down Event:" + this._dirs[0].toString());
+            //console.log("Down Event:" + this._dirs[0].toString() + " " + this.points[1].toString());
             this._dirs[1] = null;
             this.downEvent = false;
 
         // On up event, update status and return dirs.
         } else if (this.upEvent) {
-            console.log("Up Event:" + this._dirs[0].toString());
+            //console.log("Up Event:" + this._dirs[0].toString() + " " + this.points[1].toString());
             this._dirs[1] = this._dirs[0];
             this.upEvent = false;
 
         // On after up event.
         } else if (this._dirs[1] != null) {
-            console.log("Up Event End.");
+            //console.log("Up Event End.");
             this._dirs[0] = null;
             this._dirs[1] = null;
             this.keyCode = null;
