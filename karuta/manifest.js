@@ -1,7 +1,7 @@
 // Web app manifest for progressive web app.
 const manifest = {
     "name": "Karuta",
-    "version": "0.8.20322",
+    "version": "0.8.20322a",
     "short_name": "Karuta",
     "author": "saikoro.org",
     "background_color": "#000",

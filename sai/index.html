@@ -247,8 +247,8 @@ a {
 </script><!--/Resource-->
 
 <!--Menu--><script>
-	console.log = () => {};
-	document.querySelector("#author").innerText = manifest.author + manifest.scope;
+	//console.log = () => {};
+	document.querySelector("#author").innerText = manifest.author + manifest.scope.slice(0, -1);
 	document.querySelector("#version").innerText = "#" + manifest.version.substr(-4);
 	document.querySelector("#logo").href = window.location.search;
 
