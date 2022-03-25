@@ -410,7 +410,7 @@ a {
 	var decks = [], trashes = [];
 	var handCards = [], playCards = [], holdCards = [];
 	var drawCounts = 0;
-	const numberNothing = -3, numberBlankCard = -2, numberBackCard = -1;
+	const numberBlankCard = -1;
 
 	// Main loop.
 	var result = 1;
@@ -488,7 +488,7 @@ a {
 									counts = handCards.length;
 									holdingCardId = -1;
 
-								// Tap.
+								// Turn over the card on tapping.
 								} else {
 									handCards[i] = handCards[i] >= frameMax ?
 										handCards[i] - frameMax : handCards[i] + frameMax;
@@ -521,7 +521,7 @@ a {
 									}
 									holdingCardId = -1;
 
-								// Turn over the card on tap.
+								// Turn over the card on tapping.
 								} else {
 									playCards[j] = playCards[j] >= frameMax ?
 										playCards[j] - frameMax : playCards[j] + frameMax;
@@ -555,7 +555,7 @@ a {
 									}
 									holdingCardId = -1;
 
-								// Turn over the card on tap.
+								// On tapping.
 								} else {
 									holdingCardId = -1;
 								}
@@ -636,7 +636,7 @@ a {
 				}
 			}
 
-			// Holding.
+			// On holding.
 			if (holdCards.length > 0) {
 
 				// Cancel holding hand cards.
@@ -659,8 +659,8 @@ a {
 						}
 						holdingCardId = -1;
 
+					// Cancel holding cards and discard to trash.
 					} else {
-						// Discard to trash.
 						while (holdCards.length > 0) {
 							trashes.push(holdCards.pop());
 						}
@@ -668,7 +668,7 @@ a {
 					}
 				}
 
-			// End holding.
+			// Not holding.
 			} else {
 
 				// Remove blank cards.
@@ -691,29 +691,29 @@ a {
 					// Start to hold hand cards.
 					if (holdingCardId < handCards.length) {
 						let j = holdingCardId;
-						//if (handCards[j] >= 0) {
+						if (handCards[j] >= 0) {
 							holdCards.push(handCards[j]);
 							handCards[j] = numberBlankCard;
-						//}
+						}
 
 					// Start to hold playing cards.
 					} else if (holdingCardId < handCards.length + playCards.length) {
 						let j = holdingCardId - handCards.length;
-						//if (playCards[j] >= 0) {
+						if (playCards[j] >= 0) {
 							holdCards.push(playCards[j]);
 							playCards[j] = numberBlankCard;
-						//}
+						}
 
 					// Start to hold trash cards.
 					} else if (holdingCardId == handCards.length + playCards.length + 0) {
 						let j = trashes.length - 1;
-						//if (trashes[j] >= 0) {
+						if (trashes[j] >= 0) {
 							holdCards.push(trashes.splice(j, 1)[0]);
-						//}
+						}
 					}
 
 					// Push blank cards for putting target.
-					if (holdingCardId >= 0) {
+					if (holdCards.length > 0) {
 						if (handCards.length > 0) {
 							handCards.unshift(numberBlankCard);
 							handCards.push(numberBlankCard);
@@ -749,7 +749,7 @@ a {
 
 			// Update sprite animations.
 			for (let i = 0; i < handCards.length + playCards.length + cardExtraMax; i++) {
-				let n = numberNothing;
+				let n = numberBlankCard;
 
 				// Update hand cards.
 				if (i < handCards.length) {
@@ -789,7 +789,7 @@ a {
 					if (holdCards.length > 0 && motion) {
 						n = holdCards[holdCards.length - 1];
 					} else {
-						n = numberNothing;
+						n = numberBlankCard;
 					}
 				}
 
@@ -812,8 +812,8 @@ a {
 					cubeAnimate(n0, colorSprites[i]);
 					cubeAnimate(n1, numberSprites[i]);
 
-				// No cards.
-				} else if (n == numberBlankCard) {
+				// Blank cards.
+				} else if (i < handCards.length + playCards.length + 2) {
 					cubeAnimate(colorFrameMax + 0, colorSprites[i]);
 					cubeAnimate(-1, numberSprites[i]);
 
@@ -908,7 +908,6 @@ a {
 					cubeExpand(0.5, sprites[0]);
 					cubeMove(sx, sy + 30, sprites[0]);
 
-
 				// Set deck positions.
 				} else if (i == handCards.length + playCards.length + 1) {
 					sx = ox + mx * 2 / 3;
@@ -970,7 +969,6 @@ a {
 				cubeDraw(colorSprites[i]);
 				cubeDraw(numberSprites[i]);
 			}
-
 
 			await cubeWait(10);
 		}
