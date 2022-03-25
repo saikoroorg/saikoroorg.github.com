@@ -555,8 +555,10 @@ a {
 									}
 									holdingCardId = -1;
 
-								// On tapping.
+								// Turn over the card on tapping.
 								} else {
+									trashes[trashes.length-1] = trashes[trashes.length-1] >= frameMax ?
+										trashes[trashes.length-1] - frameMax : trashes[trashes.length-1] + frameMax;
 									holdingCardId = -1;
 								}
 								break;
@@ -577,23 +579,62 @@ a {
 					// Touch decks.
 					} else if (i == handCards.length + playCards.length + 1) {
 
-						// No decks.
-						if (decks.length == 0) {
-							if (result > 0 && trashes.length > 0) {
+						// Not holding.
+						if (holdCards.length <= 0) {
 
-								// Recycle trashes to decks and shuffle.
-								if (action && result > 0) {
-									while (trashes.length > 0) {
-										let j = cubeRandom(trashes.length);
-										let card = trashes.splice(j, 1)[0];
+							// No decks.
+							if (decks.length == 0) {
+								if (result > 0 && trashes.length > 0) {
+
+									// Recycle trashes to decks and shuffle.
+									if (action && result > 0) {
+										while (trashes.length > 0) {
+											let j = cubeRandom(trashes.length);
+											let card = trashes.splice(j, 1)[0];
+											// Open all cards.
+											card = card >= frameMax ? card - frameMax : card;
+											decks.push(card);
+										}
+										holdingCardId = -1;
+										break;
+
+									// Start to touch decks.
+									} else {
+										if (holdingCardId < 0) {
+											holdingCardId = i;
+										}
+										touchingCardId = i;
+
+										// Reset for touching animation.
+										rolling = 0;
+										break;
+									}
+								}
+
+							// Draw card from decks.
+							} else if (decks.length > 0) {
+							
+								if (action) {
+								//if (motion && rolling > 5) {
+									if (handCards.length + playCards.length < cardCountsMax) {
+										counts += 1;
+										let card = decks.pop();
 										// Open all cards.
 										card = card >= frameMax ? card - frameMax : card;
-										decks.push(card);
+										handCards.push(card);
+										if (result > 0) {
+											drawCounts = 1;
+										} else {
+											drawCounts += 1;
+										}
 									}
+									result = 0;
 									holdingCardId = -1;
+									rolling = 0;
 									break;
+								
 
-								// Start to touch decks.
+								// Start to touch trashes.
 								} else {
 									if (holdingCardId < 0) {
 										holdingCardId = i;
@@ -604,35 +645,6 @@ a {
 									rolling = 0;
 									break;
 								}
-							}
-
-						// Draw card from decks.
-						} else if (decks.length > 0) {
-						
-							if (action) {
-							//if (motion && rolling > 5) {
-								if (handCards.length + playCards.length < cardCountsMax) {
-									counts += 1;
-									let card = decks.pop();
-									// Open all cards.
-									card = card >= frameMax ? card - frameMax : card;
-									handCards.push(card);
-									if (result > 0) {
-										drawCounts = 1;
-									} else {
-										drawCounts += 1;
-									}
-								}
-								result = 0;
-								holdingCardId = -1;
-								rolling = 0;
-								break;
-							} else {
-								touchingCardId = i;
-
-								// Reset for touching animation.
-								rolling = 0;
-								break;
 							}
 						}
 					}
@@ -707,11 +719,21 @@ a {
 							playCards[j] = numberBlankCard;
 						}
 
-					// Start to hold trash cards.
+					// Start to hold trashes.
 					} else if (holdingCardId == handCards.length + playCards.length + 0) {
 						let j = trashes.length - 1;
 						if (trashes[j] >= 0) {
 							holdCards.push(trashes.splice(j, 1)[0]);
+						}
+
+					// Start to hold decks.
+					} else if (holdingCardId == handCards.length + playCards.length + 1) {
+						let j = decks.length - 1;
+						if (decks[j] >= 0) {
+							let card = decks.pop();
+							// Hide all cards.
+							card = card < frameMax ? card + frameMax : card;
+							holdCards.push(card);
 						}
 					}
 
