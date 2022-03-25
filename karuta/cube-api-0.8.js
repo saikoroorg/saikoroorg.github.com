@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.49b";
-cube.timestamp = "20318";
+cube.version = "0.8.50b";
+cube.timestamp = "20325";
 /************************************* /VERSION*
 
 
@@ -145,6 +145,14 @@ function cubeScreenSize(screen=null) {
         screen = cube.screen;
     }
     return screen.size;
+}
+
+// Get screen local pos.
+function cubeScreenLocalPos(pos, screen=null) {
+    if (!screen) {
+        screen = cube.screen;
+    }
+    return screen.posToLocalPos(pos);
 }
 
 //************************************************************/
@@ -1597,12 +1605,11 @@ cube.Sprite = class {
 
     // Check pos is in sprite rect.
     isInRect(pos) {
-        if (pos != null && this.screen != null) {
-            let localPos = this.screen.posToLocalPos(pos);
+        if (pos != null) {
             let rect = this.root.getBoundingClientRect();
             if (rect != null) {
-                return localPos.x > rect.left && localPos.x < rect.right &&
-                       localPos.y > rect.top && localPos.y < rect.bottom;
+                return pos.x > rect.left && pos.x < rect.right &&
+                       pos.y > rect.top && pos.y < rect.bottom;
             }
         }
         return false;
@@ -2258,7 +2265,8 @@ cube.Input = class {
     onMouseDown(evt) {
         evt = evt != null ? evt : window.event;
         evt.preventDefault();
-        let mouse = this.screen.posToGlobalPos(new cube.Vec(evt.pageX, evt.pageY));
+        let mouse = new cube.Vec(evt.pageX, evt.pageY);
+        //mouse = this.screen.posToGlobalPos(mouse);
         this.updatePointOnDown(mouse);
         // console.log("event:" + evt.type + " " + mouse.toString() + " " + evt.pageX + "," + evt.pageY);
     }
@@ -2267,7 +2275,8 @@ cube.Input = class {
     onMouseMove(evt) {
         evt = evt != null ? evt : window.event;
         evt.preventDefault();
-        let mouse = this.screen.posToGlobalPos(new cube.Vec(evt.pageX, evt.pageY));
+        let mouse = new cube.Vec(evt.pageX, evt.pageY);
+        //mouse = this.screen.posToGlobalPos(mouse);
         this.updatePointOnMove(mouse);
         // console.log("event:" + evt.type + " " + mouse.toString() + " " + evt.pageX + "," + evt.pageY);
     }
@@ -2276,7 +2285,8 @@ cube.Input = class {
     onMouseUp(evt) {
         evt = evt != null ? evt : window.event;
         evt.preventDefault();
-        let mouse = this.screen.posToGlobalPos(new cube.Vec(evt.pageX, evt.pageY));
+        let mouse = new cube.Vec(evt.pageX, evt.pageY);
+        //mouse = this.screen.posToGlobalPos(mouse);
         this.updatePointOnUp(mouse);
         // console.log("event:" + evt.type + " " + mouse.toString() + " " + evt.pageX + "," + evt.pageY);
     }
@@ -2297,7 +2307,7 @@ cube.Input = class {
                                        evt.touches[i].force));
             }
             touch.div(evt.touches.length);
-            touch = this.screen.posToGlobalPos(touch);
+            //touch = this.screen.posToGlobalPos(touch);
             this.updatePointOnDown(touch);
 
             // console.log("Touch 1:" + evt.touches.length + " " + touch.toString());

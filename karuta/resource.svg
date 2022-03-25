@@ -254,10 +254,10 @@
             <path d="M7,7h2v2h-2 M7,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
         </g>
         <!-- Dummy -->
-        <g transform="translate(100,200)">
+        <!--g transform="translate(100,200)">
             <path d="M8,4v4"/>
             <path d="M7,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
-        </g>
+        </g!-->
      </g>
 </svg>
 
