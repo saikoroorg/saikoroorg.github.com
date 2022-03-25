@@ -5,7 +5,7 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.50b";
+cube.version = "0.8.51b";
 cube.timestamp = "20325";
 /************************************* /VERSION*
 
@@ -2321,8 +2321,10 @@ cube.Input = class {
                 touchesNext.push(evt.touches[i]);
                 for (let j = 0; j < this.touches.length; ++j) {
                     if (evt.touches[i].identifier == this.touches[j].identifier) {
-                        let touchNext = this.screen.posToGlobalPos(new cube.Vec(evt.touches[i].pageX, evt.touches[i].pageY, evt.touches[i].force));
-                        let touchPrev = this.screen.posToGlobalPos(new cube.Vec(this.touches[j].pageX, this.touches[j].pageY, this.touches[j].force));
+                        //let touchNext = this.screen.posToGlobalPos(new cube.Vec(evt.touches[i].pageX, evt.touches[i].pageY, evt.touches[i].force));
+                        let touchNext = new cube.Vec(evt.touches[i].pageX, evt.touches[i].pageY, evt.touches[i].force);
+                        //let touchPrev = this.screen.posToGlobalPos(new cube.Vec(this.touches[j].pageX, this.touches[j].pageY, this.touches[j].force));
+                        let touchPrev = new cube.Vec(this.touches[j].pageX, this.touches[j].pageY, this.touches[j].force);
                         moveVec.add(touchNext).sub(touchPrev);
                         moveCount += 1;
                         // console.log("Touch Move ["+i+"]: " + touchPrev.toString() + "->" + touchNext.toString());

@@ -246,7 +246,7 @@ a {
 	// KING:  f43047f63064f66067f55
 	// COLOR: d66 6b6 66d bb4 888 000
 
-	// Example 1: Playing cards.
+	// Example 1: 54 Playing cards with court cards J,Q,K,A and joker cards.
 	// 5c54&f0=g21089&f1=c44067c35076c53054&f2=a44066a34075a43044a63064a56057&f3=d44066d53057d35075&f4=b43066b54057b35076&f5=e21e41e61e81e23e83e25e85e27e87e29e49e69e89&f6=e21081e29089e21029e81089e42e62e33e53e73e44e64e35e55e75e46e66e37e57e77e48e68&n1=f53f44047f64067f56&n2=f43063f64f45065f46f47067&n3=f43063f45065f47067f63067&n4=f43045f45065f63067&n5=f43063f44f45065f66f47067&n6=f43063f43047f45065f66f47067&n7=f43063f44f63067&n8=f43063f43047f55f63067f47067&n9=f43063f43045f45065f64067f47067&n10=f43047f63083f63067f83087f67087&n11=f53f63067f46f57&n12=f43063f43046f63065f56f67&n13=f43047f63064f66067f55&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff
 
 	// Example 2: Dice design cards.
@@ -472,8 +472,10 @@ a {
 	var numberFrameMax = numberMax;
 
 	// Card numbers.
-	var decks = [], trashes = [], handCards = [], playCards = [], holdCards = [];
+	var decks = [], trashes = [];
+	var handCards = [], playCards = [], holdCards = [];
 	var drawCounts = 0;
+	const numberNothing = -3, numberBlankCard = -2, numberBackCard = -1;
 
 	// Main loop.
 	var result = 1;
@@ -488,10 +490,10 @@ a {
 				" colors=" + colors + " courts=" + courts + " jokers=" + jokers + " numberMax=" + numberMax)
 
 			// Create new decks.
-			drawCounts = 0;
 			decks = [], trashes = [], handCards = [], playCards = [], holdCards = [];
+			drawCounts = 0;
 			for (let j = 0; j < frameMax; j++) {
-				decks[j] = j;
+				decks[j] = frameMax + j;
 			}
 
 			// Shuffle by Fisher-Yates argorythm.
@@ -521,7 +523,6 @@ a {
 		var angle = 0;
 
 		// Drawing card.
-		const numberNoCard = -2, numberBackCard = -1;
 		let holdingCardId = -1;
 		for (rolling = 1; rolling >= 1; rolling++) {
 
@@ -552,10 +553,10 @@ a {
 									counts = handCards.length;
 									holdingCardId = -1;
 
-								// Play cards from hand cards.
+								// Tap.
 								} else {
-									playCards.push(handCards.splice(i, 1)[0]);
-									counts = handCards.length;
+									handCards[i] = handCards[i] >= frameMax ?
+										handCards[i] - frameMax : handCards[i] + frameMax;
 									holdingCardId = -1;
 								}
 								break;
@@ -585,9 +586,10 @@ a {
 									}
 									holdingCardId = -1;
 
-								// Move playing cards to trash.
+								// Turn over the card on tap.
 								} else {
-									trashes.push(playCards.splice(j, 1)[0]);
+									playCards[j] = playCards[j] >= frameMax ?
+										playCards[j] - frameMax : playCards[j] + frameMax;
 									holdingCardId = -1;
 								}
 								break;
@@ -606,26 +608,23 @@ a {
 						}
 
 					// Touch trashes.
-					} else if (i == handCards.length + playCards.length) {
+					} else if (i == handCards.length + playCards.length + 0) {
 
-						if (result > 0 && trashes.length > 0) {
+						if (result > 0) {
 							if (action) {
 
-								// Discard.
+								// Discard to trashes.
 								if (holdCards.length > 0) {
 									while (holdCards.length > 0) {
 										trashes.push(holdCards.pop());
 									}
 									holdingCardId = -1;
 
-								// Recycle trashes to decks and shuffle.
+								// Turn over the card on tap.
 								} else {
-									/*while (trashes.length > 0) {
-										let j = cubeRandom(trashes.length);
-										decks.push(trashes.splice(j, 1)[0]);
-									}*/
 									holdingCardId = -1;
 								}
+								break;
 
 							// Start to touch trashes.
 							} else {
@@ -651,16 +650,20 @@ a {
 								if (action && result > 0) {
 									while (trashes.length > 0) {
 										let j = cubeRandom(trashes.length);
-										decks.push(trashes.splice(j, 1)[0]);
+										let card = trashes.splice(j, 1)[0];
+										// Turn over all cards.
+										card = card >= frameMax ? card - frameMax : card;
+										decks.push(card);
 									}
 									holdingCardId = -1;
+									break;
 
 								// Start to touch decks.
 								} else {
-									/*if (holdingCardId < 0) {
+									if (holdingCardId < 0) {
 										holdingCardId = i;
 									}
-									touchingCardId = i;*/
+									touchingCardId = i;
 
 									// Reset for touching animation.
 									rolling = 0;
@@ -685,16 +688,15 @@ a {
 								result = 0;
 								holdingCardId = -1;
 								rolling = 0;
+								break;
 							} else {
-								//touchingCardId = i;
+								touchingCardId = i;
 
 								// Reset for touching animation.
 								rolling = 0;
 								break;
 							}
 						}
-
-						break;
 					}
 				}
 			}
@@ -702,39 +704,45 @@ a {
 			// Holding.
 			if (holdCards.length > 0) {
 
-				// Discard.
+				// Cancel holding hand cards.
 				if (action) {
 
-					// End to hold hand cards.
+					// Cancel holding hand cards.
 					if (holdingCardId < handCards.length) {
 						let j = holdingCardId;
-						handCards.splice(j, 1);
+						while (holdCards.length > 0) {
+							handCards.splice(j, 0, holdCards.pop());
+						}
 						counts = handCards.length;
+						holdingCardId = -1;
 
-					// Start to hold playing cards.
+					// Cancel holding playing cards.
 					} else if (holdingCardId < handCards.length + playCards.length) {
-						let j = holdingCardId - handCards.length;
-						playCards.splice(j, 1);
-					}
+						let j = holdingCardId - playCards.length;
+						while (holdCards.length > 0) {
+							playCards.splice(j, 0, holdCards.pop());
+						}
+						holdingCardId = -1;
 
-					// Move hold cards to trash.
-					while (holdCards.length > 0) {
-						trashes.push(holdCards.pop());
+					} else {
+						// Discard to trash.
+						while (holdCards.length > 0) {
+							trashes.push(holdCards.pop());
+						}
+						holdingCardId = -1;
 					}
-					holdingCardId = -1;
 				}
 
+			// End holding.
 			} else {
 
-				// End holding hand cards.
+				// Remove blank cards.
 				for (let i = handCards.length - 1; i >= 0; i--) {
 					if (handCards[i] < 0) {
 						handCards.splice(i, 1);
 					}
 					counts = handCards.length;
 				}
-
-				// End holding playing cards.
 				for (let i = handCards.length + playCards.length - 1; i >= 0; i--) {
 					let j = i - handCards.length;
 					if (playCards[j] < 0) {
@@ -743,24 +751,46 @@ a {
 				}
 
 				// Start holding.
-				if (holdingCardId != touchingCardId) {
+				if (holdingCardId >= 0 && holdingCardId != touchingCardId) {
 
 					// Start to hold hand cards.
 					if (holdingCardId < handCards.length) {
 						let j = holdingCardId;
-						holdCards.push(handCards[j]);
-						handCards[j] = numberNoCard;
+						//if (handCards[j] >= 0) {
+							holdCards.push(handCards[j]);
+							handCards[j] = numberBlankCard;
+						//}
 
 					// Start to hold playing cards.
 					} else if (holdingCardId < handCards.length + playCards.length) {
 						let j = holdingCardId - handCards.length;
-						holdCards.push(playCards[j]);
-						playCards[j] = numberNoCard;
+						//if (playCards[j] >= 0) {
+							holdCards.push(playCards[j]);
+							playCards[j] = numberBlankCard;
+						//}
 
 					// Start to hold trash cards.
-					} else if (holdingCardId == handCards.length + playCards.length) {
+					} else if (holdingCardId == handCards.length + playCards.length + 0) {
 						let j = trashes.length - 1;
-						holdCards.push(trashes.splice(j, 1)[0]);
+						//if (trashes[j] >= 0) {
+							holdCards.push(trashes.splice(j, 1)[0]);
+						//}
+					}
+
+					// Push blank cards for putting target.
+					if (holdingCardId >= 0) {
+						if (handCards.length > 0) {
+							handCards.unshift(numberBlankCard);
+							handCards.push(numberBlankCard);
+						} else {
+							handCards.push(numberBlankCard);
+						}
+						if (playCards.length > 0) {
+							playCards.unshift(numberBlankCard);
+							playCards.push(numberBlankCard);
+						} else {
+							playCards.push(numberBlankCard);
+						}
 					}
 				}
 			}
@@ -784,14 +814,14 @@ a {
 
 			// Update sprite animations.
 			for (let i = 0; i < handCards.length + playCards.length + cardExtraMax; i++) {
-				let n = numberNoCard;
+				let n = numberNothing;
 
 				// Update hand cards.
 				if (i < handCards.length) {
 
 					// Drawing.
 					if (result <= 0 && rolling < 30 && i >= handCards.length - drawCounts) {
-						n = numberBackCard;
+						n = frameMax;
 
 					// Showing.
 					} else {
@@ -808,15 +838,15 @@ a {
 					if (trashes.length > 0) {
 						n = trashes[trashes.length - 1];
 					} else {
-						n = numberNoCard;
+						n = numberBlankCard;
 					}
 
 				// Update decks.
 				} else if (i == handCards.length + playCards.length + 1) {
 					if (decks.length > 0) {
-						n = numberBackCard;
+						n = frameMax;
 					} else {
-						n = numberNoCard;
+						n = numberBlankCard;
 					}
 
 				// Update holding cards.
@@ -824,12 +854,17 @@ a {
 					if (holdCards.length > 0 && motion) {
 						n = holdCards[holdCards.length - 1];
 					} else {
-						n = numberNoCard;
+						n = numberNothing;
 					}
 				}
 
 				// Update animation frames.
-				if (n >= 0) {
+				if (n >= frameMax) {
+					cubeAnimate(colorFrameMax + 1, colorSprites[i]);
+					cubeAnimate(-1, numberSprites[i]);
+
+				// Normal cards.
+				} else if (n >= 0) {
 					let n0 = cubeDiv(n, numberFrameMax); // Colors.
 					let n1 = cubeMod(n, numberFrameMax); // Numbers.
 					if (!buffers[1]) {
@@ -843,14 +878,10 @@ a {
 					cubeAnimate(n1, numberSprites[i]);
 
 				// No cards.
-				} else if (n == numberNoCard) {
+				} else if (n == numberBlankCard) {
 					cubeAnimate(colorFrameMax + 0, colorSprites[i]);
 					cubeAnimate(-1, numberSprites[i]);
 
-				// Backside cards.
-				} else if (n == numberBackCard) {
-					cubeAnimate(colorFrameMax + 1, colorSprites[i]);
-					cubeAnimate(-1, numberSprites[i]);
 				}
 			}
 
@@ -984,12 +1015,12 @@ a {
 				cubeMove(sx - s * 8, sy - s * 8, numberSprites[i]);
 			}
 
-			if (motion) {
+			/*if (motion) {
 				let v0 = motion;
 				let v1 = cubeScreenLocalPos(v0);
 				cubeAnimate(1, sprites[1]);
 				cubeMove(v1.x, v1.y, sprites[1]);
-			}
+			}*/
 
 			// Clear screen.
 			cubeClear();
