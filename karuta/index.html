@@ -428,7 +428,7 @@ a {
 			decks = [], trashes = [], handCards = [], playCards = [], holdCards = [];
 			drawCounts = 0;
 			for (let j = 0; j < frameMax; j++) {
-				decks[j] = frameMax + j;
+				decks[j] = j;
 			}
 
 			// Shuffle by Fisher-Yates argorythm.
@@ -586,7 +586,7 @@ a {
 									while (trashes.length > 0) {
 										let j = cubeRandom(trashes.length);
 										let card = trashes.splice(j, 1)[0];
-										// Turn over all cards.
+										// Open all cards.
 										card = card >= frameMax ? card - frameMax : card;
 										decks.push(card);
 									}
@@ -613,7 +613,10 @@ a {
 							//if (motion && rolling > 5) {
 								if (handCards.length + playCards.length < cardCountsMax) {
 									counts += 1;
-									handCards.push(decks.pop());
+									let card = decks.pop();
+									// Open all cards.
+									card = card >= frameMax ? card - frameMax : card;
+									handCards.push(card);
 									if (result > 0) {
 										drawCounts = 1;
 									} else {
