@@ -739,7 +739,7 @@ a {
 					rolling = 0;
 
 				// Timeout and show result.
-				} else if (rolling > 60) {
+				} else if (rolling > 15) {
 					angle = 0;
 					result = 1;
 					rolling = 1;
@@ -755,7 +755,7 @@ a {
 				if (i < handCards.length) {
 
 					// Drawing.
-					if (result <= 0 && rolling < 30 && i >= handCards.length - drawCounts) {
+					if (result <= 0 && rolling < 10 && i >= handCards.length - drawCounts) {
 						n = frameMax;
 
 					// Showing.
@@ -820,12 +820,14 @@ a {
 				}
 			}
 
-			// Card lines and card scales.
-			const handLineMax = 6;//frameMax > 7 ? cubeSqrt(handCounts - 1) + 1 : 7;
+			// Hand card lines and scales.
+			const handLineMax = 6;//frameMax > 7 ? cubeSqrt(handCards.length - 1) + 1 : 7;
 			let handLines = cubeDiv(handCards.length - 1, handLineMax) + 1;
-			const playLineMax = 8;//frameMax > 7 ? cubeSqrt(playCounts - 1) + 1 : 7;
-			let playLines = cubeDiv(playCards.length - 1, playLineMax) + 1;
 			let handScale = 1;// / ((handCards.length < handLineMax ? handCards.length : handLines >= handLineMax ? handLines : handLineMax) + 2);
+
+			// Play card lines and scales.
+			const playLineMax = 8;//frameMax > 7 ? cubeSqrt(playCards.length - 1) + 1 : 7;
+			let playLines = cubeDiv(playCards.length - 1, playLineMax) + 1;
 			let playScale = 6 / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
 
 			// Grid and center positions.
@@ -848,14 +850,14 @@ a {
 					if (i >= handCards.length - drawCounts) {
 
 						// Drawing.
-						if (rolling < 30) {
+						if (rolling < 10) {
 							a1 = 0;
 							a = angle;
 
 						// Showing.
-						} else if (rolling < 60) {
-							a0 = rolling < 40 ? 1 * (1.4 - 0.02 * rolling) : 1 * 0.6;
-							a1 = rolling < 60 ? 1 * (-0.8 + 0.03 * rolling) : 1 * 1.0;
+						} else if (rolling < 15) {
+							a0 = rolling < 12 ? 1 * (1.2 - 0.05 * rolling) : 1 * 0.6;
+							a1 = rolling < 15 ? 1 * (-0.5 + 0.1 * rolling) : 1 * 1.0;
 						}
 					}
 
