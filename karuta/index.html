@@ -810,7 +810,7 @@ a {
 				if (i < handCards.length) {
 
 					// Holding or within 60f of release.
-					if (holdCards.length > 0 || rolling < 60) {
+					//if (holdCards.length > 0 || rolling < 60) {
 						// Drawing.
 						if (result <= 0 && rolling < 10 && i >= handCards.length - drawCounts) {
 							n = frameMax;
@@ -821,9 +821,9 @@ a {
 						}
 
 					// Not holding.
-					} else {
-						n = frameMax;
-					}
+					//} else {
+					//	n = frameMax;
+					//}
 
 				// Update playing cards.
 				} else if (i < handCards.length + playCards.length) {
