@@ -470,7 +470,7 @@ a {
 			let motionLocalPos = motion ? cubeScreenLocalPos(motion) : null;
 
 			// Check each cards.
-			let touchingCardId = -1, touchingDir = 0;
+			let touchingCardId = -1, touchingDir = 0, appending = 0;
 			for (let i = handCards.length + playCards.length + cardExtraMax - 1; i >= 0; i--) {
 				if (cubeCheck(motion, colorSprites[i])) {
 
@@ -481,10 +481,12 @@ a {
 
 							// Check touching position.
 							if (holdCards.length > 0 && handCards[j] != 0) {
-								if (motionLocalPos.x <= colorSprites[i].pos.x) {
+								if (motionLocalPos.x < colorSprites[i].pos.x - 6) {
 									touchingDir = -1;
-								} else if (motionLocalPos.x > colorSprites[i].pos.x) {
+								} else if (motionLocalPos.x > colorSprites[i].pos.x + 6) {
 									touchingDir = +1;
+								} else {
+									appending = 1;
 								}
 							}
 
@@ -495,7 +497,17 @@ a {
 								if (holdCards.length > 0) {
 									let k = touchingDir >= 0 ? j + 1 : j;
 									while (holdCards.length > 0) {
-										handCards.splice(k, 0, holdCards.pop());
+										let card = holdCards.pop();
+										if (appending) { // Add as sub card.
+											card = card <= frameMax ? card + frameMax : card;
+										} else { // Add as main card.
+											if (card > frameMax) {
+												card -= frameMax;
+											} else if (card < -frameMax) {
+												card += frameMax;
+											}
+										}
+										handCards.splice(k, 0, card);
 									}
 									counts = handCards.length;
 									holdingCardId = -1;
@@ -529,6 +541,8 @@ a {
 									touchingDir = -1;
 								} else if (motionLocalPos.x > colorSprites[i].pos.x + 6) {
 									touchingDir = +1;
+								} else {
+									appending = 1;
 								}
 							}
 
@@ -539,7 +553,17 @@ a {
 								if (holdCards.length > 0) {
 									let k = touchingDir >= 0 ? j + 1 : j;
 									while (holdCards.length > 0) {
-										playCards.splice(k, 0, holdCards.pop());
+										let card = holdCards.pop();
+										if (appending) { // Add as sub card.
+											card = card <= frameMax ? card + frameMax : card;
+										} else { // Add as main card.
+											if (card > frameMax) {
+												card -= frameMax;
+											} else if (card < -frameMax) {
+												card += frameMax;
+											}
+										}
+										playCards.splice(k, 0, card);
 									}
 									holdingCardId = -1;
 
@@ -572,7 +596,13 @@ a {
 								// Discard to trashes.
 								if (holdCards.length > 0) {
 									while (holdCards.length > 0) {
-										trashes.push(holdCards.pop());
+										let card = holdCards.pop();
+										if (card > frameMax) { // Discard as main card.
+											card -= frameMax;
+										} else if (card < -frameMax) {
+											card += frameMax;
+										}
+										trashes.push(card);
 									}
 									holdingCardId = -1;
 
@@ -702,7 +732,13 @@ a {
 					// Cancel holding cards and discard to trash.
 					} else {*/
 						while (holdCards.length > 0) {
-							trashes.push(holdCards.pop());
+							let card = holdCards.pop();
+							if (card > frameMax) { // Discard as main card.
+								card -= frameMax;
+							} else if (card < -frameMax) {
+								card += frameMax;
+							}
+							trashes.push(card);
 						}
 						holdingCardId = -1;
 					//}
@@ -857,8 +893,9 @@ a {
 
 				// Normal cards.
 				} else if (n > 0) {
-					let n0 = cubeDiv(n - 1, numberFrameMax); // Colors.
-					let n1 = cubeMod(n - 1, numberFrameMax); // Numbers.
+					let n01 = cubeMod(n - 1, frameMax);
+					let n0 = cubeDiv(n01, numberFrameMax); // Colors.
+					let n1 = cubeMod(n01, numberFrameMax); // Numbers.
 					if (!buffers[1]) {
 						if (n0 <= colorFrameMax && n1 >= courtFrameMax) {
 							n1 = n1 - courtFrameMax + frameMin + 9; // Number cards.
@@ -901,7 +938,8 @@ a {
 
 				// Set hand card positions.
 				if (i < handCards.length) {
-					let x = cubeMod(i, handLineMax), y = cubeDiv(i, handLineMax);
+					let j = i;
+					let x = cubeMod(j, handLineMax), y = cubeDiv(j, handLineMax);
 					let rows = y < handLines - 1 ? handLineMax : (cubeMod(handCards.length - 1, handLineMax) + 1);
 					const margin = 0;
 					sx = ox + mx * (x + margin + 1) / (rows + margin*2 + 1);
@@ -922,14 +960,31 @@ a {
 						}
 					}
 
-					// Scale animation.
+					// Touching scale animation.
 					if (touchingCardId == i) {
 						s = handScale * (rolling < 5 ? (1.2 - 0.04 * rolling) : 1.0);
 						sx = sx + 4 * handScale * -touchingDir;
+
+					// Drawing scale animation.
 					} else if (rolling < 5 && i >= handCards.length - drawCounts) {
 						s = handScale * (0.8 + 0.04 * rolling);
+
 					} else {
 						s = handScale;
+					}
+
+					// Subcard position adjustment.
+					if (handCards[j] > frameMax || handCards[j] < -frameMax) {
+						if (j > 0 && handCards[j - 1] != 0) {
+							let adjust = -1;
+							for (let k = j - 1; k >= 0; k--) {
+								if (-frameMax <= handCards[k] && handCards[k] <= frameMax) {
+									break;
+								}
+								adjust -= 1;
+							}
+							sx += mx * 0.08 * adjust;
+						}
 					}
 
 				// Set playing card positions.
@@ -941,13 +996,28 @@ a {
 					sx = ox + mx * (x + margin + 1) / (rows + margin*2 + 1);
 					sy = oy + my * (y + 5 - 0.5 * playScale) / (playLines + 8);
 
-					// Scale animation.
+					// Touching scale animation.
 					if (touchingCardId == i) {
 						s = playScale * touchScale * (rolling < 5 ? (1.2 - 0.04 * rolling) : 1.0)
 						sx = sx + 4 * playScale * -touchingDir;
 						sy = sy + 40 - 40 * touchScale;
+
 					} else {
 						s = playScale;
+					}
+
+					// Subcard position adjustment.
+					if (playCards[j] > frameMax || playCards[j] < -frameMax) {
+						if (j > 0 && playCards[j - 1] != 0) {
+							let adjust = -1;
+							for (let k = j - 1; k >= 0; k--) {
+								if (-frameMax <= playCards[k] && playCards[k] <= frameMax) {
+									break;
+								}
+								adjust -= 1;
+							}
+							sx += mx * 0.08 * adjust;
+						}
 					}
 
 				// Set trash positions.
