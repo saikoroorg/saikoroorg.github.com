@@ -410,7 +410,6 @@ a {
 	var decks = [], trashes = [];
 	var handCards = [], playCards = [], holdCards = [];
 	var drawCounts = 0;
-	const numberBlankCard = -1;
 
 	// Main loop.
 	var result = 1;
@@ -428,7 +427,7 @@ a {
 			decks = [], trashes = [], handCards = [], playCards = [], holdCards = [];
 			drawCounts = 0;
 			for (let j = 0; j < frameMax; j++) {
-				decks[j] = j;
+				decks[j] = j + 1;
 			}
 
 			// Shuffle by Fisher-Yates argorythm.
@@ -478,19 +477,19 @@ a {
 					// Touch hand cards.
 					if (i < handCards.length) {
 						if (result > 0) {
+							let j = i;
 
 							// Check touching position.
-							if (holdCards.length > 0) {
-								if (motionLocalPos.x < colorSprites[i].pos.x - 2) {
+							if (holdCards.length > 0 && handCards[j] != 0) {
+								if (motionLocalPos.x <= colorSprites[i].pos.x) {
 									touchingDir = -1;
-								} else if (motionLocalPos.x > colorSprites[i].pos.x + 2) {
+								} else if (motionLocalPos.x > colorSprites[i].pos.x) {
 									touchingDir = +1;
 								}
 							}
 
 							// Check release action.
 							if (action) {
-								let j = i;
 
 								// Insert hold cards to hand cards.
 								if (holdCards.length > 0) {
@@ -503,8 +502,7 @@ a {
 
 								// Turn over the card on tapping.
 								} else {
-									handCards[j] = handCards[j] >= frameMax ?
-										handCards[j] - frameMax : handCards[j] + frameMax;
+									handCards[j] = -handCards[j];
 									holdingCardId = -1;
 								}
 								break;
@@ -523,20 +521,19 @@ a {
 					// Touch playing cards.
 					} else if (i < handCards.length + playCards.length) {
 						if (result > 0) {
+							let j = i - handCards.length;
 
 							// Check touching position.
-							if (holdCards.length > 0) {
-								if (motionLocalPos.x < colorSprites[i].pos.x - 2) {
+							if (holdCards.length > 0 && playCards[j] != 0) {
+								if (motionLocalPos.x < colorSprites[i].pos.x - 6) {
 									touchingDir = -1;
-	
-								} else if (motionLocalPos.x > colorSprites[i].pos.x + 2) {
+								} else if (motionLocalPos.x > colorSprites[i].pos.x + 6) {
 									touchingDir = +1;
 								}
 							}
 
 							// Check release action.
 							if (action) {
-								let j = i - handCards.length;
 
 								// Insert hold cards to play cards.
 								if (holdCards.length > 0) {
@@ -548,8 +545,7 @@ a {
 
 								// Turn over the card on tapping.
 								} else {
-									playCards[j] = playCards[j] >= frameMax ?
-										playCards[j] - frameMax : playCards[j] + frameMax;
+									playCards[j] = -playCards[j];
 									holdingCardId = -1;
 								}
 								break;
@@ -582,8 +578,7 @@ a {
 
 								// Turn over the card on tapping.
 								} else {
-									trashes[trashes.length-1] = trashes[trashes.length-1] >= frameMax ?
-										trashes[trashes.length-1] - frameMax : trashes[trashes.length-1] + frameMax;
+									trashes[trashes.length-1] = -trashes[trashes.length-1];
 									holdingCardId = -1;
 								}
 								break;
@@ -622,7 +617,7 @@ a {
 											let j = cubeRandom(trashes.length);
 											let card = trashes.splice(j, 1)[0];
 											// Open all cards.
-											card = card >= frameMax ? card - frameMax : card;
+											card = card < 0 ? -card : card;
 											decks.push(card);
 										}
 										holdingCardId = -1;
@@ -650,7 +645,7 @@ a {
 										counts += 1;
 										let card = decks.pop();
 										// Open all cards.
-										card = card >= frameMax ? card - frameMax : card;
+										card = card < 0 ? -card : card;
 										handCards.push(card);
 										if (result > 0) {
 											drawCounts = 1;
@@ -718,14 +713,14 @@ a {
 
 				// Remove blank cards.
 				for (let i = handCards.length - 1; i >= 0; i--) {
-					if (handCards[i] < 0) {
+					if (handCards[i] == 0) {
 						handCards.splice(i, 1);
 					}
 					counts = handCards.length;
 				}
 				for (let i = handCards.length + playCards.length - 1; i >= 0; i--) {
 					let j = i - handCards.length;
-					if (playCards[j] < 0) {
+					if (playCards[j] == 0) {
 						playCards.splice(j, 1);
 					}
 				}
@@ -736,33 +731,33 @@ a {
 					// Start to hold hand cards.
 					if (holdingCardId < handCards.length) {
 						let j = holdingCardId;
-						if (handCards[j] >= 0) {
+						if (handCards[j] != 0) {
 							holdCards.push(handCards[j]);
-							handCards[j] = numberBlankCard;
+							handCards[j] = 0;
 						}
 
 					// Start to hold playing cards.
 					} else if (holdingCardId < handCards.length + playCards.length) {
 						let j = holdingCardId - handCards.length;
-						if (playCards[j] >= 0) {
+						if (playCards[j] != 0) {
 							holdCards.push(playCards[j]);
-							playCards[j] = numberBlankCard;
+							playCards[j] = 0;
 						}
 
 					// Start to hold trashes.
 					} else if (holdingCardId == handCards.length + playCards.length + 0) {
 						let j = trashes.length - 1;
-						if (trashes[j] >= 0) {
+						if (trashes[j] != 0) {
 							holdCards.push(trashes.splice(j, 1)[0]);
 						}
 
 					// Start to hold decks.
 					} else if (holdingCardId == handCards.length + playCards.length + 1) {
 						let j = decks.length - 1;
-						if (decks[j] >= 0) {
+						if (decks[j] != 0) {
 							let card = decks.pop();
 							// Hide all cards.
-							card = card < frameMax ? card + frameMax : card;
+							card = card > 0 ? -card : card;
 							holdCards.push(card);
 						}
 					}
@@ -770,16 +765,16 @@ a {
 					// Push blank cards for putting target.
 					if (holdCards.length > 0) {
 						if (handCards.length > 0) {
-							//handCards.unshift(numberBlankCard);
-							//handCards.push(numberBlankCard);
+							//handCards.unshift(0);
+							//handCards.push(0);
 						} else {
-							handCards.push(numberBlankCard);
+							handCards.push(0);
 						}
 						if (playCards.length > 0) {
-							//playCards.unshift(numberBlankCard);
-							//playCards.push(numberBlankCard);
+							//playCards.unshift(0);
+							//playCards.push(0);
 						} else {
-							playCards.push(numberBlankCard);
+							playCards.push(0);
 						}
 					}
 				}
@@ -804,7 +799,7 @@ a {
 
 			// Update sprite animations.
 			for (let i = 0; i < handCards.length + playCards.length + cardExtraMax; i++) {
-				let n = numberBlankCard;
+				let n = 0;
 
 				// Update hand cards.
 				if (i < handCards.length) {
@@ -813,7 +808,7 @@ a {
 					//if (holdCards.length > 0 || rolling < 60) {
 						// Drawing.
 						if (result <= 0 && rolling < 10 && i >= handCards.length - drawCounts) {
-							n = frameMax;
+							n = -1;
 
 						// Showing.
 						} else {
@@ -822,7 +817,7 @@ a {
 
 					// Not holding.
 					//} else {
-					//	n = frameMax;
+					//	n = -1;
 					//}
 
 				// Update playing cards.
@@ -835,15 +830,15 @@ a {
 					if (trashes.length > 0) {
 						n = trashes[trashes.length - 1];
 					} else {
-						n = numberBlankCard;
+						n = 0;
 					}
 
 				// Update decks.
 				} else if (i == handCards.length + playCards.length + 1) {
 					if (decks.length > 0) {
-						n = frameMax;
+						n = -1;
 					} else {
-						n = numberBlankCard;
+						n = 0;
 					}
 
 				// Update holding cards.
@@ -851,19 +846,19 @@ a {
 					if (holdCards.length > 0 && motion) {
 						n = holdCards[holdCards.length - 1];
 					} else {
-						n = numberBlankCard;
+						n = 0;
 					}
 				}
 
-				// Update animation frames.
-				if (n >= frameMax) {
+				// Backside cards.
+				if (n < 0) {
 					cubeAnimate(colorFrameMax + 1, colorSprites[i]);
 					cubeAnimate(-1, numberSprites[i]);
 
 				// Normal cards.
-				} else if (n >= 0) {
-					let n0 = cubeDiv(n, numberFrameMax); // Colors.
-					let n1 = cubeMod(n, numberFrameMax); // Numbers.
+				} else if (n > 0) {
+					let n0 = cubeDiv(n - 1, numberFrameMax); // Colors.
+					let n1 = cubeMod(n - 1, numberFrameMax); // Numbers.
 					if (!buffers[1]) {
 						if (n0 <= colorFrameMax && n1 >= courtFrameMax) {
 							n1 = n1 - courtFrameMax + frameMin + 9; // Number cards.
@@ -891,6 +886,7 @@ a {
 			const playLineMax = 8;//frameMax > 7 ? cubeSqrt(playCards.length - 1) + 1 : 7;
 			let playLines = cubeDiv(playCards.length - 1, playLineMax) + 1;
 			let playScale = (holdCards.length > 0 ? 6 : 5) / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
+			const touchScale = touchingDir == 0 ? 1.2 : 1;
 
 			// Deck/Trash card scales.
 			let deckScale = holdCards.length > 0 ? 1 : 1.5;
@@ -947,8 +943,9 @@ a {
 
 					// Scale animation.
 					if (touchingCardId == i) {
-						s = playScale * (rolling < 5 ? (1.2 - 0.04 * rolling) : 1.0)
+						s = playScale * touchScale * (rolling < 5 ? (1.2 - 0.04 * rolling) : 1.0)
 						sx = sx + 4 * playScale * -touchingDir;
+						sy = sy + 40 - 40 * touchScale;
 					} else {
 						s = playScale;
 					}
