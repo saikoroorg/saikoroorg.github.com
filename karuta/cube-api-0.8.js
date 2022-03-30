@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.51b";
-cube.timestamp = "20325";
+cube.version = "0.8.52b";
+cube.timestamp = "20329";
 /************************************* /VERSION*
 
 
@@ -1560,18 +1560,25 @@ cube.Sprite = class {
     // Set cliping frame pos of image.
     setFrame(frame) {
         if (this.imageType != null) {
-            this._frame = frame;
-            var nx = (this.imageSize.x / this.size.x);
-            this.imagePos.x = Math.floor(frame % nx) * this.size.x;
-            this.imagePos.y = Math.floor(frame / nx) * this.size.y;
-            this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+            if (frame > 0) {
+                this._frame = frame;
+                let nx = (this.imageSize.x / this.size.x);
+                this.imagePos.x = Math.floor((frame - 1) % nx) * this.size.x;
+                this.imagePos.y = Math.floor((frame - 1) / nx) * this.size.y;
+                this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+                this.sprite.style.backgroundSize = "";//"" + this.size.x + " " + this.size.y;
+            } else {
+                this._frame = 0;
+                this.sprite.style.backgroundPosition = "" + 0 + " " + 0;
+                this.sprite.style.backgroundSize = "" + 0 + " " + 0;
+            }
         }
     }
 
     // Set frame rect of image.
     setFrameRect(x, y, w, h) {
         if (this.imageType != null) {
-            this._frame = 0;
+            this._frame = -1;
             this.sprite.style.width = this.size.x = w;
             this.sprite.style.height = this.size.y = h;
             this.imagePos.x = x;
@@ -1630,9 +1637,14 @@ cube.Sprite = class {
 
             // Update image frame rect.
             if (this._frame > 0) {
+                let nx = (imageSize.x / this.size.x);
                 this.imagePos.x = Math.floor(this._frame % nx) * this.size.x;
                 this.imagePos.y = Math.floor(this._frame / nx) * this.size.y;
                 this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+                this.sprite.style.backgroundSize = "";//"" + this.size.x + " " + this.size.y;
+            } else if (this._frame == 0) {
+                this.sprite.style.backgroundPosition = "" + 0 + " " + 0;
+                this.sprite.style.backgroundSize = "" + 0 + " " + 0;
             }
 
             // Update position.

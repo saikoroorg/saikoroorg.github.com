@@ -28,16 +28,18 @@
                 <path d="M5,3h6v4h-6 M3,7h10v4h-10Z M7,11h2v2h-2" fill="#6b6"/>
             </g>
         </g>
-        <!-- NONE #888=rgb(136,136,136)/(0,0%,53%) -->
+        <!-- JOKER #888=rgb(136,136,136)/(0,0%,53%) -->
         <g transform="translate(80,0)">
-            <!--path d="M2,0h12v16h-12Z" stroke="#fff" fill="#fff"/>
+            <!--X path d="M2,0h12v16h-12Z" stroke="#fff" fill="#fff"/>
             <g transform="translate(0,0)">
                 <path d="M3,3h2v2h-2Z M11,3h2v2h-2Z M5,5h6v6h-6M3,11h2v2h-2Z M11,11h2v2h-2Z" fill="#888"/>
             </g-->
-
             <path d="M2,0h12v16h-12Z" stroke="#fff" fill="#fff"/>
             <path d="M1,-1h2v2h-2ZM5,-1h2v2h-2ZM9,-1h2v2h-2ZM13,-1h2v2h-2Z M1,3h2v2h-2ZM13,3h2v2h-2Z M1,7h2v2h-2ZM13,7h2v2h-2Z M1,11h2v2h-2ZM13,11h2v2h-2Z M1,15h2v2h-2ZM5,15h2v2h-2ZM9,15h2v2h-2ZM13,15h2v2h-2Z" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#888"/>
         </g>
+        <!-- NONE #888=rgb(136,136,136)/(0,0%,53%) -->
+            <!--Blank path d="M2,0h12v16h-12Z" stroke="#fff" fill="#fff"/>
+            <path d="M1,-1h2v2h-2ZM5,-1h2v2h-2ZM9,-1h2v2h-2ZM13,-1h2v2h-2Z M1,3h2v2h-2ZM13,3h2v2h-2Z M1,7h2v2h-2ZM13,7h2v2h-2Z M1,11h2v2h-2ZM13,11h2v2h-2Z M1,15h2v2h-2ZM5,15h2v2h-2ZM9,15h2v2h-2ZM13,15h2v2h-2Z" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#888"/-->
         <!-- BACK -->
         <g transform="translate(100,0)">
             <path d="M2,0h12v16h-12Z" stroke="#888" fill="#888"/>
@@ -45,21 +47,27 @@
         </g>
     </g>
     <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,2)">
-        <!-- J Q K -->
+        <!-- BASE -->
         <g transform="translate(0,20)">
-            <path d="M8,4h2v8h-2"/>
-            <path d="M5,9h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
+            <!--path d="M2,0h12v16h-12Z" stroke="#888" fill="none"/-->
+            <!--J path d="M8,4h2v8h-2"/>
+            <path d="M5,9h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/-->
             <!--(LargeJ) path d="M8,4h4 M12,4v6 M6,12h4"/>
             <path d="M3,9h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/!-->
         </g>
+        <!-- BLANK -->
         <g transform="translate(20,20)">
-            <path d="M10,8v-4h-4v6h2"/>
-            <path d="M9,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
+            <!--path d="M2,0h12v16h-12Z" stroke="#fff" fill="#fff"/>
+            <path d="M1,-1h2v2h-2ZM5,-1h2v2h-2ZM9,-1h2v2h-2ZM13,-1h2v2h-2Z M1,3h2v2h-2ZM13,3h2v2h-2Z M1,7h2v2h-2ZM13,7h2v2h-2Z M1,11h2v2h-2ZM13,11h2v2h-2Z M1,15h2v2h-2ZM5,15h2v2h-2ZM9,15h2v2h-2ZM13,15h2v2h-2Z" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#888"/-->
+
+            <!--Q path d="M10,8v-4h-4v6h2"/>
+            <path d="M9,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/-->
             <!--(LargeQ) path d="M12,8v-4h-8v8h4"/>
             <path d="M7,7h2v2h-2 M9,9h2v2h-2 M11,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/!-->
         </g>
+        <!-- NONE -->
         <g transform="translate(40,20)">
-            <path d="M6,4v8 M6,8h2 M10,6v-2 M10,10v2"/>
+            <!--K path d="M6,4v8 M6,8h2 M10,6v-2 M10,10v2"/!-->
             <!--(LargeK) path d="M4,4v8 M4,8h4"/>
             <path d="M9,5h2v2h-2 M9,9h2v2h-2 M11,3h2v2h-2 M11,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/!-->
         </g>
