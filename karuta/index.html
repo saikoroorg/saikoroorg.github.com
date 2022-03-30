@@ -147,7 +147,7 @@ a {
 </div>
 <script src="cube-api-0.8.js"></script>
 <!--Resource!--><script>
-	var buffers = [null, null]; // Original design buffer.
+	var canvases = [null, null]; // Original design canvas.
 
 	// Query parameters.
 	//  McN/S   : M = Hand card maximum, N = Deck card maximum, S = Suit counts.
@@ -190,23 +190,21 @@ a {
 	// 3c54/9&f0=g11099f11091f11018f91098f19099&f1=f55&f2=f73f37&f3=f73f55f37&f4=f33f73f37f77&f5=f33f73f55f37f77&f6=f33f73f35f75f37f77&f7=f33f73f35f55f75f37f77&f8=f33f53f73f35f75f37f57f77&f9=f33f53f73f35f55f75f37f57f77&f10=f11091f11018f91098f19099&f11=f11091f11018f91098f19099e33e73e44e54e64e45e55e65e46e56e66e37e77&n1=c53c44c54c64c35c45c55c65c75c36c46c56c66c76c47c57c67&n2=a43a63a34a44a54a64a74a35a45a55a65a75a46a56a66a57&n3=d53d44d54d64d35d45d55d65d75d46d56d66d57&n4=b43b53b63b44b54b64b35b45b55b65b75b36b46b56b66b76b57&n5=e33e73e44e54e64e45e55e65e46e56e66e37e77&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff
 
 	// Load color palette parameters.
-	var depth = 3, palette = [[255,255,255]];
+	var palette = [cubeVector(255, 255, 255), cubeVector(0, 0, 0)];
 	for (let j = 0; j <= keys.length; j++) {
 		let data = cubeParamData("c"+ j);
-		if (data.length >= depth) {
-			let d = cubeDiv(data.length, depth); // d=1:RGB, d=2:RRGGBB.
-			palette[j] = [];
-			for (let i = 0; i < depth; i++) {
-				palette[j][i] = data[i * d] * 16 + data[(i + 1) * d - 1];
-			}
+		if (data.length >= 3) {
+			let d = cubeDiv(data.length, 3); // d=1:RGB, d=2:RRGGBB.
+			palette[j] = cubeVector(
+				data[0 * d] * 16 + data[(0 + 1) * d - 1],
+				data[1 * d] * 16 + data[(1 + 1) * d - 1],
+				data[2 * d] * 16 + data[(2 + 1) * d - 1]);
 		}
 	}
 
 	// Load face design parameters.
 	let designsMax = [0, 0], designsKeys = ["f", "n"];
 	var bufferPixel = 2, bufferWidth = 9, bufferOffset = 1, bufferScale = 2;
-	var designs = [[], []];
-	designs[0] = [[[1,1,18,18,255,255,255]]]; // Face side design.
 	for (let k = 0; k < designsKeys.length; k++) {
 		for (let j = 0; j <= keys.length; j++) {
 			let data = cubeParamData(designsKeys[k] + j);
@@ -229,71 +227,52 @@ a {
 						bufferOffset = bufferOffset * 2;
 						bufferScale = bufferScale / 2;
 					}
-					designs[k] = [[[
-						bufferOffset,
-						bufferOffset,
-						bufferWidth + bufferOffset - 1,
-						bufferWidth + bufferOffset - 1,
-						255, 255, 255]]];
 				}
-			}
-		}
-	}
-	for (let k = 0; k < designsKeys.length; k++) {
-		for (let j = 0; j <= keys.length; j++) {
-			let data = cubeParamData(designsKeys[k] + j);
-			if (data.length > 0) {
-				designs[k][j] = [];
-				let w = 2;
 				if (j > 0) {
 					designsMax[k] = j > designsMax[k] ? j : designsMax[k];
-					if (j > 0 && designs[k][0]) {
-						let rects = designs[k][0];
-						for (let i = 0; i < rects.length; i++) { // designs[0] = Common design.
-							designs[k][j].push(rects[i]);
-						}
-					}
 				}
-				for (let i = 0; i < data.length; i += 3) {
-					let x = (data[i + 1] - 1) * bufferPixel + bufferOffset;
-					let y = (data[i + 2] - 1) * bufferPixel + bufferOffset;
-					if (x > 0 && y > 0) {
-						let color = data[i] >= 10 ? data[i] - 9 : data[i];
-						let r = palette[color] ? palette[color][0] : 0;
-						let g = palette[color] ? palette[color][1] : 0;
-						let b = palette[color] ? palette[color][2] : 0;
-						//let rect = [x, y, x + bufferPixel - 1, y + bufferPixel - 1, r, g, b];
+			}
+		}
+	}
+	let size = bufferWidth * bufferScale + bufferOffset * 2;
+	for (let k = 0; k < designsKeys.length; k++) {
+		if (designsMax[k] > 0) {
+			canvases[k] = cubeCanvas(size, size, bufferScale, designsMax[k]);
+			console.log(":size=" + size.toString() +
+				" bufferWidth=" + bufferWidth.toString() +
+				" bufferScale=" + bufferScale.toString());
+			for (let j = 0; j <= keys.length; j++) {
+				let data = cubeParamData(designsKeys[k] + j);
+				if (data.length > 0) {
+					for (let i = 0; i < data.length; i += 3) {
+						let pos = cubeVector(
+							(data[i + 1] - 1) + bufferOffset / bufferScale,
+							(data[i + 2] - 1) + bufferOffset / bufferScale, 0);
 
-						let x2 = data[i + 1] * bufferPixel - 1 + bufferOffset;
-						let y2 = data[i + 2] * bufferPixel - 1 + bufferOffset;
+						// Color.
+						let c = data[i] >= 10 ? data[i] - 9 : data[i];
+						let color = palette[c] ? palette[c] : palette[1];
+
+						// Pixel rect.
+						let size = cubeVector(1, 1, 0);
+
+						// Large rect.
 						if (i < data.length - 3 && data[i + 3] == 0) {
-							x2 = data[i + 4] * bufferPixel - 1 + bufferOffset;
-							y2 = data[i + 5] * bufferPixel - 1 + bufferOffset;
+							size.x = data[i + 4] - data[i + 1] + 1;
+							size.y = data[i + 5] - data[i + 2] + 1;
 							i += 3;
 						}
-						let rect = [x, y, x2, y2, r, g, b];
-						designs[k][j].push(rect);
+
+						// Common data.
+						if (j == 0) {
+							for (let l = 1; l <= keys.length; l++) {
+								cubeCanvasRect(pos, size, color, l - 1, canvases[k]);
+							}
+						} else {
+							cubeCanvasRect(pos, size, color, j - 1, canvases[k]);
+						}
 					}
 				}
-			}
-		}
-	}
-
-	// Create pixel buffer for face design.
-	let size = bufferWidth * bufferPixel + bufferOffset * 2;
-	if (designs[0].length > 1) {
-		buffers[0] = cubeBuffer(size, size, bufferScale, designsMax[0]);
-		for (let i = 1; i < designs[0].length; i++) {
-			if (designs[0][i]) {
-				cubeBufferRects(designs[0][i], i - 1, buffers[0]);
-			}
-		}
-	}
-	if (designs[1].length > 1) {
-		buffers[1] = cubeBuffer(size, size, bufferScale, designsMax[1]);
-		for (let i = 1; i < designs[1].length; i++) {
-			if (designs[1][i]) {
-				cubeBufferRects(designs[1][i], i - 1, buffers[1]);
 			}
 		}
 	}
@@ -327,8 +306,8 @@ a {
 		var icon = document.getElementById("icon");
 		if (icon) {
 			var iconFrameMax = cubeDiv(maximum, colors);
-			if (buffers[0]) {
-				icon.style.backgroundImage = "url(\"" + buffers[0].toImage() + "\")";
+			if (canvases[0]) {
+				icon.style.backgroundImage = "url(\"" + canvases[0].toImage() + "\")";
 				original = original + 1 <= iconFrameMax ? original + 1 : 1;
 				var nx = -cubeMod(original - 1, iconFrameMax) * 40;
 				var ny = -cubeDiv(original - 1, iconFrameMax) * 40;
@@ -351,7 +330,7 @@ a {
 		setCounts(counts + x);
 	};
 	var changeMaximum = () => {
-		if (buffers[0]) {
+		if (canvases[0]) {
 			setMaximum(maximum);
 		} else {
 			setMaximum(maximum = maximum == 52 ? 54 : maximum == 54 ? 0 : 52);
@@ -367,7 +346,6 @@ a {
 	//var maximum = 6; // Maximum deck counts.
 	//var rolling = 0; // Rolling count.
 
-	//var courts = buffers[1] ? buffers[1].frames : (maximum > 0 && maximum < 56) ? 3 : 0; // Court card kinds.
 	var jokers = maximum > 0 ? cubeMod(maximum, colors) : 0; // Joker card kinds.
 	var numberMax = maximum > 0 ? cubeDiv(maximum, colors) : 10; // Card maximum number.
 
@@ -376,34 +354,58 @@ a {
 
 	var joypad = cubeJoypad();
 
-	// Create sprites.
+	// Create count sprites.
 	var sprites = [];
 	for (var i = 0; i < 2; i++) {
 		sprites[i] = await cubeSprite("resource.svg", 40, 40);
 	}
 
+	// Create card sprites.
 	const cardCountsMax = 54, cardExtraMax = 3;
 	var colorSprites = [], numberSprites = [];
 	for (var i = 0; i < cardCountsMax + cardExtraMax; i++) {
 		// Color sprites.
-		if (buffers[0]) {
-			colorSprites[i] = await cubeBufferSprite(buffers[0]);
+		if (canvases[0]) {
+			colorSprites[i] = await cubeBufferSprite(canvases[0]);
 		} else {
 			colorSprites[i] = await cubeSprite("resource.svg", 40, 40);
 		}
 		// Number sprites.
-		if (buffers[1]) {
-			numberSprites[i] = await cubeBufferSprite(buffers[1]);
+		if (canvases[1]) {
+			numberSprites[i] = await cubeBufferSprite(canvases[1]);
 		} else {
 			numberSprites[i] = await cubeSprite("resource.svg", 40, 40);
 		}
 	}
 
+	// Create board sprite.
+	{
+		let boardCanvas = cubeCanvas(160, 160, 1);
+		const boardGridSize = cubeVector(16, 16);
+		const boardGridColor = cubeVector(204, 204, 204);
+		for (let i = 0; i < 8; i++) {
+			for (let j = 0; j < 8; j++) {
+				cubeCanvasRect(cubeVector(i*20+2, j*20+2), boardGridSize, boardGridColor, 0, boardCanvas);
+			}
+		}
+		var boardSprite = await cubeCanvasSprite(boardCanvas);
+	}
+	cubeMove(120, 150, boardSprite);
+
+	// Create hand shade sprite.
+	{
+		let handCanvas = cubeCanvas(240, 40, 1);
+		const handShadeSize = cubeVector(240-4, 240-4);
+		const handShadeColor = cubeVector(136, 136, 136);
+		cubeCanvasRect(cubeVector(2, 2), handShadeSize, handShadeColor, 0, handCanvas);
+		var handSprite = await cubeCanvasSprite(handCanvas);
+	}
+	cubeMove(120, 280, handSprite);
+
 	// Sprite frame.
 	var frameMax = maximum > 0 ? maximum : 10 * colors;
 	var frameMin = maximum > 0 ? 1 : 0;
 	var colorFrameMax = colors;
-	//var courtFrameMax = courts;
 	var numberFrameMax = numberMax;
 	const frameBlank = colorFrameMax + 1, frameBack = colorFrameMax + 2;
 
@@ -905,12 +907,7 @@ a {
 					let n01 = cubeMod(n - 1, frameMax) + 1;
 					let n0 = cubeDiv(n01 - 1, numberFrameMax) + 1; // Colors.
 					let n1 = cubeMod(n01 - 1, numberFrameMax) + 1; // Numbers.
-					if (!buffers[1]) {
-						//if (n0 <= colorFrameMax && n1 >= courtFrameMax) {
-						//	n1 = n1 - courtFrameMax + frameMin + 9; // Number cards.
-						//} else {
-						//	n1 = n1 + 6; // Court or Joker cards.
-						//}
+					if (!canvases[1]) {
 						n1 = n1 + 10;
 					}
 					cubeAnimate(n0, colorSprites[i]);
@@ -1104,6 +1101,8 @@ a {
 
 			// Clear screen.
 			cubeClear();
+			cubeDraw(boardSprite);
+			cubeDraw(handSprite);
 
 			// Draw sprites.
 			for (let i = 0; i < 2; i++) {

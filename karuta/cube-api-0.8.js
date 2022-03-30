@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.52b";
-cube.timestamp = "20329";
+cube.version = "0.8.53b";
+cube.timestamp = "20330";
 /************************************* /VERSION*
 
 
@@ -272,6 +272,44 @@ function cubeCheck(pos, sprite=null) {
     }
     return sprite.isInRect(pos);
 }
+
+// Get master pixel canvas or create new pixel canvas.
+function cubeCanvas(width=0, height=0, scale=10, frames=1) {
+    if (width > 0 && height > 0) {
+        var canvas = new cube.Canvas(width, height, scale, frames);
+        return canvas;
+    }
+    return cube.canvas;
+}
+
+// Get master canvas or create new canvas.
+function cubeCanvas(width=0, height=0, scale=10, frames=1) {
+    if (width > 0 && height > 0) {
+        var canvas = new cube.Canvas(width, height, scale, frames);
+        return canvas;
+    }
+    return cube.canvas;
+}
+
+// Add pixel rect to canvas.
+function cubeCanvasRect(pos, size=cubeVector(1,1), color=cubeVector(0,0,0), frame=0, canvas=null) {
+    if (!canvas) {
+        canvas = cube.canvas;
+    }
+    canvas.addRect(pos, size, color, frame);
+}
+
+// Create new sprite from canvas.
+async function cubeCanvasSprite(canvas=null) {
+    if (!canvas) {
+        canvas = cube.canvas;
+    }
+    return canvas.toSprite();
+//    return cubeSprite(canvas.toImage(),
+//        canvas.width * canvas.scale,
+//        canvas.height * canvas.scale);
+}
+
 
 // Get master pixel buffer or create new pixel buffer.
 function cubeBuffer(width=0, height=0, scale=10, frames=1) {
@@ -1694,8 +1732,8 @@ cube.Sprite = class {
                 this.root.style.position = "absolute";
                 let w = this.size.x * this.scale / 2;
                 let h = this.size.y * this.scale / 2;
-                this.root.style.top = this.pos.y - w;
-                this.root.style.left = this.pos.x - h;
+                this.root.style.top = this.pos.y - h;
+                this.root.style.left = this.pos.x - w;
             } else {
                 this.root.style.position = "relative";
             }
@@ -1749,6 +1787,64 @@ cube.Sprite = class {
         this.root.style.opacity = this.alpha;
     }
 }
+
+// Pixel canvas class.
+cube.Canvas = class {
+
+    // Constructor.
+    constructor(width=16, height=16, scale=10, frames=1) {
+        this.width = width;
+        this.height = height;
+        this.scale = scale;
+        this.frames = frames;
+        this.sprite = null;
+        this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this.svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        this.svg.setAttribute("width", "" + (width * scale * frames));
+        this.svg.setAttribute("height", "" + (height * scale));
+        this.svg.setAttribute("viewBox", "0 0 " + (width * 2 * frames) + " " + (height * 2));
+        this.svg.setAttribute("stroke-width", 1);
+        this.svg.setAttribute("stroke-linecap", "butt");
+        this.svg.setAttribute("fill", "none");
+    }
+
+    // Clone.
+    clone() {
+        let clone = new cube.Canvas(this.width, this.height, this.scale, this.frames);
+        return clone;
+    }
+
+    // Resource.
+    toImage() {
+        return "data:image/svg+xml;base64," + btoa(this.svg.outerHTML);
+    }
+
+    // Sprite.
+    async toSprite(type=null) {
+        if (this.sprite) {
+            return this.sprite.clone();
+        }
+        this.sprite = new cube.Sprite(type);
+        this.sprite.loadImage(this.toImage());
+        await this.sprite.waitLoadingImage();
+        this.sprite.resize(this.width * this.scale, this.height * this.scale);
+        return this.sprite;
+    }
+
+    // Add pixel rect.
+    addRect(pos, size=cube.Vec(1,1), color=cube.Vec(0,0,0), frame=0) {
+        if (pos.x >= 0 && pos.y >= 0) {
+            let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute("fill", "rgb(" + color.x + "," + color.y + "," + color.z + ")");
+            rect.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
+            rect.setAttribute("x", (pos.x * this.scale * 2));
+            rect.setAttribute("y", (pos.y * this.scale * 2));
+            rect.setAttribute("width", (size.x * this.scale * 2));
+            rect.setAttribute("height", (size.y * this.scale * 2));
+            this.svg.appendChild(rect);
+        }
+    }
+};
 
 // Pixel buffer class.
 cube.Buffer = class {
