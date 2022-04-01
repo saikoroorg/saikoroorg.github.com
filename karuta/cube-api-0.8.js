@@ -291,6 +291,14 @@ function cubeCanvas(width=0, height=0, scale=10, frames=1) {
     return cube.canvas;
 }
 
+// Clear canvas.
+function cubeCanvasClear(frame=0, canvas=null) {
+    if (!canvas) {
+        canvas = cube.canvas;
+    }
+    canvas.clear(frame);
+}
+
 // Add pixel rect to canvas.
 function cubeCanvasRect(pos, size=cubeVector(1,1), color=cubeVector(0,0,0), frame=0, canvas=null) {
     if (!canvas) {
@@ -1806,6 +1814,7 @@ cube.Canvas = class {
         this.svg.setAttribute("stroke-width", 1);
         this.svg.setAttribute("stroke-linecap", "butt");
         this.svg.setAttribute("fill", "none");
+        this.items = []; // Svg child node items.
     }
 
     // Clone.
@@ -1821,9 +1830,9 @@ cube.Canvas = class {
 
     // Sprite.
     async toSprite(type=null) {
-        if (this.sprite) {
-            return this.sprite.clone();
-        }
+        //if (this.sprite) {
+        //    return this.sprite.clone();
+        //}
         this.sprite = new cube.Sprite(type);
         this.sprite.loadImage(this.toImage());
         await this.sprite.waitLoadingImage();
@@ -1831,9 +1840,22 @@ cube.Canvas = class {
         return this.sprite;
     }
 
+    // Clear canvas.
+    clear(frame=0) {
+        while (this.items[frame].length) {
+            let rect = this.items[frame].shift();
+            if (this.svg.contains(rect)) {
+                this.svg.removeChild(rect);
+            }
+        }
+    }
+
     // Add pixel rect.
     addRect(pos, size=cube.Vec(1,1), color=cube.Vec(0,0,0), frame=0) {
         if (pos.x >= 0 && pos.y >= 0) {
+            if (this.items[frame] == null) {
+                this.items[frame] = [];
+            }
             let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             rect.setAttribute("fill", "rgb(" + color.x + "," + color.y + "," + color.z + ")");
             rect.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
@@ -1842,6 +1864,7 @@ cube.Canvas = class {
             rect.setAttribute("width", (size.x * this.scale * 2));
             rect.setAttribute("height", (size.y * this.scale * 2));
             this.svg.appendChild(rect);
+            this.items[frame].push(rect);
         }
     }
 };
@@ -1958,6 +1981,9 @@ cube.sprites = [cube.sprite];
 
 // Master pixel buffer.
 cube.buffer = new cube.Sprite("cubeBuffer");
+
+// Master pixel canvas.
+cube.canvas = new cube.Sprite("cubeCanvas");
 
 /*  */
 // javascript
