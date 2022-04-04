@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.53b";
-cube.timestamp = "20330";
+cube.version = "0.8.54b";
+cube.timestamp = "20404";
 /************************************* /VERSION*
 
 
@@ -54,6 +54,23 @@ function cubeMod(x, y) {
 // Calculate the square root.
 function cubeSqrt(x) {
     return Math.floor(Math.sqrt(x));
+}
+
+// Calculate the sine theta.
+function cubeSin(x, a=1) {
+    const angle_radian = 180 / Math.PI;
+    return Math.round(Math.sin(x/angle_radian)*a);
+}
+
+// Calculate the cosine theta.
+function cubeCos(x, a=1) {
+    const angle_radian = 180 / Math.PI;
+    return Math.round(Math.cos(x/angle_radian)*a);
+}
+
+// Clone structed object.
+function cubeClone(x) {
+    return Object.assign({}, x);
 }
 
 //************************************************************/

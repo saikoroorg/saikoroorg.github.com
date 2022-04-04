@@ -406,9 +406,11 @@ a {
 	var numberFrameMax = numberMax;
 	const frameBlank = colorFrameMax + 1, frameBack = colorFrameMax + 2;
 
-	// Card numbers.
+	// Cards.
 	var decks = [], trashes = [];
 	var handCards = [], playCards = [], holdCards = [];
+	const blankCard = { x:0, y:0, angle:0, frame:0, flag:0 };
+	const backsidedCard = { x:0, y:0, angle:0, frame:0, flag:1 };
 	var drawCounts = 0;
 
 	// Main loop.
@@ -448,12 +450,8 @@ a {
 			decks = [], trashes = [], handCards = [], playCards = [], holdCards = [];
 			drawCounts = 0;
 			for (let j = 0; j < frameMax; j++) {
-				decks[j] = {
-					frame: j + 1,
-					x: 0, y: 0,
-					angle: 0,
-					flag: true,
-				};
+				decks[j] = cubeClone(backsidedCard);
+				decks[j].frame = j + 1;
 			}
 
 			// Shuffle by Fisher-Yates argorythm.
@@ -486,8 +484,8 @@ a {
 		var angle = 0;
 
 		// Drawing card.
-		let holdingCardId = -1;
-		for (rolling = 1; rolling >= 1; rolling++) {
+		let holdingCardId = -1, touching = 0;
+		for (rolling = 1; rolling >= 1; rolling++, touching++) {
 
 			// Screen size.
 			var size = cubeScreenSize();
@@ -689,6 +687,10 @@ a {
 					} else {
 						if (holdingCardId < 0) {
 							holdingCardId = touchingCardId;
+							touching = 0;
+						} else if (touching > 60) {
+							handCards[j].angle = cubeMod(handCards[j].angle + 90, 360);
+							touching = 0;
 						}
 						rolling = 0;
 					}
@@ -748,6 +750,20 @@ a {
 					} else {
 						if (holdingCardId < 0) {
 							holdingCardId = touchingCardId;
+							touching = 0;
+						} else if (touching > 60) {
+							playCards[j].angle = cubeMod(playCards[j].angle + 90, 360);
+							touching = 0;
+
+							let x = -8, y = -8;
+							let ca = cubeCos(playCards[j].angle);
+							let sa = cubeSin(playCards[j].angle);
+
+							console.log("a=" + playCards[j].angle +
+								" ca=" + ca +
+								" sa=" + sa +
+								" x*ca-y*sa=" + (x*ca-y*sa) +
+								" x*sa+y*ca=" + (x*sa+y*ca));
 						}
 
 						// Reset for touching animation.
@@ -974,14 +990,13 @@ a {
 						let j = holdingCardId - handCards.length;
 						if (j < playCards.length) {
 							if (playCards[j].frame != 0) {
-								holdCards.push(playCards[j]);
+								let card = playCards[j];
+								holdCards.push(card);
 
 								// Replace with dummy.
-								playCards[j] = {
-									frame: 0,
-									x: playCards[j].x,
-									y: playCards[j].y,
-									flag: playCards[j].flag};
+								playCards[j] = cubeClone(blankCard);
+								playCards[j].x = card.x;
+								playCards[j].y = card.y;
 							}
 						}
 
@@ -1218,6 +1233,9 @@ a {
 						s = handScale;
 					}
 
+					// Rotation.
+					a = handCards[j].angle;
+
 					/*// Subcard position adjustment.
 					if (handCards[j] > frameMax || handCards[j] < -frameMax) {
 						if (j > 0 && handCards[j - 1].frame != 0) {
@@ -1254,6 +1272,9 @@ a {
 					} else {
 						s = playScale;
 					}
+
+					// Rotation.
+					a = playCards[j].angle;
 
 					/*// Subcard position adjustment.
 					if (playCards[j] > frameMax || playCards[j] < -frameMax) {
@@ -1319,6 +1340,9 @@ a {
 						sy = localPos.y;
 						s = playScale * 1.2;
 
+						// Rotation.
+						a = holdCards[holdCards.length - 1].angle;
+
 					} else {
 						a0 = a1 = 0;
 					}
@@ -1333,6 +1357,9 @@ a {
 						a0 = 0.3;
 						a1 = 0.5;
 
+						// Rotation.
+						a = holdCards[holdCards.length - 1].angle;
+
 					} else {
 						a0 = a1 = 0;
 					}
@@ -1346,7 +1373,9 @@ a {
 				cubeRotate(a, colorSprites[i]);
 				cubeRotate(a, numberSprites[i]);
 				cubeMove(sx, sy, colorSprites[i]);
-				cubeMove(sx - s * 8, sy - s * 8, numberSprites[i]);
+				let x = s * -8, y = s * -8; // Number position.
+				let ca = cubeCos(a), sa = cubeSin(a);
+				cubeMove(sx + (x*ca-y*sa), sy + (x*sa+y*ca), numberSprites[i]);
 			}
 
 			/*if (motion) {
