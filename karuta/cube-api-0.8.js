@@ -6,7 +6,7 @@ var cube = cube || {};
 
 /* VERSION/ *****************************/
 cube.version = "0.8.55b";
-cube.timestamp = "20405";
+cube.timestamp = "20406";
 /************************************* /VERSION*
 
 
@@ -2291,7 +2291,7 @@ cube.Input = class {
                 // Flick check.
                 } else if (this.upEvent) {
                     this._dirs[0].add(cube.Dirs.near);
-                    console.log("Flick:" + this.flickTime + " " + time);
+                    //console.log("Flick:" + this.flickTime + " " + time);
                 }
             } else {
 
@@ -2310,7 +2310,7 @@ cube.Input = class {
                 // Tap check.
                 } else if (this.upEvent) {
                     this._dirs[0] = cube.Dirs.near.clone();
-                    console.log("Tap:" + this.tapTime + " " + time);
+                    //console.log("Tap:" + this.tapTime + " " + time);
                 }
             }
             //console.log("Mouse/Touch input:" + this.tapTime + " " + time);
