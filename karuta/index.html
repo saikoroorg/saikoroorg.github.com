@@ -831,7 +831,7 @@ a {
 					let x = cubeDiv(motionLocalPos.x - (shadeSprite.pos.x - shadeSprite.size.x/2), shadeGridSize.x);
 					let y = cubeDiv(motionLocalPos.y - (shadeSprite.pos.y - shadeSprite.size.y/2), shadeGridSize.y);
 					touchingShadeL = x - 1 >= 0 ? x + y * shadeGridLine - 1 : -1;
-					touchingShadeR = x + 1 <= shadeGridLine ? x + y * shadeGridLine : -1;
+					touchingShadeR = x + y * shadeGridLine;
 
 					// Check release action.
 					if (action) {
