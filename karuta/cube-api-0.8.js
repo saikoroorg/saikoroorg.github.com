@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.54b";
-cube.timestamp = "20404";
+cube.version = "0.8.55b";
+cube.timestamp = "20405";
 /************************************* /VERSION*
 
 
@@ -2250,6 +2250,8 @@ cube.Input = class {
 
         // No input.
         if (this.keyCode <= 0 && this.points == null) {
+            //console.log("Mouse/Touch input:" + this.tapTime + " " + time);
+
             this._dirs[0] = null;
             this.keyTime = time;
             this.tapTime = time;
@@ -2278,30 +2280,40 @@ cube.Input = class {
                 // Ignore tap after point out of play radius.
                 this.tapTime = time - timeout;
 
-                // Timeout or Far depth check.
-                if (this.flickTime <= time - timeout
-                 || this.points[1].z - this.points[0].z >= depth) {
+                // Swipe timeout or far depth check.
+                if (this.flickTime <= time - timeout || this.points[1].z - this.points[0].z >= depth) {
                     this._dirs[0].add(cube.Dirs.far);
+                    //console.log("Swipe:" + this.flickTime + " " + time);
 
                     // Ignore flick after point reach to far depth.
                     this.flickTime = time - timeout;
+
+                // Flick check.
+                } else if (this.upEvent) {
+                    this._dirs[0].add(cube.Dirs.near);
+                    console.log("Flick:" + this.flickTime + " " + time);
                 }
             } else {
 
                 // Tap/Touching.
                 this._dirs[0] = new cube.Dirs();
 
-                // Timeout or Far depth check.
-                if (this.tapTime <= time - timeout
-                 || this.points[1].z - this.points[0].z >= depth) {
+                // Press timeout or far depth check.
+                if (this.tapTime <= time - timeout || this.points[1].z - this.points[0].z >= depth) {
                     this._dirs[0].add(cube.Dirs.far);
+                    //console.log("Press:" + this.tapTime + " " + time);
 
                     // Ignore tap/flick after point reach to far depth.
                     this.tapTime = time - timeout;
                     this.flickTime = time - timeout;
+
+                // Tap check.
+                } else if (this.upEvent) {
+                    this._dirs[0] = cube.Dirs.near.clone();
+                    console.log("Tap:" + this.tapTime + " " + time);
                 }
             }
-            // console.log("Mouse/Touch input:" + this.tapTime + " " + time);
+            //console.log("Mouse/Touch input:" + this.tapTime + " " + time);
         }
 
         // On down event, only update status.
@@ -2313,6 +2325,7 @@ cube.Input = class {
         // On up event, update status and return dirs.
         } else if (this.upEvent) {
             //console.log("Up Event:" + this._dirs[0].toString() + " " + this.points[1].toString());
+
             this._dirs[1] = this._dirs[0];
             this.upEvent = false;
 
