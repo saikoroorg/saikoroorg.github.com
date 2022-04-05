@@ -949,9 +949,9 @@ a {
 						angle = 0;
 					} else if (pos.y < +boardSprite.size.y / 2 + 10 &&
 							   pos.y > -boardSprite.size.y / 2 - 10) {
-						if (pos.x < -boardSprite.size.x / 2) {
+						if (pos.x < -boardSprite.size.x / 2 - 20) {
 							angle = -90;
-						} else if (pos.x > boardSprite.size.x / 2) {
+						} else if (pos.x > boardSprite.size.x / 2 + 20) {
 							angle = 90;
 						}
 					}
