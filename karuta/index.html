@@ -522,7 +522,7 @@ a {
 				// Not holding.
 				if (holdCards.length <= 0) {
 
-					// No decks.
+					// Empty deck.
 					if (decks.length == 0) {
 						if (result > 0 && trashes.length > 0) {
 
@@ -539,14 +539,14 @@ a {
 								holdingCardId = -1;
 								touchingCardId = -1;
 
-							// Start to touch decks.
+							// Start to touch empty deck.
 							} else {
-								if (holdingCardId < 0) {
+								if (holdingCardId < 0 && rotatingCardId < 0) {
 									holdingCardId = touchingCardId;
 								}
 
 								// Reset for touching animation.
-								//rolling = 0;
+								rolling = 0;
 							}
 						} else {
 							holdingCardId = -1;
