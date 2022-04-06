@@ -386,15 +386,22 @@ a {
 		}
 	}
 
-	// Create hand shade sprite.
-	var shadeSprite = null;
-	{
-		let shadeCanvas = cubeCanvas(240, 40, 1);
-		const shadeSize = cubeVector(240-4, 240-4);
-		const shadeColor = cubeVector(204, 204, 204);//136, 136, 136);
-		cubeCanvasRect(cubeVector(2, 2), shadeSize, shadeColor, 0, shadeCanvas);
-		shadeSprite = await cubeCanvasSprite(shadeCanvas);
-		cubeMove(120, 280, shadeSprite);
+	// Create shade sprite.
+	const shadeOffsets = [cubeVector(0, 0), cubeVector(0, 0)];
+	const shadeSizes = [cubeVector(240, 40), cubeVector(32, 160)];
+	const shadeColors = [cubeVector(204, 204, 204), cubeVector(204, 204, 204)];
+	var shadeCanvases = [cubeCanvas(240, 40, 1), cubeCanvas(240, 40, 1), cubeCanvas(32, 160, 1), cubeCanvas(32, 160, 1)];
+	const shadeSpriteMax = 4;
+	const shadePoses = [cubeVector(120, 280), cubeVector(120, 20), cubeVector(16, 150), cubeVector(224, 150)];
+	var shadeSprites = [];
+	//for (var i = 0; i < shadeSpriteMax/2; i++) {
+	//	cubeCanvasRect(shadeOffsets[i], shadeSizes[i], shadeColors[i], 0, shadeCanvases[i]);
+	//}
+	for (var i = 0; i < shadeSpriteMax; i++) {
+		cubeCanvasRect(shadeOffsets[cubeDiv(i, 2)], shadeSizes[cubeDiv(i, 2)], shadeColors[i>0?1:0], 0, shadeCanvases[i]);
+		shadeSprites[i] = await cubeCanvasSprite(shadeCanvases[i]);
+		cubeDilute(0, shadeSprites[i]);
+		cubeMove(shadePoses[i].x, shadePoses[i].y, shadeSprites[i]);
 	}
 
 	// Board sprite.
@@ -485,8 +492,8 @@ a {
 		var angle = 0;
 
 		// Drawing card.
-		const rotatingTime = 120;
-		let holdingCardId = -1, rotatingCardId = -1;
+		const rotatingTime = 30, pressingTime = 60;
+		let holdingCardId = -1, rotatingCardId = -1, rotatingAngle = 0;
 		for (rolling = 1; rolling >= 1; rolling++) {
 
 			// Screen size.
@@ -529,8 +536,11 @@ a {
 				touchingCardId = handCards.length + playCards.length + 0;
 			}
 			// Check touching hand shade.
-			if (touchingCardId < 0 && cubeCheck(motion, shadeSprite)) {
-				touchingCardId = touchingShade;
+			for (let i = 0; i < shadeSpriteMax; i++) {
+				if (touchingCardId < 0 && cubeCheck(motion, shadeSprites[i])) {
+					touchingCardId = touchingShade - i;
+					break;
+				}
 			}
 			// Check touching playing board.
 			if (touchingCardId < 0 && holdCards.length > 0 && cubeCheck(motion, boardSprite)) {
@@ -650,6 +660,10 @@ a {
 							touchingDir = +1;
 						}*/
 
+						// Reset for touching animation.
+						rolling = 0;
+
+					} else if (holdCards.length > 0) {
 						// Reset for touching animation.
 						rolling = 0;
 					}
@@ -780,7 +794,7 @@ a {
 							holdingCardId = touchingCardId;
 							rolling = 0;
 
-						} else if (rolling > rotatingTime && holdCards.length <= 0 && rotatingCardId < 0) {
+						} else if (rolling > pressingTime && holdCards.length <= 0 && rotatingCardId < 0) {
 							holdingCardId = -1;
 							rotatingCardId = touchingCardId;
 							//playCards[j].angle = cubeMod(playCards[j].angle + 90, 360);
@@ -819,17 +833,17 @@ a {
 
 					// Check touching position.
 					/*if (holdCards.length > 0) {
-						if (motionLocalPos.x < shadeSprite.pos.x - 6) {
+						if (motionLocalPos.x < shadeSprites[0].pos.x - 6) {
 							touchingDir = -1;
-						} else if (motionLocalPos.x > shadeSprite.pos.x + 6) {
+						} else if (motionLocalPos.x > shadeSprites[0].pos.x + 6) {
 							touchingDir = +1;
 						}
 					}*/
 
 					// Check touching position.
 					let mod2 = shadeGridSize.x < shadeGridSize.x && cubeMod(handCards.length, 2);
-					let x = cubeDiv(motionLocalPos.x - (shadeSprite.pos.x - shadeSprite.size.x/2), shadeGridSize.x);
-					let y = cubeDiv(motionLocalPos.y - (shadeSprite.pos.y - shadeSprite.size.y/2), shadeGridSize.y);
+					let x = cubeDiv(motionLocalPos.x - (shadeSprites[0].pos.x - shadeSprites[0].size.x/2), shadeGridSize.x);
+					let y = cubeDiv(motionLocalPos.y - (shadeSprites[0].pos.y - shadeSprites[0].size.y/2), shadeGridSize.y);
 					touchingShadeL = x - 1 >= 0 ? x + y * shadeGridLine - 1 : -1;
 					touchingShadeR = x + y * shadeGridLine;
 
@@ -871,6 +885,57 @@ a {
 					//} else {
 					//	holdingCardId = -1;
 					//	rolling = 0;
+
+					} else {
+
+						// Start to touch hand shade.
+						if (holdingCardId != touchingCardId && rotatingCardId < 0) {
+							holdingCardId = touchingCardId;
+							rolling = 0;
+
+						// Reset to rotate hold cards.
+						} else if (holdCards.length > 0) {
+
+							// Reset rotation now.
+							rotatingAngle = 0;
+							angle = 0;
+							//console.log("#rotatingAngle=" + rotatingAngle + ":" + angle);
+
+							//holdingCardId = -1;
+							//touchingCardId = -1;
+						}
+					}
+
+				} else {
+					holdingCardId = -1;
+					touchingCardId = -1;
+				}
+			}
+
+			// Touch another shades.
+			if (touchingCardId <= touchingShade && rotatingCardId < 0) {
+				if (result > 0) {
+	
+					// Start to touch another shade.
+					if (holdingCardId != touchingCardId) {
+						holdingCardId = touchingCardId;
+						rolling = 0;
+						if (touchingCardId == touchingShade - 1) {
+							rotatingAngle = angle<0?-180:180;
+						} else if (touchingCardId == touchingShade - 2) {
+							rotatingAngle = angle<-90?-270:90;
+						} else if (touchingCardId == touchingShade - 3) {
+							rotatingAngle = angle<90?-90:270;
+						} else {
+							rotatingAngle = 0;
+						}
+						//console.log("rotatingAngle=" + rotatingAngle + ":" + angle);
+
+					// Rotate hold cards.
+					} else if (holdCards.length > 0 && rolling > rotatingTime) {
+						angle = rotatingAngle;
+						//holdingCardId = -1;
+						//touchingCardId = -1;
 					}
 
 				} else {
@@ -938,36 +1003,38 @@ a {
 				}
 
 			// Holding outside board.
-			} else if (holdCards.length > 0) {
+			/*} else if (holdCards.length > 0) {
 				if (motion) {
 					let pos = cubeVector(
 						motionLocalPos.x - boardSprite.pos.x,
 						motionLocalPos.y - boardSprite.pos.y);
 					if (pos.y < -boardSprite.size.y / 2 - 40) {
 						angle = 180;
+						rolling = 0;
 					} else if (pos.y > boardSprite.size.y / 2 + 40) {
-						angle = 0;
+						//angle = 0;
 					} else if (pos.y < +boardSprite.size.y / 2 + 10 &&
 							   pos.y > -boardSprite.size.y / 2 - 10) {
 						if (pos.x < -boardSprite.size.x / 2 - 20) {
 							angle = -90;
+							rolling = 0;
 						} else if (pos.x > boardSprite.size.x / 2 + 20) {
 							angle = 90;
+							rolling = 0;
 						}
 					}
-				}
+				}*/
 			}
 
 			// Update holding card angle.
 			for (let i = 0; i < holdCards.length; i++) {
 				if (holdCards[i].angle != angle) {
-					if (holdCards[i].angle < angle+5 && holdCards[i].angle > angle-5) {
+					if (holdCards[i].angle < angle + 5 && holdCards[i].angle > angle - 5) {
 						holdCards[i].angle = angle;
 					} else {
 						holdCards[i].angle += cubeDiv(angle - holdCards[i].angle, 2);
 					}
-
-					//console.log("angle=" + holdCards[i].angle + "," + angle);
+					//console.log("angle=" + holdCards[i].angle + "," + angle + "," + rotatingAngle);
 				}
 			}
 
@@ -1301,8 +1368,8 @@ a {
 					let x = cubeMod(j, shadeGridLine);
 					let y = cubeDiv(j, shadeGridLine);
 					let offset = shadeLines >= 1 ? 20 : 30;
-					sx = (shadeSprite.pos.x - shadeSprite.size.x/2) + (x + 1) * shadeGridSize.x;
-					sy = (shadeSprite.pos.y - shadeSprite.size.y/2 - offset) + (y + 1) * shadeGridSize.y;
+					sx = (shadeSprites[0].pos.x - shadeSprites[0].size.x/2) + (x + 1) * shadeGridSize.x;
+					sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 - offset) + (y + 1) * shadeGridSize.y;
 
 					// Touching hand cards scale animation.
 					if (touchingCardId == i && rotatingCardId < 0) {
@@ -1444,7 +1511,13 @@ a {
 						let localPos = cubeScreenLocalPos(motion);
 						sx = localPos.x;
 						sy = localPos.y;
-						s = playScale * 1.2;
+
+						// Rotating animation.
+						if (touchingCardId < touchingShade && holdCards.length > 0 && rolling < rotatingTime) {
+							s = playScale * 1.0;
+						} else {
+							s = playScale * 1.2;
+						}
 
 						// Rotation.
 						a = holdCards[holdCards.length - 1].angle;
@@ -1493,6 +1566,16 @@ a {
 				}
 			}
 
+			// Update shade animation.
+			for (let i = 0; i < shadeSpriteMax; i++) {
+				let j = touchingShade - i;
+				let a = 0;
+				if (touchingCardId == j && holdCards.length > 0) {
+					a = (rolling < 5 ? (0.3 * 0.04 * rolling) : 0.5);
+				}
+				cubeDilute(a, shadeSprites[i]);
+			}
+
 			/*if (motion) {
 				let v0 = motion;
 				let v1 = cubeScreenLocalPos(v0);
@@ -1503,7 +1586,9 @@ a {
 			// Clear screen.
 			cubeClear();
 			cubeDraw(boardSprite);
-			cubeDraw(shadeSprite);
+			for (let i = 0; i < shadeSpriteMax; i++) {
+				cubeDraw(shadeSprites[i]);
+			}
 
 			// Draw sprites.
 			for (let i = 0; i < 2; i++) {
