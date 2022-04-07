@@ -506,21 +506,21 @@ a {
 			let motionLocalPos = motion ? cubeScreenLocalPos(motion) : null;
 
 			// Check touching each cards.
-			const touchingNothing = -1, touchingAnything = -2, touchingReleased = -3;
+			const touchingNothing = -1, touchingSomething = -2, touchingReleased = -3;
 			const touchingBoard = -4, touchingShade = -5;
-			let touchingCardId = motion ? touchingAnything : touchingNothing;
+			let touchingCardId = motion ? touchingSomething : touchingNothing;
 			let touchingShadeL = -1, touchingShadeR = -1;
 			let touchingBoardPos = null;
 			let touchingDir = 0;//, appending = 0;
 
 			// Check touching decks.
-			if (touchingCardId == touchingAnything && holdCards.length <= 0 &&
+			if (touchingCardId == touchingSomething && releasedCards.length <= 0 && holdCards.length <= 0 &&
 				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 1])) {
 				touchingCardId = handCards.length + playCards.length + 1;
 			}
 
 			// Check touching trashes.
-			if (touchingCardId == touchingAnything && releasedCards.length <= 0 &&
+			if (touchingCardId == touchingSomething && releasedCards.length <= 0 &&
 				(trashes.length > 0 || holdCards.length > 0) && 
 				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 0])) {
 				touchingCardId = handCards.length + playCards.length + 0;
@@ -528,14 +528,14 @@ a {
 
 			// Check touching released card.
 			if (releasedCards.length > 0) {
-				if (touchingCardId == touchingAnything &&
+				if (touchingCardId == touchingSomething &&
 					cubeCheck(motion, colorSprites[handCards.length + playCards.length + 3])) {
 					touchingCardId = touchingReleased;
 				}
 			}
 
 			// Check touching hand card.
-			if (touchingCardId == touchingAnything && holdCards.length <= 0) {
+			if (touchingCardId == touchingSomething && holdCards.length <= 0) {
 				for (let i = handCards.length - 1; i >= 0; i--) {
 					if (cubeCheck(motion, colorSprites[i])) {
 						touchingCardId = i;
@@ -545,7 +545,7 @@ a {
 			}
 
 			// Check touching play cards.
-			if (touchingCardId == touchingAnything) {
+			if (touchingCardId == touchingSomething) {
 				for (let i = handCards.length + playCards.length - 1; i >= handCards.length; i--) {
 					if (cubeCheck(motion, colorSprites[i])) {
 						touchingCardId = i;
@@ -555,7 +555,7 @@ a {
 			}
 
 			// Check touching hand shade.
-			if (touchingCardId == touchingAnything) {
+			if (touchingCardId == touchingSomething) {
 				for (let i = 0; i < 2/*shadeSpriteMax*/; i++) {
 					if (cubeCheck(motion, shadeSprites[i])) {
 						touchingCardId = touchingShade - i;
@@ -565,7 +565,7 @@ a {
 			}
 
 			// Check touching playing board.
-			if (touchingCardId == touchingAnything && holdCards.length > 0 && cubeCheck(motion, boardSprite)) {
+			if (touchingCardId == touchingSomething && holdCards.length > 0 && cubeCheck(motion, boardSprite)) {
 				touchingCardId = touchingBoard;
 			}
 
@@ -589,8 +589,8 @@ a {
 									//card.frame = card.frame < 0 ? -card.frame : card.frame;
 									decks.push(card);
 								}
-								holdingCardId = -1;
-								touchingCardId = -1;
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
 								rolling = 0;
 
 							// Start to touch empty deck.
@@ -604,8 +604,8 @@ a {
 								}
 							}
 						} else {
-							holdingCardId = -1;
-							touchingCardId = -1;
+							holdingCardId = touchingSomething;
+							touchingCardId = touchingSomething;
 						}
 
 					// Draw card from decks.
@@ -628,8 +628,8 @@ a {
 								}
 							}
 							result = 0;
-							holdingCardId = -1;
-							touchingCardId = -1;
+							holdingCardId = touchingSomething;
+							touchingCardId = touchingSomething;
 							rolling = 0;
 
 						// Start to touch decks.
@@ -645,8 +645,8 @@ a {
 
 					// Nothing to do.
 					/*} else {
-						holdingCardId = -1;
-						touchingCardId = -1;*/
+						holdingCardId = touchingSomething;
+						touchingCardId = touchingSomething;*/
 					}
 				}
 			}
@@ -673,8 +673,8 @@ a {
 								trashes.push(card);
 							}
 
-							holdingCardId = -1;
-							touchingCardId = -1;
+							holdingCardId = touchingSomething;
+							touchingCardId = touchingSomething;
 							rolling = 0;
 
 						// Turn over the card on tapping.
@@ -682,8 +682,8 @@ a {
 							//trashes[trashes.length-1].frame = -trashes[trashes.length-1].frame;
 							trashes[trashes.length-1].flag = !trashes[trashes.length-1].flag;
 
-							holdingCardId = -1;
-							touchingCardId = -1;
+							holdingCardId = touchingSomething;
+							touchingCardId = touchingSomething;
 							rolling = 0;
 						}
 
@@ -710,8 +710,8 @@ a {
 
 					// Nothing to do.
 					/*} else {
-						holdingCardId = -1;
-						touchingCardId = -1;*/
+						holdingCardId = touchingSomething;
+						touchingCardId = touchingSomething;*/
 					}
 
 				}
@@ -762,8 +762,8 @@ a {
 							handCards[j].flag = !handCards[j].flag;
 						}
 
-						holdingCardId = -1;
-						touchingCardId = -1;
+						holdingCardId = touchingSomething;
+						touchingCardId = touchingSomething;
 						rolling = 0;
 
 					// Start to touch hand cards.
@@ -804,17 +804,17 @@ a {
 							angle = cubeMod(angle + 90, 360);
 						} else if (touchingDir < 0) {
 							angle = cubeMod(angle - 90, 360);
-						} else {
 
-							// Put released card to playing board.
+						/*// Put released card to playing board.
+						} else {
 							while (releasedCards.length > 0) {
 								let card = releasedCards.pop();
 								playCards.push(card);
-							}
+							}*/
 						}
 
-						holdingCardId = -1;
-						touchingCardId = -1;
+						holdingCardId = touchingNothing;
+						touchingCardId = touchingNothing;
 						rolling = 0;
 
 					// Start to touch released shade.
@@ -869,14 +869,17 @@ a {
 							}
 
 							releasedCardId = touchingCardId;
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
 
 						// Turn over the playing card on tapping.
 						} else if (action.z < 0) {
 							playCards[j].flag = !playCards[j].flag;
+
+							holdingCardId = touchingSomething;
+							touchingCardId = touchingSomething;
 						}
 
-						holdingCardId = -1;
-						touchingCardId = -1;
 						rolling = 0;
 
 					// Start to touch playing cards.
@@ -887,7 +890,7 @@ a {
 							rolling = 0;
 
 						/*} else if (rolling > holdingTime && holdCards.length <= 0 && rollingCardId < 0) {
-							holdingCardId = -1;
+							holdingCardId = touchingSomething;
 							rollingCardId = touchingCardId;
 							//playCards[j].angle = cubeMod(playCards[j].angle + 90, 360);
 							rolling = 0;*/
@@ -960,8 +963,8 @@ a {
 							}
 							handCounts = handCards.length;
 
-							holdingCardId = -1;
-							touchingCardId = -1;
+							holdingCardId = touchingSomething;
+							touchingCardId = touchingSomething;
 							rolling = 0;
 
 						// Turn over all hand cards on tapping.
@@ -973,7 +976,7 @@ a {
 
 					// Start to touch all hand cards.
 					//} else {
-					//	holdingCardId = -1;
+					//	holdingCardId = touchingSomething;
 					//	rolling = 0;
 
 					//} else {
@@ -988,8 +991,8 @@ a {
 
 							angle = 0;
 
-							//holdingCardId = -1;
-							//touchingCardId = -1;
+							//holdingCardId = touchingSomething;
+							//touchingCardId = touchingSomething;
 						}*/
 					}
 
@@ -1020,8 +1023,8 @@ a {
 							angle = 0;
 						}
 
-						//holdingCardId = -1;
-						//touchingCardId = -1;
+						//holdingCardId = touchingSomething;
+						//touchingCardId = touchingSomething;
 					}
 
 				}
@@ -1067,10 +1070,14 @@ a {
 
 								releasedCards.push(card);
 							}
-						}
 
-						holdingCardId = -1;
-						touchingCardId = -1;
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+						} else {
+
+							holdingCardId = touchingSomething;
+							touchingCardId = touchingSomething;
+						}
 
 					// Start to touch playing cards.
 					} else {
@@ -1145,7 +1152,7 @@ a {
 							let card = releasedCards.pop();
 							holdCards.push(card);
 						}
-						holdingCardId = -1;
+						holdingCardId = touchingSomething;
 					}
 				}
 
@@ -1174,7 +1181,7 @@ a {
 							handCards.splice(j, 0, holdCards.pop());
 						}
 						handCounts = handCards.length;
-						holdingCardId = -1;
+						holdingCardId = touchingSomething;
 
 					// Cancel holding playing cards.
 					} else if (holdingCardId < handCards.length + playCards.length) {
@@ -1182,7 +1189,7 @@ a {
 						while (holdCards.length > 0) {
 							playCards.splice(j, 0, holdCards.pop());
 						}
-						holdingCardId = -1;
+						holdingCardId = touchingSomething;
 
 					// Cancel holding cards and discard to trash.
 					} else {*/
@@ -1197,7 +1204,7 @@ a {
 							//card.flag = false;
 							trashes.push(card);
 						}
-						holdingCardId = -1;
+						holdingCardId = touchingSomething;
 					//}
 				}
 
@@ -1238,7 +1245,7 @@ a {
 							}
 						} else {
 							rollingCardId = -1;
-							touchingCardId = -1;
+							touchingCardId = touchingSomething;
 						}
 					} else {
 						rollingCardId = -1;
@@ -1263,8 +1270,8 @@ a {
 							if (handCards[j].frame != 0) {
 								holdCards.push(handCards.splice(j, 1)[0]);
 								angle = 0;
-								holdingCardId = -1;
-								touchingCardId = -1;
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
 
 								// Replace with dummy.
 								/*
@@ -1286,8 +1293,8 @@ a {
 								let card = playCards.splice(j, 1)[0];
 								holdCards.push(card);
 								angle = card.angle;
-								holdingCardId = -1;
-								touchingCardId = -1;
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
 
 								// Replace with dummy.
 								/*let card = playCards[j];
@@ -1305,8 +1312,8 @@ a {
 							if (trashes[j].frame != 0) {
 								holdCards.push(trashes.splice(j, 1)[0]);
 								angle = 0;
-								holdingCardId = -1;
-								touchingCardId = -1;
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
 							}
 						}
 
@@ -1321,8 +1328,8 @@ a {
 								//card.flag = true;
 								holdCards.push(card);
 								angle = 0;
-								holdingCardId = -1;
-								touchingCardId = -1;
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
 							}
 						}
 					}
