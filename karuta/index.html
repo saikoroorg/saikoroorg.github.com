@@ -799,11 +799,21 @@ a {
 					// Check release action.
 					if (action) {
 
-						// Rotate released card.
+						// Rotate the released card to right.
 						if (touchingDir > 0) {
 							angle = cubeMod(angle + 90, 360);
+
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+							rolling = 0;
+
+						// Rotate the released card to left.
 						} else if (touchingDir < 0) {
 							angle = cubeMod(angle - 90, 360);
+
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+							rolling = 0;
 
 						/*// Put released card to playing board.
 						} else {
@@ -811,11 +821,13 @@ a {
 								let card = releasedCards.pop();
 								playCards.push(card);
 							}*/
-						}
 
-						holdingCardId = touchingNothing;
-						touchingCardId = touchingNothing;
-						rolling = 0;
+						// Turn over the card on tapping.
+						} else if (action.z < 0 && releasedCards.length > 0) {
+							releasedCards[releasedCards.length-1].flag = !releasedCards[releasedCards.length-1].flag;
+
+							rolling = 0;
+						}
 
 					// Start to touch released shade.
 					} else {
