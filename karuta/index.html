@@ -1284,14 +1284,7 @@ a {
 						if (j < playCards.length) {
 							if (playCards[j].frame != 0) {
 								let card = playCards.splice(j, 1)[0];
-
-								// Release instead of holding.
-								if (rolling > holdingTime) {
-									releasedCards.push(card);
-								} else {
-									holdCards.push(card);
-								}
-
+								holdCards.push(card);
 								angle = card.angle;
 								holdingCardId = -1;
 								touchingCardId = -1;
