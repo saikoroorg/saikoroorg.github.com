@@ -1129,17 +1129,28 @@ a {
 					}
 				}
 
-				// Put released card to playing board.
+				// Release terminated.
 				if (touchingCardId != touchingReleased && touchingCardId != touchingNothing) {
-					while (releasedCards.length > 0) {
-						let card = releasedCards.pop();
-						playCards.push(card);
+
+					// Put released card to holding cards.
+					if (holdingCardId != touchingReleased) {
+						while (releasedCards.length > 0) {
+							let card = releasedCards.pop();
+							playCards.push(card);
+						}
+
+					// Put released card to playing board.
+					} else {
+						while (releasedCards.length > 0) {
+							let card = releasedCards.pop();
+							holdCards.push(card);
+						}
+						holdingCardId = -1;
 					}
 				}
-			}
 
 			// On holding.
-			if (holdCards.length > 0) {
+			} else if (holdCards.length > 0) {
 
 				// Update holding card angle animation.
 				for (let i = 0; i < holdCards.length; i++) {
@@ -1273,7 +1284,14 @@ a {
 						if (j < playCards.length) {
 							if (playCards[j].frame != 0) {
 								let card = playCards.splice(j, 1)[0];
-								holdCards.push(card);
+
+								// Release instead of holding.
+								if (rolling > holdingTime) {
+									releasedCards.push(card);
+								} else {
+									holdCards.push(card);
+								}
+
 								angle = card.angle;
 								holdingCardId = -1;
 								touchingCardId = -1;
