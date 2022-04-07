@@ -566,7 +566,7 @@ a {
 
 			// Check touching hand shade.
 			if (touchingCardId == touchingNothing) {
-				for (let i = 0; i < shadeSpriteMax; i++) {
+				for (let i = 0; i < 2/*shadeSpriteMax*/; i++) {
 					if (cubeCheck(motion, shadeSprites[i])) {
 						touchingCardId = touchingShade - i;
 						break;
