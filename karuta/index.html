@@ -1681,7 +1681,11 @@ a {
 						sy = boardSprite.pos.y + releasedCards[releasedCards.length - 1].y * boardGridSize.y;
 
 						// Scale animation.
-						s = playScale * 0.8;
+						if (touchingCardId == touchingReleased) {
+							s = playScale * 1.2;
+						} else {
+							s = playScale * 1.0;
+						}
 
 						// Rotation.
 						a = releasedCards[releasedCards.length - 1].angle;
