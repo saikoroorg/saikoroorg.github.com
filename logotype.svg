@@ -1,0 +1,58 @@
+<!--svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="300" height="300">
+    <g stroke-width="2" stroke="none" fill="#000" transform="translate(2,2)">
+        <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
+        <path d="M3,3h2v2h-2ZM11,3h2v2h-2ZM3,7h2v2h-2ZM11,7h2v2h-2ZM3,11h2v2h-2ZM11,11h2v2h-2Z"/>
+    </g>
+</svg!-->
+<!--
+    brew install inkscape
+    /Applications/Inkscape.app/Contents/MacOS/inkscape -b white -w 168 -p logotype.svg -o logotype.png
+ !-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 16" width="168" height="32">
+    <rect x="0" y="0" width="100%" height="100%" fill="#fff"/>
+    <!--g stroke-width="2" stroke="none" fill="#000" transform="translate(5,8.5)">
+        <g>
+            <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
+            <path d="M3,3h2v2h-2ZM11,3h2v2h-2ZM3,7h2v2h-2ZM11,7h2v2h-2ZM3,11h2v2h-2ZM11,11h2v2h-2Z"/>
+        </g>
+    </g!-->
+    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(-2,0)">
+        <g transform="translate(0,0)">
+            <path d="M10,4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(8,0)">
+            <path d="M6,4v8 M6,4h4 M6,10h4 M10,4v8"/>
+            <path d="M7,3h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
+        </g>
+        <g transform="translate(14,0)">
+            <path d="M8,4v8"/>
+        </g>
+        <g transform="translate(20,0)">
+            <path d="M6,4v8 M6,8h2 M10,6v-2 M10,10v2"/>
+        </g>
+        <g transform="translate(28,0)">
+            <path d="M6,4h4v8h-4v-8"/>
+        </g>
+        <g transform="translate(36,0)">
+            <path d="M6,4v8 M6,4h4 M6,10h2 M10,4v4"/>
+            <path d="M9,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
+        </g>
+        <g transform="translate(44,0)">
+            <path d="M6,4h4v8h-4v-8"/>
+        </g>
+        <g transform="translate(50,0)">
+            <path d="M7,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
+        </g>
+        <g transform="translate(56,0)">
+            <path d="M6,4h4v8h-4v-8"/>
+        </g>
+        <g transform="translate(64,0)">
+            <path d="M6,4v8 M6,4h4 M6,10h2 M10,4v4"/>
+            <path d="M9,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/>
+        </g>
+        <g transform="translate(72,0)">
+            <path d="M10,4h-4v8h4v-4"/>
+        </g>
+    </g>
+</svg>
+
