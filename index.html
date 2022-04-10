@@ -3,12 +3,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
 <title>Saikoro.org</title>
-<link rel="icon" type="image/svg" href="dice/icon.svg">
-<link rel="apple-touch-icon" href="dice/icon.png" sizes="192x192">
+<link rel="icon" type="image/svg" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.png" sizes="192x192">
 <link rel="manifest" href="manifest.json">
 <style>
 body {
     font-family: Courier, monospace, sans-serif;
+    background-color: #fff;
 }
 a {
     color: #000;
@@ -20,6 +21,7 @@ a {
     flex-direction: column; -webkit-flex-direction: column;
     justify-content: flex-start; -webkit-justify-content: flex-start;
     align-items: center; -webkit-align-items: center;
+    overflow: hidden;
 }
 #header {
     width: 95%; margin: 0px;
@@ -58,11 +60,14 @@ a {
     align-items: center; -webkit-align-items: center;
     font-size: 24px;
 }
-.logo .icon {
+.logo .logomark {
     width: 40px; height: 40px; padding: 10px; margin-left: -28px;
 }
 .logo .cubeScreen {
     width: 60px; height: 60px; margin-left: -28px;
+}
+.logo .logotype {
+    width: 168px; height: 40px; margin-left: -12px;
 }
 .menu {
     display: flex; display: -webkit-flex;
@@ -138,10 +143,9 @@ a {
 <div id="container">
     <h1 id="header">
         <div class="logo">
-            <img class="icon no" src="sai/icon.svg"/>
-            <div class="cubeScreen en ja">
-            </div>
-            <a href="?">Saikoro.org</a>
+            <img class="logomark no" src="logomark.svg"/>
+            <div class="cubeScreen en ja"></div>
+            <a href="?"><img class="logotype" src="logotype.svg"/></a>
         </div>
         <div class="menu">
             <div class="lang en">en</div>
@@ -155,7 +159,7 @@ a {
             <div class="menu">
                 <a class="name" href="sai/">
                     <img class="icon" src="sai/icon.svg"/>
-                    Sai
+                    Sai (Dice)
                 </a>
             </div>
             <div class="disc en">
@@ -175,6 +179,48 @@ a {
              --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
             </div>
         </div>
+        <div class="app">
+            <div class="menu">
+                <a class="name" href="karuta/">
+                    <img class="icon" src="goban/icon.svg"/>
+                    Karuta (Beta)
+                </a>
+            </div>
+            <div class="disc en">
+                <a href="karuta/">Karuta</a> is the web app that draws or places cards on the board by touching.
+                <span class="note">"Add to Homescreen" to use like as native app.</span>
+            </div>
+            <div class="disc ja">
+                <a href="karuta/">Karuta</a>はタッチでカードをとったりおいたりするウェブアプリです。<!--
+             --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
+            </div>
+        </div>
+        <script>/* <div class="app">
+            <div class="menu">
+                <a class="name" href="goban/">
+                    <img class="icon" src="goban/icon.svg"/>
+                    Goban Board
+                </a>
+            </div>
+            <div class="disc en">
+                <a href="goban/">Goban</a> is the web app that places black and white stones on the Go board by tapping.
+                <a href="goban/?o6">o6</a> is the board for mini size (6x6) <a href="goban/?o6+a43b33a34b44">Reversi</a> / <a href="goban/?o6+a16a25a36a45a56a65b12b21b32b41b52b61">Checker</a>.
+                <a href="goban/?o8">o8</a> is the board for full size (8x8) <a href="goban/?o8+a54b44a45b55">Reversi</a> / <a href="goban/?o8+a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">Checker</a>.
+                <a href="goban/?x5">x5</a> / <a href="goban/?x7">x7</a> / <a href="goban/?x9">x9</a> is the board for 5x5 / 7x7 / 9x9 Go.
+                <a href="goban/?x13">x13</a> is the board for half size (13x13) Go.
+                <a href="goban/?x19">x19</a> is the board for full size (19x19) Go.
+                <span class="note">"Add to Homescreen" to use like as native app.</span>
+            </div>
+            <div class="disc ja">
+                <a href="goban/">Goban</a>はタップで石を碁盤におくウェブアプリです。<!--
+             --><a href="goban/?o6">o6</a>はミニサイズ(6x6)の<a href="goban/?o6+a43b33a34b44">リバーシ盤</a>・<a href="goban/?o6+a16a25a36a45a56a65b12b21b32b41b52b61">チェッカー盤</a>です。<!--
+             --><a href="goban/?o8">o8</a>はフルサイズ(8x8)の<a href="goban/?o8+a54b44a45b55">リバーシ盤</a>・<a href="goban/?o8+a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">チェッカー盤</a>です。<!--
+             --><a href="goban/?x5">x5</a>・<a href="goban/?x7">x7</a>・<a href="goban/?x9">x9</a>は五路盤(5x5)・七路盤(7x7)・九路盤(9x9)です。<!--
+             --><a href="goban/?x13">x13</a>は十三路盤(13x13)です。<!--
+             --><a href="goban/?x19">x19</a>はフルサイズ(19x19)の囲碁盤です。<!--
+             --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
+            </div>
+        </div> */</script>
         <div class="app">
             <div class="menu">
                 <a class="name" href="kuku/">
@@ -197,48 +243,6 @@ a {
              --><a href="kuku/?t20">t20</a>(たして20)は20までのたしざん/ひきざんです。<!--
              --><a href="kuku/?x9">x9</a>(九九)は9×9までのかけざんです。<!--
              --><a href="kuku/?x19">x19</a>(インド式九九)は11×1から19×19までのかけざんです。<!--
-             --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
-            </div>
-        </div>
-        <div class="app">
-            <div class="menu">
-                <a class="name" href="karuta/">
-                    <img class="icon" src="karuta/icon.svg"/>
-                    Karuta Beta
-                </a>
-            </div>
-            <div class="disc en">
-                <a href="karuta/">Karuta</a> is the web app that draws or places cards on the board by touching.
-                <span class="note">"Add to Homescreen" to use like as native app.</span>
-            </div>
-            <div class="disc ja">
-                <a href="karuta/">Karuta</a>はタッチでカードをとったりおいたりするウェブアプリです。<!--
-             --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
-            </div>
-        </div>
-        <div class="app">
-            <div class="menu">
-                <a class="name" href="goban/">
-                    <img class="icon" src="goban/icon.svg"/>
-                    Goban Beta
-                </a>
-            </div>
-            <div class="disc en">
-                <a href="goban/">Goban</a> is the web app that places black and white stones on the Go board by tapping.
-                <a href="goban/?o6">o6</a> is the board for mini size (6x6) <a href="goban/?o6+a43b33a34b44">Reversi</a> / <a href="goban/?o6+a16a25a36a45a56a65b12b21b32b41b52b61">Checker</a>.
-                <a href="goban/?o8">o8</a> is the board for full size (8x8) <a href="goban/?o8+a54b44a45b55">Reversi</a> / <a href="goban/?o8+a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">Checker</a>.
-                <a href="goban/?x5">x5</a> / <a href="goban/?x7">x7</a> / <a href="goban/?x9">x9</a> is the board for 5x5 / 7x7 / 9x9 Go.
-                <a href="goban/?x13">x13</a> is the board for half size (13x13) Go.
-                <a href="goban/?x19">x19</a> is the board for full size (19x19) Go.
-                <span class="note">"Add to Homescreen" to use like as native app.</span>
-            </div>
-            <div class="disc ja">
-                <a href="goban/">Goban</a>はタップで石を碁盤におくウェブアプリです。<!--
-             --><a href="goban/?o6">o6</a>はミニサイズ(6x6)の<a href="goban/?o6+a43b33a34b44">リバーシ盤</a>・<a href="goban/?o6+a16a25a36a45a56a65b12b21b32b41b52b61">チェッカー盤</a>です。<!--
-             --><a href="goban/?o8">o8</a>はフルサイズ(8x8)の<a href="goban/?o8+a54b44a45b55">リバーシ盤</a>・<a href="goban/?o8+a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">チェッカー盤</a>です。<!--
-             --><a href="goban/?x5">x5</a>・<a href="goban/?x7">x7</a>・<a href="goban/?x9">x9</a>は五路盤(5x5)・七路盤(7x7)・九路盤(9x9)です。<!--
-             --><a href="goban/?x13">x13</a>は十三路盤(13x13)です。<!--
-             --><a href="goban/?x19">x19</a>はフルサイズ(19x19)の囲碁盤です。<!--
              --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
             </div>
         </div>
