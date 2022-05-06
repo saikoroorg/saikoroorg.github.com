@@ -427,7 +427,7 @@ a {
 	const frameBlank = colorFrameMax + 1, frameBack = colorFrameMax + 2;
 
 	// Cards.
-	var decks = [], trashes = [];
+	var decks = [], trashes = [], focuses = [];
 	var handCards = [], playCards = [], holdCards = [], releasedCards = [];
 	const blankCard = { x:0, y:0, angle:0, frame:0, flag:0 };
 	const backsidedCard = { x:0, y:0, angle:0, frame:0, flag:1 };
@@ -467,7 +467,8 @@ a {
 				" colors=" + colors + " jokers=" + jokers + " numberMax=" + numberMax)
 
 			// Create new decks.
-			decks = [], trashes = [], handCards = [], playCards = [], holdCards = [], releasedCards = [];
+			decks = [], trashes = [], focuses = [];
+			handCards = [], playCards = [], holdCards = [], releasedCards = [];
 			drawCounts = 0;
 			for (let j = 0; j < frameMax; j++) {
 				decks[j] = cubeClone(backsidedCard);
@@ -505,7 +506,7 @@ a {
 
 		// Drawing card.
 		const holdingTime = 30, rotatingTime = 30;
-		let holdingCardId = -1, releasedCardId = -1;
+		let holdingCardId = -1, releasedCardId = -1, focusingCardId = -1;
 		for (rolling = 1; rolling >= 1; rolling++) {
 
 			// Screen size.
@@ -519,7 +520,7 @@ a {
 
 			// Check touching each cards.
 			const touchingNothing = -1, touchingSomething = -2, touchingReleased = -3;
-			const touchingBoard = -4, touchingShade = -5;
+			const touchingFocus = -4, touchingBoard = -5, touchingShade = -6;
 			let touchingCardId = motion ? touchingSomething : touchingNothing;
 			let touchingShadeL = -1, touchingShadeR = -1;
 			let touchingBoardPos = null;
@@ -538,12 +539,18 @@ a {
 				touchingCardId = handCards.length + playCards.length + 0;
 			}
 
+			// Check touching focuses.
+			if (focuses.length > 0 &&
+				touchingCardId == touchingSomething &&
+				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 3])) {
+				touchingCardId = touchingFocus;
+			}
+
 			// Check touching released card.
-			if (releasedCards.length > 0) {
-				if (touchingCardId == touchingSomething &&
-					cubeCheck(motion, colorSprites[handCards.length + playCards.length + 3])) {
-					touchingCardId = touchingReleased;
-				}
+			if (releasedCards.length > 0 &&
+				touchingCardId == touchingSomething &&
+				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 3])) {
+				touchingCardId = touchingReleased;
 			}
 
 			// Check touching hand card.
@@ -593,6 +600,9 @@ a {
 
 							// Recycle trashes to decks and shuffle.
 							if (action && action.z < 0 && result > 0) {
+
+								console.log("recycle trashes to decks.");
+
 								while (trashes.length > 0) {
 									let j = cubeRandom(trashes.length);
 									let card = trashes.splice(j, 1)[0];
@@ -616,6 +626,9 @@ a {
 								}
 							}
 						} else {
+
+							console.log("decks.");
+
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
 						}
@@ -639,6 +652,9 @@ a {
 									drawCounts += 1;
 								}
 							}
+
+							console.log("release touch over decks.");
+
 							result = 0;
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
@@ -685,12 +701,17 @@ a {
 								trashes.push(card);
 							}
 
+							console.log("Discard to trashes.");
+
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
 							rolling = 0;
 
 						// Turn over the card on tapping.
 						} else if (action.z < 0 && trashes.length > 0) {
+
+							console.log("Turn over the card on tapping.");
+
 							//trashes[trashes.length-1].frame = -trashes[trashes.length-1].frame;
 							trashes[trashes.length-1].flag = !trashes[trashes.length-1].flag;
 
@@ -726,6 +747,66 @@ a {
 						touchingCardId = touchingSomething;*/
 					}
 
+				}
+			}
+
+			// Touch focuses.
+			if (touchingCardId == touchingFocus) {
+				if (result > 0) {
+
+					// Check focuses position.
+					let x = colorSprites[handCards.length + playCards.length + 3].pos.x;
+					let w = colorSprites[handCards.length + playCards.length + 3].size.x / 8;
+					if (motionLocalPos.x < x - w) {
+						touchingDir = -1;
+					} else if (motionLocalPos.x > x + w) {
+						touchingDir = +1;
+					}
+
+					// Check release action.
+					if (action) {
+
+						// Rotate the released card to right.
+						if (touchingDir > 0) {
+							angle = cubeMod(angle + 90, 360);
+
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+							rolling = 0;
+
+						// Rotate the released card to left.
+						} else if (touchingDir < 0) {
+							angle = cubeMod(angle - 90, 360);
+
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+							rolling = 0;
+
+						// Turn over the card on tapping.
+						} else if (action.z < 0 && focusingCardId >= 0) {
+
+							if (focusingCardId < handCards.length) {
+								let j = focusingCardId ;
+								handCards[j].flag = !handCards[j].flag;
+								focuses[focuses.length - 1].flag = handCards[j].flag;
+							} else if (focusingCardId < handCards.length + playCards.length) {
+								let j = focusingCardId - handCards.length;
+								playCards[j].flag = !playCards[j].flag;
+								focuses[focuses.length - 1].flag = playCards[j].flag;
+							}
+
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+							rolling = 0;
+						}
+
+					// Start to touch focuses.
+					} else {
+						if (holdingCardId != touchingFocus) {
+							holdingCardId = touchingFocus;
+							rolling = 0;
+						}
+					}
 				}
 			}
 
@@ -767,16 +848,39 @@ a {
 								handCards.splice(k, 0, card);
 							}
 							handCounts = handCards.length;
+						} else*/ 
+
+						// Focus hand card on tapping.
+						if (action.z < 0) {
+							console.log("Focus hand card on tapping.");
+
+							if (focuses.length <= 0) {
+								focuses.push(cubeClone(backsidedCard));
+							}
+							if (focusingCardId != touchingCardId) {
+								focuses[focuses.length - 1].frame = handCards[j].frame;
+								focuses[focuses.length - 1].x = handCards[j].x;
+								focuses[focuses.length - 1].y = handCards[j].y;
+								focuses[focuses.length - 1].flag = handCards[j].flag;
+								focuses[focuses.length - 1].angle = handCards[j].angle;
+								focusingCardId = touchingCardId;
+							} else {
+								focuses.pop();
+								focusingCardId = touchingNothing;
+							}
+
+							holdingCardId = touchingSomething;
+							//touchingCardId = touchingSomething;
+						}
 
 						// Turn over the hand card on tapping.
-						} else*/ 
-						if (action.z < 0) {
+						/*if (action.z < 0) {
 							handCards[j].flag = !handCards[j].flag;
 						}
 
 						holdingCardId = touchingSomething;
 						touchingCardId = touchingSomething;
-						rolling = 0;
+						rolling = 0;*/
 
 					// Start to touch hand cards.
 					} else {
@@ -896,12 +1000,34 @@ a {
 							holdingCardId = touchingNothing;
 							touchingCardId = touchingNothing;
 
-						// Turn over the playing card on tapping.
+						// Focus playing card on tapping.
 						} else if (action.z < 0) {
+							console.log("Focus playing card on tapping.");
+
+							if (focuses.length <= 0) {
+								focuses.push(cubeClone(backsidedCard));
+							}
+							if (focusingCardId != touchingCardId) {
+								focuses[focuses.length - 1].frame = playCards[j].frame;
+								focuses[focuses.length - 1].x = playCards[j].x;
+								focuses[focuses.length - 1].y = playCards[j].y;
+								focuses[focuses.length - 1].flag = playCards[j].flag;
+								focuses[focuses.length - 1].angle = playCards[j].angle;
+								focusingCardId = touchingCardId;
+							} else {
+								focuses.pop();
+								focusingCardId = touchingNothing;
+							}
+
+							holdingCardId = touchingSomething;
+							//touchingCardId = touchingSomething;
+
+						// Turn over the playing card on tapping.
+						/*} else if (action.z < 0) {
 							playCards[j].flag = !playCards[j].flag;
 
 							holdingCardId = touchingSomething;
-							touchingCardId = touchingSomething;
+							touchingCardId = touchingSomething;*/
 						}
 
 						rolling = 0;
@@ -912,6 +1038,8 @@ a {
 							holdingCardId = touchingCardId;
 							releasedCardId = -1;
 							rolling = 0;
+
+						} else if (rolling > holdingTime && holdingCardId < 0) {
 
 						/*} else if (rolling > holdingTime && holdCards.length <= 0 && rollingCardId < 0) {
 							holdingCardId = touchingSomething;
@@ -968,6 +1096,9 @@ a {
 
 						// Insert hold cards to hand cards.
 						if (holdCards.length > 0) {
+
+							console.log("Insert hold cards to hand cards.");
+
 							//let k = touchingDir >= 0 ? 0 : handCards.length - 1;
 							let k = touchingShadeR;
 							while (holdCards.length > 0) {
@@ -1075,6 +1206,9 @@ a {
 
 						// Put hold cards to playing board.
 						if (holdCards.length > 0) {
+
+							console.log("Put hold cards to playing board.");
+
 							let k = /*touchingDir >= 0 ? 0 :*/ playCards.length - 1;
 							while (holdCards.length > 0) {
 								let card = holdCards.pop();
@@ -1098,6 +1232,8 @@ a {
 							holdingCardId = touchingNothing;
 							touchingCardId = touchingNothing;
 						} else {
+
+							console.log("board.");
 
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
@@ -1144,6 +1280,33 @@ a {
 			shadeGridLine = handCards.length < shadeGridLineMax ? handCards.length : shadeGridLineMax;
 			shadeLines = cubeDiv(handCards.length - 1, shadeGridLine);
 			shadeGridSize = cubeVector(240 / (shadeGridLine + 1), 40 / (shadeLines + 1));
+
+			// Update focusing card angle animation.
+			if (focuses.length > 0 && focusingCardId >= 0) {
+				if (focusingCardId < handCards.length) {
+					/*let j = focusingCardId;
+					if (handCards[j].angle != angle) {
+						let d = cubeMod(angle - handCards[j].angle, 360);
+						if (-5 < d && d < 5) {
+							handCards[j].angle = angle;
+						} else {
+							handCards[j].angle += cubeDiv(d > 180 ? d - 360 : d < -180 ? d + 360 : d, 2);
+						}
+						focuses[focuses.length - 1].angle = handCards[j].angle;
+					}*/
+				} else if (focusingCardId < handCards.length + playCards.length) {
+					let j = focusingCardId - handCards.length;
+					if (playCards[j].angle != angle) {
+						let d = cubeMod(angle - playCards[j].angle, 360);
+						if (-5 < d && d < 5) {
+							playCards[j].angle = angle;
+						} else {
+							playCards[j].angle += cubeDiv(d > 180 ? d - 360 : d < -180 ? d + 360 : d, 2);
+						}
+						focuses[focuses.length - 1].angle = playCards[j].angle;
+					}
+				}
+			}
 
 			// Now Released.
 			if (releasedCards.length > 0) {
@@ -1276,9 +1439,10 @@ a {
 					}		
 				}*/
 
+				console.log("hold=" + holdingCardId + " touch=" + touchingCardId + " focus=" + focusingCardId);
+
 				// Start holding.
 				if (holdingCardId != touchingCardId || rolling > holdingTime) {
-
 
 					// Start to hold released cards.
 					if (holdingCardId == touchingReleased) {
@@ -1287,9 +1451,51 @@ a {
 							holdCards.push(card);
 						}
 
+					// Start to hold focusing cards.
+					} else if (holdingCardId == touchingFocus && focusingCardId >= 0) {
+
+						console.log("Start to hold focuses.");
+
+						// Start to hold focusing hand cards.
+						if (focusingCardId < handCards.length) {
+							let j = focusingCardId;
+
+							console.log("Start to hold focusing hand cards:" + j);
+
+							if (handCards[j].frame != 0) {
+								holdCards.push(handCards.splice(j, 1)[0]);
+								angle = 0;
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
+
+								focusingCardId = touchingNothing;
+								focuses.pop();
+							}
+						
+						// Start to hold focusing playing cards.
+						} else if (focusingCardId < handCards.length + playCards.length) {
+							let j = focusingCardId - handCards.length;
+
+							console.log("Start to hold focusing playing cards:" + j);
+
+							if (playCards[j].frame != 0) {
+								let card = playCards.splice(j, 1)[0];
+								holdCards.push(card);
+								angle = card.angle;
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
+
+								focusingCardId = touchingNothing;
+								focuses.pop();
+							}
+						}
+
 					// Start to hold hand cards.
 					} else if (holdingCardId >= 0 && holdingCardId < handCards.length) {
 						let j = holdingCardId;
+
+						console.log("Start to hold hand cards:" + j);
+
 						if (j < handCards.length) {
 							if (handCards[j].frame != 0) {
 								holdCards.push(handCards.splice(j, 1)[0]);
@@ -1312,6 +1518,9 @@ a {
 					} else if (holdingCardId >= handCards.length &&
 						holdingCardId < handCards.length + playCards.length) {
 						let j = holdingCardId - handCards.length;
+
+						console.log("Start to hold playing cards:" + j);
+
 						if (j < playCards.length) {
 							if (playCards[j].frame != 0) {
 								let card = playCards.splice(j, 1)[0];
@@ -1331,6 +1540,9 @@ a {
 
 					// Start to hold trashes.
 					} else if (holdingCardId == handCards.length + playCards.length + 0) {
+
+						console.log("Start to hold trashes.");
+
 						if (trashes.length > 0) {
 							let j = trashes.length - 1;
 							if (trashes[j].frame != 0) {
@@ -1343,6 +1555,9 @@ a {
 
 					// Start to hold decks.
 					} else if (holdingCardId == handCards.length + playCards.length + 1) {
+
+						console.log("Start to hold decks.");
+
 						if (decks.length > 0) {
 							let j = decks.length - 1;
 							if (decks[j].frame != 0) {
@@ -1355,6 +1570,14 @@ a {
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
 							}
+						}
+					}
+
+					// Cancel focusing cards.
+					if (touchingCardId == touchingSomething) {
+						if (focuses.length > 0) {
+							focuses.pop();
+							focusingCardId = touchingNothing;
 						}
 					}
 
@@ -1457,9 +1680,12 @@ a {
 						n = 0; // Blank.
 					}
 
-				// Update holding cards shade.
+				// Update focuses or holding cards shade.
 				} else if (i == handCards.length + playCards.length + 3) {
-					if (holdCards.length > 0 && motion) {
+					if (focuses.length > 0) {
+						n = focuses[focuses.length - 1].flag ? -1 :
+							focuses[focuses.length - 1].frame;
+					} else if (holdCards.length > 0 && motion) {
 						n = 0; // Blank.
 					} else {
 						n = 0; // Blank.
@@ -1501,6 +1727,8 @@ a {
 			let playScale = 0.04 * boardGridSize.y;//(holdCards.length > 0 ? 6 : 5) / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
 			//const touchScale = touchingDir == 0 ? 1.2 : 1;
 
+			let focusScale = 0.06 * boardGridSize.y;
+
 			// Deck/Trash card scales.
 			let deckScale = 1;//holdCards.length > 0 ? 1 : 1.5;
 
@@ -1535,12 +1763,20 @@ a {
 							a0 = rolling < 12 ? 1 * (1.2 - 0.05 * rolling) : 1 * 0.6;
 							a1 = rolling < 15 ? 1 * (-0.5 + 0.1 * rolling) : 1 * 1.0;
 						}
+					} else if (focuses.length > 0) {
+						if (focusingCardId == i) {
+							a0 = 0;
+							a1 = 0;
+						} else {
+							a0 = 0.3;
+							a1 = 0.5;
+						}
 					}
 
 					// Position direct setting.
 					let x = cubeMod(j, shadeGridLine);
 					let y = cubeDiv(j, shadeGridLine);
-					let offset = shadeLines >= 1 ? 20 : 30;
+					let offset = focuses.length > 0 ? 0 : shadeLines >= 1 ? 20 : 30;
 					sx = (shadeSprites[0].pos.x - shadeSprites[0].size.x/2) + (x + 1) * shadeGridSize.x;
 					sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 - offset) + (y + 1) * shadeGridSize.y;
 
@@ -1608,6 +1844,12 @@ a {
 						s = playScale * (rolling < 5 ? (1.4 - 0.04 * rolling) : 1.2)
 						//sx = sx + 4 * playScale * -touchingDir;
 						//sy = sy + 40 - 40 * touchScale;
+
+					// Focusing animation.
+					} else if (focusingCardId == i) {
+						s = playScale * 1.2;
+						a0 = 0.3;
+						a1 = 0.5;
 
 					} else {
 						s = playScale;
@@ -1718,11 +1960,26 @@ a {
 						a0 = a1 = 0;
 					}
 
-				// Set holding/released card shade position.
+				// Set focues or holding/released card shade position.
 				} else if (i == handCards.length + playCards.length + 3) {
 
+					// Set focuses position.
+					if (focuses.length > 0) {
+						sx = ox + mx * 1 / 2;
+						sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 + 5);
+
+						if (touchingCardId == touchingFocus) {
+							s = focusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);
+						} else {
+							s = focusScale;
+						}
+
+						// Rotation animation..
+						a = focuses[focuses.length - 1].angle +
+							touchingDir * (rolling < 30 ? (10 + 0.5 * rolling) : 30);;
+
 					// Set holding card shade position.
-					if (holdCards.length > 0 && touchingBoardPos) {
+					} else if (holdCards.length > 0 && touchingBoardPos) {
 
 						// Position direct setting.
 						sx = boardSprite.pos.x + touchingBoardPos.x * boardGridSize.x;
@@ -1735,7 +1992,7 @@ a {
 						a = holdCards[holdCards.length - 1].angle;
 
 					// Set released card shade position.
-					} else if (releasedCards.length > 0) {
+					/*} else if (releasedCards.length > 0) {
 
 						// Position direct setting.
 						sx = boardSprite.pos.x + releasedCards[releasedCards.length - 1].x * boardGridSize.x;
@@ -1753,7 +2010,7 @@ a {
 						} else {
 							s = playScale * 1.2;
 							a = releasedCards[releasedCards.length - 1].angle;
-						}
+						}*/
 
 					} else {
 						a0 = a1 = 0;
