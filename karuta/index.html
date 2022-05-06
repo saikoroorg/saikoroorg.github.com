@@ -16,6 +16,8 @@ a {
 	text-decoration: none;
 }
 #container {
+	//position: absolute;
+	//left: 0; top: 0;
 	width: 100%; height: 100%;
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
@@ -66,6 +68,15 @@ a {
 	justify-content: flex-start; -webkit-justify-content: flex-start;
 	align-items: center; -webkit-align-items: center;
 }
+#logo span:hover {
+	transform: scale(1);
+	opacity: 0.6;
+	cursor: pointer;
+}
+#logo span:active {
+	transform: scale(0.9);
+	opacity: 1;
+}
 #icon {
 	width: 40px; height: 40px; margin-right: 10px;
 	/*background-image: url('resource.svg');*/
@@ -82,7 +93,7 @@ a {
 	align-items: center; -webkit-align-items: center;
 	opacity: 0.5;
 }
-#menu a {
+#menu span {
 	width: 40px; height: 44px;
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
@@ -94,11 +105,12 @@ a {
 	transform: scale(1);
 	opacity: 1;
 }
-#menu a:hover {
+#menu span:hover {
 	transform: scale(1);
 	opacity: 0.6;
+	cursor: pointer;
 }
-#menu a:active {
+#menu span:active {
 	transform: scale(0.9);
 	opacity: 1;
 }
@@ -117,7 +129,7 @@ a {
 	#menu {
 		height: 20px;
 	}
-	#menu a {
+	#menu span {
 		font-size: 12px;
 	}
 	#author,#version {
@@ -132,12 +144,12 @@ a {
 	<h1 id="header">
 		<a href="?" id="logo">
 			<img id="icon" src="icon.svg"/>
-			<div id="title">Karuta</div>
+			<span id="title" href="#" onclick="javascript:window.top.location.reload();">Karuta</span>
 		</a>
 		<div id="menu">
-			<a href="javascript:changeCounts(-1);">-</a>
-			<a href="javascript:changePattern();">|</a>
-			<a href="javascript:changeCounts(+1);">+</a>
+			<span href="#" onclick="javascript:changeCounts(-1);">-</span>
+			<span href="#" onclick="javascript:changePattern();">|</span>
+			<span href="#" onclick="javascript:changeCounts(+1);">+</span>
 		</div>
 	</h1>
 	<div id="contents" class="cubeScreen"></div>

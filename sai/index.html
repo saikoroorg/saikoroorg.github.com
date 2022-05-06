@@ -16,11 +16,14 @@ a {
 	text-decoration: none;
 }
 #container {
+	//position: absolute;
+	//left: 0; top: 0;
 	width: 100%; height: 100%;
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
 	justify-content: flex-start; -webkit-justify-content: flex-start;
 	align-items: center; -webkit-align-items: center;
+	overflow: hidden;
 }
 #header {
 	width: 95%; margin: 0px;
@@ -39,6 +42,12 @@ a {
 	justify-content: center; -webkit-justify-content: center;
 	align-items: center; -webkit-align-items: center;
 	background-color: #eee;
+}
+#screens {
+	width: 100%; height: 100%;
+	flex: 1 1 auto;
+	display: grid; display: -webkit-grid;
+	background-color: #ddd;
 }
 #footer {
 	width: 95%; margin: 0px;
@@ -59,9 +68,18 @@ a {
 	justify-content: flex-start; -webkit-justify-content: flex-start;
 	align-items: center; -webkit-align-items: center;
 }
+#logo span:hover {
+	transform: scale(1);
+	opacity: 0.6;
+	cursor: pointer;
+}
+#logo span:active {
+	transform: scale(0.9);
+	opacity: 1;
+}
 #icon {
 	width: 40px; height: 40px; margin-right: 10px;
-	background-image: url('resource.svg');
+	/*background-image: url('resource.svg');*/
 }
 #title {
 	margin: 0px;
@@ -75,7 +93,7 @@ a {
 	align-items: center; -webkit-align-items: center;
 	opacity: 0.5;
 }
-#menu a {
+#menu span {
 	width: 40px; height: 44px;
 	display: flex; display: -webkit-flex;
 	flex-direction: column; -webkit-flex-direction: column;
@@ -85,12 +103,14 @@ a {
 	font-size: 30px;
 	text-decoration: none;
 	transform: scale(1);
+	opacity: 1;
 }
-#menu a:hover {
+#menu span:hover {
 	transform: scale(1);
 	opacity: 0.6;
+	cursor: pointer;
 }
-#menu a:active {
+#menu span:active {
 	transform: scale(0.9);
 	opacity: 1;
 }
@@ -109,7 +129,7 @@ a {
 	#menu {
 		height: 20px;
 	}
-	#menu a {
+	#menu span {
 		font-size: 12px;
 	}
 	#author,#version {
@@ -123,13 +143,13 @@ a {
 <div id="container">
 	<h1 id="header">
 		<a href="?" id="logo">
-			<div id="icon"></div>
-			<div id="title">Sai</div>
+			<img id="icon" src="icon.svg"/>
+			<span id="title" href="#" onclick="javascript:window.top.location.reload();">Sai</span>
 		</a>
 		<div id="menu">
-			<a href="javascript:changeCounts(-1);">-</a>
-			<a href="javascript:changeMaximum();">|</a>
-			<a href="javascript:changeCounts(+1);">+</a>
+			<span href="#" onclick="javascript:changeCounts(-1);">-</span>
+			<span href="#" onclick="javascript:changeMaximum();">|</span>
+			<span href="#" onclick="javascript:changeCounts(+1);">+</span>
 		</div>
 	</h1>
 	<div id="contents" class="cubeScreen"></div>
@@ -142,20 +162,23 @@ a {
 <!--Resource--><script>
 	var buffer = null; // Original design buffer.
 
-	// Query parameters.
-	//  McN  : M = Roll dice counts, N = Dice maximum number.
-	//  &n1~ = Dice face design.
-	//  &c1~ = Color palette.
-	var keys = cubeParamKeys();
 
-	// Example 1: Standard dotted dice with color pips (1~6) and playing card suit marks (7~12).
-	// 2d6&n0=f11099g22088&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&n7=c44067c35076c53054&n8=a44066a34075a43044a63064a56057&n9=d44066d53057d35075&n10=b43066b54057b35076&n11=e33e73e44066e37e77&n12=g44066&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff
+    // Example 1: Standard dotted dice with color pips (1~6) and playing card suit marks (7~12).
+    // var query = "2d6&n0=f11099g22088&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&n7=c44067c35076c53054&n8=a44066a34075a43044a63064a56057&n9=d44066d53057d35075&n10=b43066b54057b35076&n11=e33e73e44066e37e77&n12=g44066&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff"
 
-	// Example 2: Highreso number dice.
-	// 2d10&n0=f110ggg220ff&n1=f53057&n2=f43063f64f45065f46f47067&n3=f43063f45065f47067f63067&n4=f43045f45065f63067&n5=f43063f44f45065f66f47067&n6=f43063f43047f45065f66f47067&n7=f43063f44f63067&n8=f43063f43047f55f63067f47067&n9=f43063f43045f45065f64067f47067&n10=f43063f43047f63067f47067&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff
+    // Example 2: Highreso number dice.
+    // var query = "2d10&n0=f110ggg220ff&n1=f53057&n2=f43063f64f45065f46f47067&n3=f43063f45065f47067f63067&n4=f43045f45065f63067&n5=f43063f44f45065f66f47067&n6=f43063f43047f45065f66f47067&n7=f43063f44f63067&n8=f43063f43047f55f63067f47067&n9=f43063f43045f45065f64067f47067&n10=f43063f43047f63067f47067&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff"
 
-	// Example 3: Unkoro.
-	// 5d6&n1=b44066b34075b43044b63064b56057&n2=a34074a63067a37a46a55&n3=a34074a74076a47067a35a53&n4=a35075a43063a53056a47&n5=a33043a37057a66a74075&n6=a33073a37077a73077&c1=000&c2=d66
+    // Example 3: Unkoro.
+    // var query = "5d6&n1=b44066b34075b43044b63064b56057&n2=a34074a63067a37a46a55&n3=a34074a74076a47067a35a53&n4=a35075a43063a53056a47&n5=a33043a37057a66a74075&n6=a33073a37077a73077&c1=000&c2=d66";
+    // cubeLoadParam(null, query);
+    // console.log("Query:" + query);
+
+    // Load query parameters.
+    //  McN  : M = Roll dice counts, N = Dice maximum number.
+    //  &n1~ = Dice face design.
+    //  &c1~ = Color palette.
+    var keys = cubeParamKeys();
 
 	// Load color palette parameters.
 	var depth = 3, palette = [[255,255,255]];
