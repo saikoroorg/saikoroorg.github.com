@@ -535,7 +535,7 @@ a {
 
 			// Check touching buttons.
 			let touchingButtonId = -1;
-			if (focuses.length > 0) {
+			if (focuses.length > 0 && focusingCardId >= handCards.length) {
 				for (let i = 0; i < 2; i++) {
 					if (cubeCheck(motion, buttonSprites[i])) {
 						touchingCardId = touchingButton;
@@ -1048,7 +1048,7 @@ a {
 							touchingCardId = touchingNothing;
 
 						// Focus playing card on tapping.
-						} else if (action.z < 0 && focuses.length <= 0) {
+						} else if (action.z < 0 && focusingCardId != touchingCardId) {
 							console.log("Focus playing card on tapping.");
 
 							if (focuses.length <= 0) {
