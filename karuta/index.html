@@ -374,6 +374,12 @@ a {
 
 	var joypad = cubeJoypad();
 
+	// Create button sprites.
+	var buttonSprites = [];
+	for (var i = 0; i < 2; i++) {
+		buttonSprites[i] = await cubeSprite("resource.svg", 40, 40);
+	}
+
 	// Create count sprites.
 	var sprites = [];
 	for (var i = 0; i < 2; i++) {
@@ -399,18 +405,19 @@ a {
 	}
 
 	// Create shade sprite.
-	const shadeOffsets = [cubeVector(0, 0), cubeVector(0, 0)];
+	const shadeStarts = [cubeVector(0, 0), cubeVector(0, 0)];
 	const shadeSizes = [cubeVector(240, 40), cubeVector(32, 160)];
 	const shadeColors = [cubeVector(204, 204, 204), cubeVector(204, 204, 204)];
 	var shadeCanvases = [cubeCanvas(240, 40, 1), cubeCanvas(240, 40, 1), cubeCanvas(32, 160, 1), cubeCanvas(32, 160, 1)];
 	const shadeSpriteMax = 4;
 	const shadePoses = [cubeVector(120, 280), cubeVector(120, 20), cubeVector(16, 150), cubeVector(224, 150)];
 	var shadeSprites = [];
+	var shadeOffsets = [0, 0];
 	//for (var i = 0; i < shadeSpriteMax/2; i++) {
-	//	cubeCanvasRect(shadeOffsets[i], shadeSizes[i], shadeColors[i], 0, shadeCanvases[i]);
+	//	cubeCanvasRect(shadeStarts[i], shadeSizes[i], shadeColors[i], 0, shadeCanvases[i]);
 	//}
 	for (var i = 0; i < shadeSpriteMax; i++) {
-		cubeCanvasRect(shadeOffsets[cubeDiv(i, 2)], shadeSizes[cubeDiv(i, 2)], shadeColors[i>0?1:0], 0, shadeCanvases[i]);
+		cubeCanvasRect(shadeStarts[cubeDiv(i, 2)], shadeSizes[cubeDiv(i, 2)], shadeColors[i>0?1:0], 0, shadeCanvases[i]);
 		shadeSprites[i] = await cubeCanvasSprite(shadeCanvases[i]);
 		cubeDilute(0, shadeSprites[i]);
 		cubeMove(shadePoses[i].x, shadePoses[i].y, shadeSprites[i]);
@@ -520,11 +527,23 @@ a {
 
 			// Check touching each cards.
 			const touchingNothing = -1, touchingSomething = -2, touchingReleased = -3;
-			const touchingFocus = -4, touchingBoard = -5, touchingShade = -6;
+			const touchingButton = -4, touchingFocus = -5, touchingBoard = -6, touchingShade = -7;
 			let touchingCardId = motion ? touchingSomething : touchingNothing;
 			let touchingShadeL = -1, touchingShadeR = -1;
 			let touchingBoardPos = null;
 			let touchingDir = 0;//, appending = 0;
+
+			// Check touching buttons.
+			let touchingButtonId = -1;
+			if (focuses.length > 0) {
+				for (let i = 0; i < 2; i++) {
+					if (cubeCheck(motion, buttonSprites[i])) {
+						touchingCardId = touchingButton;
+						touchingButtonId = i;
+						break;
+					}
+				}
+			}
 
 			// Check touching decks.
 			if (touchingCardId == touchingSomething && releasedCards.length <= 0 && holdCards.length <= 0 &&
@@ -750,23 +769,50 @@ a {
 				}
 			}
 
+			// Touch buttons.
+			if (touchingButtonId >= 0) {
+				if (result > 0) {
+
+					// Check release action.
+					if (action) {
+
+						// Rotate the released card to right.
+						if (touchingButtonId == 1) {
+							angle = cubeMod(angle + 90, 360);
+
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+							rolling = 0;
+
+						// Rotate the released card to left.
+						} else if (touchingButtonId == 0) {
+							angle = cubeMod(angle - 90, 360);
+
+							holdingCardId = touchingNothing;
+							touchingCardId = touchingNothing;
+							rolling = 0;
+						}
+					}
+				}
+			}
+
 			// Touch focuses.
 			if (touchingCardId == touchingFocus) {
 				if (result > 0) {
 
-					// Check focuses position.
+					/*// Check focuses position.
 					let x = colorSprites[handCards.length + playCards.length + 3].pos.x;
 					let w = colorSprites[handCards.length + playCards.length + 3].size.x / 8;
 					if (motionLocalPos.x < x - w) {
 						touchingDir = -1;
 					} else if (motionLocalPos.x > x + w) {
 						touchingDir = +1;
-					}
+					}*/
 
 					// Check release action.
 					if (action) {
 
-						// Rotate the released card to right.
+						/*// Rotate the released card to right.
 						if (touchingDir > 0) {
 							angle = cubeMod(angle + 90, 360);
 
@@ -783,7 +829,8 @@ a {
 							rolling = 0;
 
 						// Turn over the card on tapping.
-						} else if (action.z < 0 && focusingCardId >= 0) {
+						} else */
+						if (action.z < 0 && focusingCardId >= 0) {
 
 							if (focusingCardId < handCards.length) {
 								let j = focusingCardId ;
@@ -848,10 +895,10 @@ a {
 								handCards.splice(k, 0, card);
 							}
 							handCounts = handCards.length;
-						} else*/ 
+						} else if (action.z < 0) {*/
 
 						// Focus hand card on tapping.
-						if (action.z < 0) {
+						if (action) {
 							console.log("Focus hand card on tapping.");
 
 							if (focuses.length <= 0) {
@@ -1070,6 +1117,17 @@ a {
 			let shadeGridLine = handCards.length < shadeGridLineMax ? handCards.length : shadeGridLineMax;
 			let shadeLines = cubeDiv(handCards.length - 1, shadeGridLine);
 			let shadeGridSize = cubeVector(240 / (shadeGridLine + 1), 40 / (shadeLines + 1));
+
+			// Update shade offset.
+			let offset = focuses.length > 0 ? 0 : shadeLines >= 1 ? 20 : 30;
+			if (shadeOffsets[0] != offset) {
+				let d = offset - shadeOffsets[0];
+				if (-5 < d && d < 5) {
+					shadeOffsets[0] = offset;
+				} else {
+					shadeOffsets[0] += cubeDiv(d, 2);
+				}
+			}
 
 			// Touch hand shade.
 			if (touchingCardId == touchingShade) {
@@ -1736,6 +1794,11 @@ a {
 			let mx = size.x * 1, my = size.y * 1;
 			let ox = (size.x - mx) * 0.5, oy = (size.y - my) * 0.5;
 
+			// Reset buttons.
+			for (let k = 0; k < 2; k++) {
+				cubeAnimate(0, buttonSprites[k]);
+			}
+
 			// Set sprite positions.
 			for (let i = 0; i < handCards.length + playCards.length + cardExtraMax; i++) {
 				let a0 = 0.6, a1 = 1.0, s = 1.0, a = 0, sx = ox, sy = oy; // Default parameters.
@@ -1776,9 +1839,8 @@ a {
 					// Position direct setting.
 					let x = cubeMod(j, shadeGridLine);
 					let y = cubeDiv(j, shadeGridLine);
-					let offset = focuses.length > 0 ? 0 : shadeLines >= 1 ? 20 : 30;
 					sx = (shadeSprites[0].pos.x - shadeSprites[0].size.x/2) + (x + 1) * shadeGridSize.x;
-					sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 - offset) + (y + 1) * shadeGridSize.y;
+					sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 - shadeOffsets[0]) + (y + 1) * shadeGridSize.y;
 
 					// Touching hand cards scale animation.
 					if (touchingCardId == i) {
@@ -1978,6 +2040,20 @@ a {
 						a = focuses[focuses.length - 1].angle +
 							touchingDir * (rolling < 30 ? (10 + 0.5 * rolling) : 30);;
 
+						// Buttons.
+						if (focusingCardId >= handCards.length) {
+							for (let k = 0; k < 2; k++) {
+								cubeAnimate(k + 7, buttonSprites[k]);
+								cubeDilute(0.2, buttonSprites[k]);
+								let buttonScale = focusScale * 0.5;
+								if (touchingButtonId == k) {
+									buttonScale = focusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);
+								}
+								cubeExpand(buttonScale, buttonSprites[k]);
+								cubeMove(sx + focusScale * 40 * (k - 0.5), sy, buttonSprites[k]);
+							}
+						}
+
 					// Set holding card shade position.
 					} else if (holdCards.length > 0 && touchingBoardPos) {
 
@@ -2013,6 +2089,7 @@ a {
 						}*/
 
 					} else {
+
 						a0 = a1 = 0;
 					}
 				}
@@ -2066,6 +2143,9 @@ a {
 			// Draw sprites.
 			for (let i = 0; i < 2; i++) {
 				cubeDraw(sprites[i]);
+			}
+			for (let i = 0; i < 2; i++) {
+				cubeDraw(buttonSprites[i]);
 			}
 			for (let i = 0; i < handCards.length + playCards.length + cardExtraMax; i++) {
 				cubeDraw(colorSprites[i]);

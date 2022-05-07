@@ -71,6 +71,16 @@
             <!--(LargeK) path d="M4,4v8 M4,8h4"/>
             <path d="M9,5h2v2h-2 M9,9h2v2h-2 M11,3h2v2h-2 M11,11h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/!-->
         </g>
+        <!-- - + . -->
+        <g transform="translate(0,20)">
+            <path d="M6,8h4"/>
+        </g>
+        <g transform="translate(20,20)">
+            <path d="M6,8h4 M8,6v4"/>
+        </g>
+        <g transform="translate(40,20)">
+            <path d="M7.5,7.5h1v1h-1Z" stroke-width="1"/>
+        </g>
         <!-- 0 1 2 -->
         <g transform="translate(60,20)">
             <!--(.) path d="M7,7h2v2h-2" stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000"/-->
