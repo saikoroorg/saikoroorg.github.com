@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.55b";
-cube.timestamp = "20406";
+cube.version = "0.8.56b";
+cube.timestamp = "20508";
 /************************************* /VERSION*
 
 
@@ -1628,6 +1628,13 @@ cube.Sprite = class {
                 let nx = (this.imageSize.x / this.size.x);
                 this.imagePos.x = Math.floor((frame - 1) % nx) * this.size.x;
                 this.imagePos.y = Math.floor((frame - 1) / nx) * this.size.y;
+                this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+                this.sprite.style.backgroundSize = "";//"" + this.size.x + " " + this.size.y;
+            } else if (frame < 0) {
+                this._frame = frame;
+                let nx = (this.imageSize.x / this.size.x);
+                this.imagePos.x = Math.floor(frame % nx) * this.size.x;
+                this.imagePos.y = Math.floor(frame / nx) * this.size.y;
                 this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
                 this.sprite.style.backgroundSize = "";//"" + this.size.x + " " + this.size.y;
             } else {

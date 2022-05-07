@@ -306,6 +306,15 @@ a {
 	var original = 0; // Original design icon frame.
 	var rolling = 0; // Rolling count.
 
+	// Deck sets.
+	const resource = "resource.svg", resourceScale = 1;
+	const deckSets = null; /*[
+		[1,1],[1,1], [2,2],[2,2], [3,3],[3,3],
+		[4,1],[4,1], [5,2],[5,2], [6,1],[6,1],
+		[7,1],[7,1],[7,1], [8,2], [9,2], [10,3],
+		[11,1], [12,1], [13,2], [14,3],
+		[15,2], [16,3]];*/
+
 	// Set counts.
 	var setCounts = (x) => {
 		counts = (x > 18) ? 18 : (x < 1) ? 1 : x;
@@ -388,13 +397,15 @@ a {
 
 	// Create card sprites.
 	const cardCountsMax = 54, cardExtraMax = 4, cardExtraHoldable = 2;
+	const colorSpriteScale = canvases[0] ? 1 : resourceScale;
+	const numberSpriteScale = 0.5;
 	var colorSprites = [], numberSprites = [];
 	for (var i = 0; i < cardCountsMax + cardExtraMax; i++) {
 		// Color sprites.
 		if (canvases[0]) {
 			colorSprites[i] = await cubeBufferSprite(canvases[0]);
 		} else {
-			colorSprites[i] = await cubeSprite("resource.svg", 40, 40);
+			colorSprites[i] = await cubeSprite(resource, 40/resourceScale, 40/resourceScale);
 		}
 		// Number sprites.
 		if (canvases[1]) {
@@ -431,7 +442,8 @@ a {
 	var frameMin = maximum > 0 ? 1 : 0;
 	var colorFrameMax = colors;
 	var numberFrameMax = numberMax;
-	const frameBlank = colorFrameMax + 1, frameBack = colorFrameMax + 2;
+	const frameBlank = colorFrameMax + 1;//canvases[0] ? colorFrameMax + 1 : -2;
+	const frameBack = colorFrameMax + 2;//canvases[0] ? colorFrameMax + 2 : -1;
 
 	// Cards.
 	var decks = [], trashes = [], focuses = [];
@@ -467,7 +479,7 @@ a {
 
 		// Reset and shuffle decks.
 		if (rolling < 0) {
-			frameMax = maximum > 0 ? maximum : 10 * colors;
+			frameMax = deckSets ? deckSets.length : maximum > 0 ? maximum : 10 * colors;
 			frameMin = maximum > 0 ? 1 : 0;
 
 			console.log("maximum=" + maximum + " frameMax=" + frameMax + " handCounts=" + handCounts +
@@ -477,9 +489,21 @@ a {
 			decks = [], trashes = [], focuses = [];
 			handCards = [], playCards = [], holdCards = [], releasedCards = [];
 			drawCounts = 0;
-			for (let j = 0; j < frameMax; j++) {
-				decks[j] = cubeClone(backsidedCard);
-				decks[j].frame = j + 1;
+
+			if (deckSets) {
+				for (let j = 0; j < deckSets.length; j++) {
+					decks[j] = cubeClone(backsidedCard);
+					decks[j].frame = j + 1;
+					decks[j].color = deckSets[j][0]; // Colors.
+					decks[j].number = deckSets[j][1]; // Numbers.
+				}
+			} else {
+				for (let j = 0; j < frameMax; j++) {
+					decks[j] = cubeClone(backsidedCard);
+					decks[j].frame = j + 1;
+					decks[j].color = cubeDiv(cubeMod(j, frameMax) - 1, numberFrameMax) + 1; // Colors.
+					decks[j].number = cubeMod(cubeMod(j, frameMax) - 1, numberFrameMax) + 1; // Numbers.
+				}
 			}
 
 			// Shuffle by Fisher-Yates argorythm.
@@ -906,6 +930,8 @@ a {
 							}
 							if (focusingCardId != touchingCardId) {
 								focuses[focuses.length - 1].frame = handCards[j].frame;
+								focuses[focuses.length - 1].color = handCards[j].color;
+								focuses[focuses.length - 1].number = handCards[j].number;
 								focuses[focuses.length - 1].x = handCards[j].x;
 								focuses[focuses.length - 1].y = handCards[j].y;
 								focuses[focuses.length - 1].flag = handCards[j].flag;
@@ -1056,6 +1082,8 @@ a {
 							}
 							if (focusingCardId != touchingCardId) {
 								focuses[focuses.length - 1].frame = playCards[j].frame;
+								focuses[focuses.length - 1].color = playCards[j].color;
+								focuses[focuses.length - 1].number = playCards[j].number;
 								focuses[focuses.length - 1].x = playCards[j].x;
 								focuses[focuses.length - 1].y = playCards[j].y;
 								focuses[focuses.length - 1].flag = playCards[j].flag;
@@ -1685,7 +1713,7 @@ a {
 
 			// Update sprite animations.
 			for (let i = 0; i < handCards.length + playCards.length + cardExtraMax; i++) {
-				let n = 0;
+				let n = 0, n0 = 0, n1 = 0;
 
 				// Update hand cards.
 				if (i < handCards.length) {
@@ -1699,8 +1727,9 @@ a {
 
 						// Showing.
 						} else {
-							n = handCards[j].flag ? -1 :
-								handCards[j].frame;
+							n = handCards[j].flag ? -1 : handCards[j].frame;
+							n0 = handCards[j].color;
+							n1 = handCards[j].number;
 						}
 
 					// Not holding.
@@ -1711,14 +1740,16 @@ a {
 				// Update playing cards.
 				} else if (i < handCards.length + playCards.length) {
 					let j = i - handCards.length;
-					n = playCards[j].flag ? -1 :
-						playCards[j].frame;
+					n = playCards[j].flag ? -1 : playCards[j].frame;
+					n0 = playCards[j].color;
+					n1 = playCards[j].number;
 
 				// Update trashes.
 				} else if (i == handCards.length + playCards.length + 0) {
 					if (trashes.length > 0) {
-						n = trashes[trashes.length - 1].flag ? -1 :
-							trashes[trashes.length - 1].frame;
+						n = trashes[trashes.length - 1].flag ? -1 : trashes[trashes.length - 1].frame;
+						n0 = trashes[trashes.length - 1].color;
+						n1 = trashes[trashes.length - 1].number;
 					} else {
 						n = 0; // Blank.
 					}
@@ -1734,11 +1765,13 @@ a {
 				// Update holding cards.
 				} else if (i == handCards.length + playCards.length + 2) {
 					if (holdCards.length > 0 && motion) {
-						n = holdCards[holdCards.length - 1].flag ? -1 :
-							holdCards[holdCards.length - 1].frame;
+						n = holdCards[holdCards.length - 1].flag ? -1 : holdCards[holdCards.length - 1].frame;
+						n0 = holdCards[holdCards.length - 1].color;
+						n1 = holdCards[holdCards.length - 1].number;
 					} else if (releasedCards.length > 0) {
-						n = releasedCards[releasedCards.length - 1].flag ? -1 :
-							releasedCards[releasedCards.length - 1].frame;
+						n = releasedCards[releasedCards.length - 1].flag ? -1 : releasedCards[releasedCards.length - 1].frame;
+						n0 = releasedCards[releasedCards.length - 1].color;
+						n1 = releasedCards[releasedCards.length - 1].number;
 					} else {
 						n = 0; // Blank.
 					}
@@ -1746,8 +1779,9 @@ a {
 				// Update focuses or holding cards shade.
 				} else if (i == handCards.length + playCards.length + 3) {
 					if (focuses.length > 0) {
-						n = focuses[focuses.length - 1].flag ? -1 :
-							focuses[focuses.length - 1].frame;
+						n = focuses[focuses.length - 1].flag ? -1 : focuses[focuses.length - 1].frame;
+						n0 = focuses[focuses.length - 1].color;
+						n1 = focuses[focuses.length - 1].number;
 					} else if (holdCards.length > 0 && motion) {
 						n = 0; // Blank.
 					} else {
@@ -1762,9 +1796,9 @@ a {
 
 				// Normal cards.
 				} else if (n > 0) {
-					let n01 = cubeMod(n - 1, frameMax) + 1;
+					/*let n01 = cubeMod(n - 1, frameMax) + 1;
 					let n0 = cubeDiv(n01 - 1, numberFrameMax) + 1; // Colors.
-					let n1 = cubeMod(n01 - 1, numberFrameMax) + 1; // Numbers.
+					let n1 = cubeMod(n01 - 1, numberFrameMax) + 1; // Numbers.*/
 					if (!canvases[1]) {
 						n1 = n1 + 10;
 					}
@@ -1775,7 +1809,6 @@ a {
 				} else /*if (i < handCards.length + playCards.length + 2)*/ {
 					cubeAnimate(frameBlank, colorSprites[i]);
 					cubeAnimate(0, numberSprites[i]);
-
 				}
 			}
 
@@ -2121,8 +2154,8 @@ a {
 				// Update transformations.
 				cubeDilute(a0, colorSprites[i]);
 				cubeDilute(a1, numberSprites[i]);
-				cubeExpand(s, colorSprites[i]);
-				cubeExpand(s * 0.5, numberSprites[i]);
+				cubeExpand(s * colorSpriteScale, colorSprites[i]);
+				cubeExpand(s * numberSpriteScale, numberSprites[i]);
 				cubeRotate(a, colorSprites[i]);
 				cubeRotate(a, numberSprites[i]);
 				cubeMove(sx, sy, colorSprites[i]);
