@@ -477,6 +477,9 @@ a {
 		boardSprite = await cubeCanvasSprite(boardCanvas);
 		cubeMove(120, 150, boardSprite);
 
+		// Collision margin.
+		let colorMargin = cubeVector(-80 / boardGridCounts, -80 / boardGridCounts);
+
 		// Reset and shuffle decks.
 		if (rolling < 0) {
 			frameMax = deckSets ? deckSets.length : maximum > 0 ? maximum : 10 * colors;
@@ -561,7 +564,7 @@ a {
 			let touchingButtonId = -1;
 			if (focuses.length > 0 && focusingCardId >= handCards.length) {
 				for (let i = 0; i < 2; i++) {
-					if (cubeCheck(motion, buttonSprites[i])) {
+					if (cubeCheck(motion, null, buttonSprites[i])) {
 						touchingCardId = touchingButton;
 						touchingButtonId = i;
 						break;
@@ -571,35 +574,35 @@ a {
 
 			// Check touching decks.
 			if (touchingCardId == touchingSomething && releasedCards.length <= 0 && holdCards.length <= 0 &&
-				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 1])) {
+				cubeCheck(motion, null, colorSprites[handCards.length + playCards.length + 1])) {
 				touchingCardId = handCards.length + playCards.length + 1;
 			}
 
 			// Check touching trashes.
 			if (touchingCardId == touchingSomething && releasedCards.length <= 0 &&
 				(trashes.length > 0 || holdCards.length > 0) && 
-				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 0])) {
+				cubeCheck(motion, null, colorSprites[handCards.length + playCards.length + 0])) {
 				touchingCardId = handCards.length + playCards.length + 0;
 			}
 
 			// Check touching focuses.
 			if (focuses.length > 0 &&
 				touchingCardId == touchingSomething &&
-				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 3])) {
+				cubeCheck(motion, colorMargin, colorSprites[handCards.length + playCards.length + 3])) {
 				touchingCardId = touchingFocus;
 			}
 
 			// Check touching released card.
 			if (releasedCards.length > 0 &&
 				touchingCardId == touchingSomething &&
-				cubeCheck(motion, colorSprites[handCards.length + playCards.length + 3])) {
+				cubeCheck(motion, colorMargin, colorSprites[handCards.length + playCards.length + 3])) {
 				touchingCardId = touchingReleased;
 			}
 
 			// Check touching hand card.
 			if (touchingCardId == touchingSomething && holdCards.length <= 0) {
 				for (let i = handCards.length - 1; i >= 0; i--) {
-					if (cubeCheck(motion, colorSprites[i])) {
+					if (cubeCheck(motion, null, colorSprites[i])) {
 						touchingCardId = i;
 						break;
 					}
@@ -609,7 +612,7 @@ a {
 			// Check touching play cards.
 			if (touchingCardId == touchingSomething) {
 				for (let i = handCards.length + playCards.length - 1; i >= handCards.length; i--) {
-					if (cubeCheck(motion, colorSprites[i])) {
+					if (cubeCheck(motion, colorMargin, colorSprites[i])) {
 						touchingCardId = i;
 						break;
 					}
@@ -619,7 +622,7 @@ a {
 			// Check touching hand shade.
 			if (touchingCardId == touchingSomething) {
 				for (let i = 0; i < 2/*shadeSpriteMax*/; i++) {
-					if (cubeCheck(motion, shadeSprites[i])) {
+					if (cubeCheck(motion, null, shadeSprites[i])) {
 						touchingCardId = touchingShade - i;
 						break;
 					}
@@ -627,7 +630,7 @@ a {
 			}
 
 			// Check touching playing board.
-			if (touchingCardId == touchingSomething && holdCards.length > 0 && cubeCheck(motion, boardSprite)) {
+			if (touchingCardId == touchingSomething && holdCards.length > 0 && cubeCheck(motion, null, boardSprite)) {
 				touchingCardId = touchingBoard;
 			}
 

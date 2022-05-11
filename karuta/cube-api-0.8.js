@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.56b";
-cube.timestamp = "20508";
+cube.version = "0.8.58b";
+cube.timestamp = "20511";
 /************************************* /VERSION*
 
 
@@ -182,14 +182,14 @@ function cubeScreenLocalPos(pos, screen=null) {
 //  .scale : Actual size is calculated by size * scale
 
 // Get master sprite or create new sprite.
-async function cubeSprite(imageName=null, width=0, height=0) {
+async function cubeSprite(imageName=null, width=0, height=0, baseScale=1) {
     if (imageName != null) {
         var sprite = new cube.Sprite(imageName);
         sprite.loadImage(imageName);
         await sprite.waitLoadingImage();
         sprite = sprite.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
         if (width > 0 && height > 0) {
-            sprite.resize(width, height);
+            sprite.resize(width, height, baseScale);
         }
         return sprite; //.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
     }
@@ -230,12 +230,12 @@ function cubeMove(x, y, sprite=null) {
 }
 
 // Resize sprite resolution.
-function cubeResize(width, height, sprite=null) {
+function cubeResize(width, height, baseScale=1, sprite=null) {
     if (!sprite) {
         sprite = cube.sprite;
     }
     if (width > 0 && height > 0) {
-        sprite.resize(width, height);
+        sprite.resize(width, height, baseScale);
     }
 }
 
@@ -283,11 +283,11 @@ function cubeDraw(sprite=null, screen=null) {
 }
 
 // Check pos is in sprite rect.
-function cubeCheck(pos, sprite=null) {
+function cubeCheck(pos, margin=null, sprite=null) {
     if (!sprite) {
         sprite = cube.sprite;
     }
-    return sprite.isInRect(pos);
+    return sprite.isInRect(pos, margin);
 }
 
 // Get master pixel canvas or create new pixel canvas.
@@ -1269,6 +1269,7 @@ cube.Screen = class {
         this.screen.style.alignItems = "start";
         this.screen.style.justifyContent = "start";
         this.screen.style.clipPath = "border-box";
+        this.screen.style.imageRendering = "pixelated";
         window.addEventListener("resize", (evt) => this.onResize(evt));
     }
 
@@ -1518,6 +1519,7 @@ cube.Sprite = class {
                     "background-image:url(\"" + data + "\");" +
                     "width:" + imageSize.x + ";" +
                     "height:" + imageSize.y + ";" +
+                    "image-rendering: pixelated;"+
                     "}";
                 style.sheet.insertRule(rule);
 
@@ -1568,9 +1570,10 @@ cube.Sprite = class {
     }
 
     // Set resolution size of image.
-    resize(w, h) {
+    resize(w, h, u=1) {
         this.size.x = w;
         this.size.y = h;
+        this.size.z = u;
         if (this.imageType != null) {
             this.sprite.style.width = this.size.x;
             this.sprite.style.height = this.size.y;
@@ -1681,12 +1684,17 @@ cube.Sprite = class {
     }
 
     // Check pos is in sprite rect.
-    isInRect(pos) {
+    isInRect(pos, margin=null) {
         if (pos != null) {
             let rect = this.root.getBoundingClientRect();
             if (rect != null) {
-                return pos.x > rect.left && pos.x < rect.right &&
-                       pos.y > rect.top && pos.y < rect.bottom;
+                if (margin != null) {
+                    return pos.x > rect.left - margin.x && pos.x < rect.right + margin.x &&
+                           pos.y > rect.top - margin.y && pos.y < rect.bottom + margin.y;
+                } else {
+                    return pos.x > rect.left && pos.x < rect.right &&
+                           pos.y > rect.top && pos.y < rect.bottom;
+                }
             }
         }
         return false;
@@ -1720,8 +1728,8 @@ cube.Sprite = class {
             // Update position.
             if (this.pos != null) {
                 this.root.style.position = "absolute";
-                let cx = this.size.x * this.scale / 2;
-                let cy = this.size.y * this.scale / 2;
+                let cx = this.size.x * this.scale * this.size.z / 2;
+                let cy = this.size.y * this.scale * this.size.z / 2;
                 this.root.style.left = this.pos.x - cx;
                 this.root.style.top = this.pos.y - cy;
             } else {
@@ -1734,13 +1742,13 @@ cube.Sprite = class {
                 this.angle = Math.atan2(this.dir.y, this.dir.x) * angle_radian;
             }
             this.root.style.transform =
-                "scale(" + this.scale + ")" +
+                "scale(" + (this.scale * this.size.z) + ")" +
                 "rotate(" + this.angle + "deg)";
 
             // Update center position.
             if (this.scale > 0) {
-                let mx = this.size.x * (this.scale - 1) / 2;
-                let my = this.size.y * (this.scale - 1) / 2;
+                let mx = this.size.x * (this.scale * this.size.z - 1) / 2;
+                let my = this.size.y * (this.scale * this.size.z - 1) / 2;
                 this.root.style.marginLeft = mx;
                 this.root.style.marginRight = mx;
                 this.root.style.marginTop = my;
@@ -1762,8 +1770,8 @@ cube.Sprite = class {
             this.pos = pos;
             if (pos != null) {
                 this.root.style.position = "absolute";
-                let w = this.size.x * this.scale / 2;
-                let h = this.size.y * this.scale / 2;
+                let w = this.size.x * this.scale * this.size.z / 2;
+                let h = this.size.y * this.scale * this.size.z / 2;
                 this.root.style.top = this.pos.y - h;
                 this.root.style.left = this.pos.x - w;
             } else {
@@ -1779,7 +1787,7 @@ cube.Sprite = class {
             const angle_radian = 180 / Math.PI;
             this.angle = Math.atan2(this.dir.y, this.dir.x) * angle_radian;
             this.root.style.transform =
-                "scale(" + this.scale + ")" +
+                "scale(" + (this.scale * this.size.z) + ")" +
                 "rotate(" + this.angle + "deg)";
         }
     }
@@ -1789,7 +1797,7 @@ cube.Sprite = class {
         this.dir = new cube.Vec(); // Can not set direction vector.
         this.angle = angle;
         this.root.style.transform =
-            "scale(" + this.scale + ")" +
+            "scale(" + (this.scale * this.size.z) + ")" +
             "rotate(" + this.angle + "deg)";
     }
 
@@ -1798,10 +1806,10 @@ cube.Sprite = class {
         if (this.imageType != null) {
             this.scale = scale;
             this.root.style.transform =
-                "scale(" + this.scale + ")" +
+                "scale(" + (this.scale * this.size.z) + ")" +
                 "rotate(" + this.angle + "deg)";
-            let mx = parseInt(this.sprite.style.width) * (scale - 1) / 2;
-            let my = parseInt(this.sprite.style.height) * (scale - 1) / 2;
+            let mx = parseInt(this.sprite.style.width) * (this.scale * this.size.z - 1) / 2;
+            let my = parseInt(this.sprite.style.height) * (this.scale * this.size.z - 1) / 2;
             this.root.style.marginLeft = mx;
             this.root.style.marginRight = mx;
             this.root.style.marginTop = my;
@@ -1860,7 +1868,7 @@ cube.Canvas = class {
         this.sprite = new cube.Sprite(type);
         this.sprite.loadImage(this.toImage());
         await this.sprite.waitLoadingImage();
-        this.sprite.resize(this.width * this.scale, this.height * this.scale);
+        this.sprite.resize(this.width, this.height, this.scale);
         return this.sprite;
     }
 
@@ -1932,7 +1940,7 @@ cube.Buffer = class {
         this.sprite = new cube.Sprite(type);
         this.sprite.loadImage(this.toImage());
         await this.sprite.waitLoadingImage();
-        this.sprite.resize(this.width * this.scale, this.height * this.scale);
+        this.sprite.resize(this.width, this.height, this.scale);
         return this.sprite;
     }
 
