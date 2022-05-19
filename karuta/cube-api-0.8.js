@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.58b";
-cube.timestamp = "20511";
+cube.version = "0.8.59b";
+cube.timestamp = "20519";
 /************************************* /VERSION*
 
 
@@ -1089,7 +1089,7 @@ cube.Params = class {
                     // console.log("parameter:" + kv[0] + " = " + kv[1]);
                 }
             } else if (text.includes('+')) {
-                this.keyvalues += text.split('+');
+                this.keyvalues = text.split('+');
             } else {
                 this.keyvalues[0] = text;
             }
@@ -1868,7 +1868,7 @@ cube.Canvas = class {
         this.sprite = new cube.Sprite(type);
         this.sprite.loadImage(this.toImage());
         await this.sprite.waitLoadingImage();
-        this.sprite.resize(this.width, this.height, this.scale);
+        this.sprite.resize(this.width*this.scale, this.height*this.scale, 1);
         return this.sprite;
     }
 
