@@ -102,6 +102,7 @@ a {
 	color: #000;
 	font-size: 30px;
 	text-decoration: none;
+	user-select: none; -webkit-user-select: none;
 	transform: scale(1);
 	opacity: 1;
 }
@@ -163,40 +164,39 @@ a {
 	var buffer = null; // Original design buffer.
 
 
-    // Example 1: Standard dotted dice with color pips (1~6) and playing card suit marks (7~12).
-    // var query = "2d6&n0=f11099g22088&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&n7=c44067c35076c53054&n8=a44066a34075a43044a63064a56057&n9=d44066d53057d35075&n10=b43066b54057b35076&n11=e33e73e44066e37e77&n12=g44066&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff"
+  // Example 1: Standard dotted dice with color pips (1~6) and playing card suit marks (7~12).
+  // var query = "2d6&n0=f11099g22088&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&n7=c44067c35076c53054&n8=a44066a34075a43044a63064a56057&n9=d44066d53057d35075&n10=b43066b54057b35076&n11=e33e73e44066e37e77&n12=g44066&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff"
 
-    // Example 2: Highreso number dice.
-    // var query = "2d10&n0=f110ggg220ff&n1=f53057&n2=f43063f64f45065f46f47067&n3=f43063f45065f47067f63067&n4=f43045f45065f63067&n5=f43063f44f45065f66f47067&n6=f43063f43047f45065f66f47067&n7=f43063f44f63067&n8=f43063f43047f55f63067f47067&n9=f43063f43045f45065f64067f47067&n10=f43063f43047f63067f47067&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff"
+  // Example 2: Highreso number dice.
+  // var query = "2d10&n0=f110ggg220ff&n1=f53057&n2=f43063f64f45065f46f47067&n3=f43063f45065f47067f63067&n4=f43045f45065f63067&n5=f43063f44f45065f66f47067&n6=f43063f43047f45065f66f47067&n7=f43063f44f63067&n8=f43063f43047f55f63067f47067&n9=f43063f43045f45065f64067f47067&n10=f43063f43047f63067f47067&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff"
 
-    // Example 3: Unkoro.
-    // var query = "5d6&n1=b44066b34075b43044b63064b56057&n2=a34074a63067a37a46a55&n3=a34074a74076a47067a35a53&n4=a35075a43063a53056a47&n5=a33043a37057a66a74075&n6=a33073a37077a73077&c1=000&c2=d66";
-    // cubeLoadParam(null, query);
-    // console.log("Query:" + query);
+  // Example 3: Unkoro.
+  // var query = "5d6&n1=b44066b34075b43044b63064b56057&n2=a34074a63067a37a46a55&n3=a34074a74076a47067a35a53&n4=a35075a43063a53056a47&n5=a33043a37057a66a74075&n6=a33073a37077a73077&c1=000&c2=d66";
+  // cubeLoadParam(null, query);
+  // console.log("Query:" + query);
 
-    // Load query parameters.
-    //  McN  : M = Roll dice counts, N = Dice maximum number.
-    //  &n1~ = Dice face design.
-    //  &c1~ = Color palette.
-    var keys = cubeParamKeys();
+  // Load query parameters.
+  //  McN  : M = Roll dice counts, N = Dice maximum number.
+  //  &n1~ = Dice face design.
+  //  &c1~ = Color palette.
+  var keys = cubeParamKeys();
 
 	// Load color palette parameters.
-	var depth = 3, palette = [[255,255,255]];
+	var palette = [cubeVector(255, 255, 255), cubeVector(0, 0, 0)];
 	for (let j = 0; j <= keys.length; j++) {
 		let data = cubeParamData("c"+ j);
-		if (data.length >= depth) {
-			let d = cubeDiv(data.length, depth); // d=1:RGB, d=2:RRGGBB.
-			palette[j] = [];
-			for (let i = 0; i < depth; i++) {
-				palette[j][i] = data[i * d] * 16 + data[(i + 1) * d - 1];
-			}
+		if (data.length >= 3) {
+			let d = cubeDiv(data.length, 3); // d=1:RGB, d=2:RRGGBB.
+			palette[j] = cubeVector(
+				data[0 * d] * 16 + data[(0 + 1) * d - 1],
+				data[1 * d] * 16 + data[(1 + 1) * d - 1],
+				data[2 * d] * 16 + data[(2 + 1) * d - 1]);
 		}
 	}
 
 	// Load face design parameters.
-	//var bufferParams = [[9,2,1,2], [16,1,2,2], [32,1,4,1]]; // [width,pixel,offset,scale]
+	let designsMax = 0;
 	var bufferPixel = 2, bufferWidth = 9, bufferOffset = 1, bufferScale = 2;
-	var designs = [[[1,1,18,18,255,255,255]]];
 	for (let j = 0; j <= keys.length; j++) {
 		let data = cubeParamData("n" + j);
 		for (let i = 0; i < data.length; i += 3) {
@@ -206,67 +206,66 @@ a {
 					bufferPixel = 1;
 					bufferWidth = 32;
 					bufferOffset = 4;
-					bufferScale = 1;
+					//bufferScale = 1;
 				} else if (x > 9 || y > 9) {
 					bufferPixel = 1;
 					bufferWidth = 16;
 					bufferOffset = 2;
-					bufferScale = 2;
+					//bufferScale = 2;
 				}
 				while (x > bufferWidth || y > bufferWidth) {
 					bufferWidth = bufferWidth * 2;
 					bufferOffset = bufferOffset * 2;
-					bufferScale = bufferScale / 2;
+					//bufferScale = bufferScale / 2;
 				}
-				designs = [[[
-					bufferOffset,
-					bufferOffset,
-					bufferWidth + bufferOffset - 1,
-					bufferWidth + bufferOffset - 1,
-					255, 255, 255]]];
+			}
+			if (j > 0) {
+				designsMax = j > designsMax ? j : designsMax;
 			}
 		}
 	}
-	for (let j = 0; j <= keys.length; j++) {
-		let data = cubeParamData("n" + j);
-		if (data.length > 0) {
-			designs[j] = [];
-			if (j > 0 && designs[0]) {
-				let rects = designs[0];
-				for (let i = 0; i < rects.length; i++) { // designs[0] = Common design.
-					designs[j].push(rects[i]);
-				}
-			}
-			for (let i = 0; i < data.length; i += 3) {
-				let x = (data[i + 1] - 1) * bufferPixel + bufferOffset;
-				let y = (data[i + 2] - 1) * bufferPixel + bufferOffset;
-				if (x > 0 && y > 0) {
-					let color = data[i] >= 10 ? data[i] - 9 : data[i];
-					let r = palette[color] ? palette[color][0] : 0;
-					let g = palette[color] ? palette[color][1] : 0;
-					let b = palette[color] ? palette[color][2] : 0;
-					let x2 = data[i + 1] * bufferPixel - 1 + bufferOffset;
-					let y2 = data[i + 2] * bufferPixel - 1 + bufferOffset;
+	bufferSpriteWidth = bufferWidth * bufferScale + bufferOffset * 2;
+	if (designsMax > 0) {
+		buffer = cubeCanvas(bufferSpriteWidth, bufferSpriteWidth, bufferScale, designsMax);
+		console.log(":bufferSpriteWidth=" + bufferSpriteWidth.toString() +
+			" bufferWidth=" + bufferWidth.toString() +
+			" bufferScale=" + bufferScale.toString() +
+			" bufferOffset=" + bufferOffset.toString());
+		for (let j = 0; j <= keys.length; j++) {
+			let data = cubeParamData("n" + j);
+			if (data.length > 0) {
+				for (let i = 0; i < data.length; i += 3) {
+					let pos = cubeVector(
+						(data[i + 1] - 1) + bufferOffset / bufferScale,
+						(data[i + 2] - 1) + bufferOffset / bufferScale, 0);
+
+					// Color.
+					let c = data[i] >= 10 ? data[i] - 9 : data[i];
+					let color = palette[c] ? palette[c] : palette[1];
+
+					// Pixel rect.
+					let size = cubeVector(1, 1, 0);
+
+					// Large rect.
 					if (i < data.length - 3 && data[i + 3] == 0) {
-						x2 = data[i + 4] * bufferPixel - 1 + bufferOffset;
-						y2 = data[i + 5] * bufferPixel - 1 + bufferOffset;
+						size.x = data[i + 4] - data[i + 1] + 1;
+						size.y = data[i + 5] - data[i + 2] + 1;
 						i += 3;
 					}
-					let rect = [x, y, x2, y2, r, g, b];
-					designs[j].push(rect);
+
+					// Common data.
+					if (j == 0) {
+						for (let l = 1; l <= keys.length; l++) {
+							cubeCanvasRect(pos, size, color, l - 1, buffer);
+						}
+					} else {
+						cubeCanvasRect(pos, size, color, j - 1, buffer);
+					}
 				}
 			}
 		}
 	}
 
-	// Create pixel buffer for face designs.
-	if (designs.length > 1) {
-		let size = bufferWidth * bufferPixel + bufferOffset * 2;
-		buffer = cubeBuffer(size, size, bufferScale, designs.length - 1);
-		for (let i = 1; i < designs.length; i++) {
-			cubeBufferRects(designs[i], i - 1, buffer);
-		}
-	}
 </script><!--/Resource-->
 
 <!--Menu--><script>
@@ -290,7 +289,7 @@ a {
 
 	// Set maximum number.
 	var setMaximum = (x) => {
-		maximum = (x > 20) ? 20 : (x < 0) ? 0 : x;
+		maximum = (x > 56) ? 56 : (x < 0) ? 0 : x;
 
 		// Reset dice icon.
 		var icon = document.getElementById("icon");
@@ -342,7 +341,7 @@ a {
 	var sprites = [];
 	for (var i = 0; i < 30; i++) {
 		if (buffer) {
-			sprites[i] = await cubeBufferSprite(buffer);
+			sprites[i] = await cubeCanvasSprite(buffer);
 		} else {
 			sprites[i] = await cubeSprite("resource.svg", 40, 40);
 		}
@@ -411,11 +410,11 @@ a {
 				angle = cubeMod(angle + 20, 360);
 				for (var y = 0; y < lines; y++) {
 					for (var x = 0; x < rows[y]; x++) {
-						var framePlus = buffer ? (lineMax * y + x) * frameMax : 0;
-						if (frameMax < 10) {
+						var framePlus = buffer ? (lineMax * y + x) * frameMax : 1;
+						if (frameMax <= 8) {
 							randoms[lineMax*y+x] = cubeRandom(frameMax) + frameMin + framePlus;
 						} else {
-							randoms[lineMax*y+x] = cubeMod(cubeRandom(frameMax), 20) + frameMin + 10;
+							randoms[lineMax*y+x] = cubeMod(cubeRandom(frameMax), 56) + frameMin + 13;
 						}
 					}
 				}
@@ -425,7 +424,7 @@ a {
 			var n = result <= 0 ? counter : counter - 1;
 			var mx = size.x * 0.8, my = size.y * 1;
 			var ox = (size.x - mx) * 0.5, oy = (size.y - my) * 0.5;
-			cubeAnimate(n > 0 ? cubeMod(n - 1, 20) + 10 : 9, sprite);
+			cubeAnimate(n > 0 ? cubeMod(n - 1, 56) + 13 : 12, sprite);
 			cubeMove(ox + mx / 2, 16, sprite);
 
 			// Update sprites.

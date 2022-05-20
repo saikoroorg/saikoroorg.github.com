@@ -303,40 +303,72 @@ a {
 	document.querySelector("#author").innerText = manifest.author + manifest.scope.slice(0, -1);
 	document.querySelector("#version").innerText = "#" + manifest.version.substr(-4);
 	document.querySelector("#icon").src = manifest.icons[0].src;
-
-	// Overwrite query parameters.
-	if (manifest.params) {
-		console.log("Overwrite parameters by manifest: " + manifest.params);
-		cubeLoadParam(null, manifest.params);
-	}
 	document.querySelector("#logo").href = window.location.search;
 
 	// Get query parameters.
 	var params0 = cubeParamNumbers(0); // c52
-	var handCounts = params0[0] > 0 ? params0[0] : 0; // Hand card counts.
-	var cardCounts = params0.length >= 2 ? params0.slice(1) : [52]; // Deck card counts.
+	var handCounts = params0[0] >= 0 ? params0[0] : manifest.params && manifest.params.hand >= 0 ? manifest.params.hand : 0; // Hand card counts.
+	var cardCounts = params0.length >= 2 ? params0.slice(1) : manifest.params && manifest.params.cards.length >= 1 ? manifest.params.cards : [6,6,6,6]; // Deck card counts.
 	var params1 = cubeParamNumbers(1); // b2x8
-	var chipFrameMax = params1[1] > 0 ? params1[1] : 2;// Chip pettern size.
-	var counts = params1[2] > 0 ? params1[2] : 8; // Grid counts.
-	var pattern = 0; // Grid pattern. (0:Chess, 1:Goban)
-	var params2 = cubeParamNumbers(2); // p1/1
-	var playerNumber = params2[1] > 0 ? params2[1] : 1; // Player number.
-	var playerCounts = params2[2] > 0 ? params2[2] : 1; // Player counts.
+	var chipFrameMax = params1[1] >= 0 ? params1[1] : manifest.params && manifest.params.chip ? manifest.params.chip : 2;// Chip pattern size.
+	var counts = params1[2] > 0 ? params1[2] : manifest.params && manifest.params.board ? manifest.params.board : 8; // Grid counts.
+	var pattern = 0; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
+	var playerParams = cubeParamNumbers("p"); // Player number/counts. p=1/1
+	var playerNumber = playerParams[0] > 0 ? playerParams[0] : manifest.params && manifest.params.players.length >= 1 ? manifest.params.players[0] : 1; // Player number.
+	var playerCounts = playerParams[1] > 0 ? playerParams[1] : manifest.params && manifest.params.players.length >= 2 ? manifest.params.players[1] : 1; // Player counts.
+	var randomParams = cubeParamNumbers("r"); // Random seed. r=0
+	var seed = randomParams[0] > 0 ? randomParams[0] : manifest.params && manifest.params.seed ? manifest.params.seed : 0; // Random seed.
+
+	// Initialize goban grids.
+	if (cubeMod(counts, 2)) {
+		counts -= 1;
+		pattern = 1;
+	}
+
+	//Example b1: Mini Reversi.
+	// c0+b2x6&b=a43b33a34b44
+	//Example b2: Reversi.
+	// c0+b2x8&b=a54b44a45b55
+	//Example b3: Mini Checker.
+	// c0+b4x6&p=1/2&b=a16a25a36a45a56a65b12b21b32b41b52b61
+	//Example b4: Checker.
+	// c0+b4x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81
+	//Example b5: 9-Ro Goban.
+	// c0+b2x9
+	//Example b6: 13-Ro Goban.
+	// c0+b2x13
+
+	// Initialize placement pieces.
+	var placements = []; // Placement pieces.
+	var piecesParams = cubeParamData("b");
+	var piecesType = cubeDiv(counts, 2) + 1 - 0.5 * (cubeMod(counts, 2) ? pattern : !pattern);
+	for (let i = 0; i < piecesParams.length / 3; i++) {
+		let x = piecesParams[i * 3 + 1] - piecesType;
+		let y = piecesParams[i * 3 + 2] - piecesType;
+		let z = piecesParams[i * 3] >= 10 ? piecesParams[i * 3] - 9 : piecesParams[i * 3];
+		placements.push(cubeVector(x, y, z));
+	}
+
+	// Initialize random seed.
+	if (seed) {
+		seed = cubeDate() * 1000000 + cubeMod(seed, 1000000);
+		console.log("Seed=" + seed);
+		cubeRandom(0, seed);
+	}
 
 	// Sprite frame.
-	const frameNone = 0, frameCards = 1, frameBack = -1, frameBlank = -2, frameChips = -3;
+	const frameNone = 0, frameBack = -1, frameBlank = -2;
+	const frameCardStart = 1, frameChipStart = -3;
+	const frameDigitStart = 12, frameDigitCounts = 56, frameButtons = [10, 10];
 
 	// Deck sets.
-	var resource = "resource.png", resourceCounts = 8;
+	var resource = "resource.svg", resourceCounts = 8;
 	if (manifest.resource) {
 		resource = manifest.resource;
 	}
-	//resource = "cheque.png", handCounts = 0, cardCounts = [16,7,1], chipFrameMax = 6, playerCounts = 2; // c16c7c1+b6+p1/2+cheque
 
 	var original = 0; // Original design icon frame.
 	var rolling = 0; // Rolling count.
-
-	console.log("P0=" + params0 + " P1=" + params1 + " P2=" + params2);
 
 	// Set counts.
 	var setCounts = (x) => {
@@ -427,34 +459,40 @@ a {
 	// Cards.
 	var decks = [], trashes = [], focuses = [];
 	var handCards = [], playCards = [], holdCards = [];
-	const blankCard = { x:0, y:0, angle:0, frame:frameCards, flag:0 };
+	const blankCard = { x:0, y:0, angle:0, frame:frameCardStart, flag:0 };
 	const backsidedCard = { x:0, y:0, angle:0, frame:frameBack, flag:1 };
 	var drawCounts = 0;
 
 	// Chips.
 	var banks = [], playChips = [], holdChips = [];
-	const backsidedChip = { x:0, y:0, angle:0, frame:frameChips, flag:0 };
+	const backsidedChip = { x:0, y:0, angle:0, frame:frameChipStart, flag:0 };
 
 	// Main loop.
 	var result = 1;
 	while (true) {
 
 		// Load board sprite.
-		let boardGridCounts = counts, boardGridPattern = pattern;
+		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
 		let boardCanvas = cubeCanvas(160 + boardGridPattern * 2, 160 + boardGridPattern * 2, 1);
-		let boardGridColor = [cubeVector(238, 238, 238), cubeVector(204, 204, 204)];
+		let boardGridColor = [cubeVector(238, 238, 238), cubeVector(204, 204, 204), cubeVector(136, 136, 136)]; // #eee=rgb(238,238,238)  #d3d3d3=rgb(211,211,211) #ccc=rgb(204,204,204) #888=rgb(136,136,136) #333=rgb(51,51,51) #2c2c2c=rgb(44,44,44) #111=rgb(17,17,17) #000=rgb(0,0,0)
 		boardGridSize = cubeVector(160 / boardGridCounts, 160 / boardGridCounts);
 		if (boardGridPattern > 0) {
-			cubeCanvasRect(cubeVector(0, 0), cubeVector(162, 162),
-				boardGridColor[1], 0, boardCanvas);
+			cubeCanvasRect(cubeVector(0, 0), cubeVector(162, 162), boardGridColor[1], 0, boardCanvas);
 		}
-		for (let i = 0; i < boardGridCounts; i++) {
-			for (let j = 0; j < boardGridCounts; j++) {
+		for (let j = 0; j < boardGridCounts; j++) {
+			for (let i = 0; i < boardGridCounts; i++) {
+				let c = boardGridPattern > 0 ? 0 : 1;
+				if (playerCounts > 1) {
+					let n = cubeMod(j, 2) ? ((j + 1) * boardGridCounts - (i + 1)) : (j * boardGridCounts + i);
+					if (cubeMod(n, playerCounts) == playerNumber - 1) {
+						c = boardGridPattern > 0 ? 0 : 2;
+					}
+				}
 				cubeCanvasRect(
-					cubeVector(i*boardGridSize.x+1+boardGridPattern, j*boardGridSize.y+1+boardGridPattern),
-					cubeVector(boardGridSize.x-2, boardGridSize.y-2),
-					boardGridColor[boardGridPattern>0?0:1], 0, boardCanvas);
+					cubeVector(i*boardGridSize.x+1+boardGridPattern,
+						(boardGridCounts-(j+1))*boardGridSize.y+1+boardGridPattern),
+					cubeVector(boardGridSize.x-2, boardGridSize.y-2), boardGridColor[c], 0, boardCanvas);
 			}
 		}
 		boardSprite = await cubeCanvasSprite(boardCanvas);
@@ -486,8 +524,17 @@ a {
 			banks = [], playChips = [], holdChips = [];
 			for (let j = 0; j < chipCountsMax; j++) {
 				banks[j] = cubeClone(backsidedChip);
-				banks[j].frame = frameChips;
+				banks[j].frame = frameChipStart;
 				//console.log("j=" + j);
+			}
+			if (placements.length > 0) {
+				for (let j = 0; j < placements.length; j++) {
+						let chip = banks.pop();
+						chip.x = placements[j].x;
+						chip.y = placements[j].y;
+						chip.frame = frameChipStart - (placements[j].z - 1);
+						playChips.push(chip);
+				}
 			}
 
 			// Shuffle by Fisher-Yates argorythm.
@@ -506,25 +553,28 @@ a {
 				drawCounts = 0;
 			}
 			// Draw initial card from decks.
-			while (handCounts > handCards.length) {
-				if (decks.length > 0) {
-					let card = decks.pop();
+			while (handCounts > handCards.length && decks.length > 0) {
+				for (let k = 1; k <= playerCounts; k++) {
+					if (decks.length > 0) {
+						let card = decks.pop();
 
-					// Draw and open cards from deck.
-					if (k == playerNumber) {
-						handCards.push(card);
-						handCounts += 1;
-						if (result > 0) {
-							drawCounts = 1;
+						// Draw and open cards from deck.
+						if (k == playerNumber) {
+							card.angle = 0;
+							card.flag = false;
+							handCards.push(card);
+							if (result > 0) {
+								drawCounts = 1;
+							} else {
+								drawCounts += 1;
+							}
+
+						// Discard to trashes from deck.
 						} else {
-							drawCounts += 1;
+							trashes.push(card);
 						}
-
-					// Discard to trashes from deck.
-					} else {
-						trashes.push(card);
+						result = 0;
 					}
-					result = 0;
 				}
 			}
 			handCounts = handCards.length;
@@ -792,8 +842,8 @@ a {
 						console.log("Change the chip on tapping.");
 
 						banks[banks.length-1].frame =
-							banks[banks.length-1].frame - 1 > frameChips - chipFrameMax ?
-							banks[banks.length-1].frame - 1 : frameChips;
+							banks[banks.length-1].frame - 1 > frameChipStart - chipFrameMax ?
+							banks[banks.length-1].frame - 1 : frameChipStart;
 
 						holdingCardId = touchingSomething;
 						touchingCardId = touchingSomething;
@@ -863,8 +913,8 @@ a {
 								// Change the playing chip on tapping.
 								} else {
 									handCards[j].frame =
-										handCards[j].frame - 1 > frameChips - chipFrameMax ?
-										handCards[j].frame - 1 : frameChips;
+										handCards[j].frame - 1 > frameChipStart - chipFrameMax ?
+										handCards[j].frame - 1 : frameChipStart;
 									focuses[focuses.length - 1].frame = handCards[j].frame;
 								}
 
@@ -1016,8 +1066,8 @@ a {
 
 							// Change the playing chip on tapping.
 							playChips[j].frame =
-								playChips[j].frame - 1 > frameChips - chipFrameMax ?
-								playChips[j].frame - 1 : frameChips;
+								playChips[j].frame - 1 > frameChipStart - chipFrameMax ?
+								playChips[j].frame - 1 : frameChipStart;
 
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
@@ -1158,7 +1208,6 @@ a {
 								for (let j = 0; j < playChips.length; j++) {
 									if (playChips[j].x == touchingBoardPos.x && playChips[j].y == touchingBoardPos.y) {
 										let chip = playChips.splice(j, 1)[0];
-										chip.frame = frameChips;
 										banks.push(chip);
 									}
 								}
@@ -1198,7 +1247,6 @@ a {
 								for (let j = 0; j < playChips.length; j++) {
 									if (playChips[j].x == touchingBoardPos.x && playChips[j].y == touchingBoardPos.y) {
 										let chip = playChips.splice(j, 1)[0];
-										chip.frame = frameChips;
 										banks.push(chip);
 									}
 								}
@@ -1302,7 +1350,6 @@ a {
 					// Discard to banks.
 					while (holdChips.length > 0) {
 						let hold = holdChips.pop();
-						hold.frame = frameChips;
 						banks.push(hold);
 					}
 					holdingCardId = touchingSomething;
@@ -1527,26 +1574,32 @@ a {
 
 				// Update decks.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDeck) {
-					if (decks.length > 0) {
-						n = frameBack;
-					} else {
-						n = frameBlank;
+					if (cardFrameMax > 0) {
+						if (decks.length > 0) {
+							n = frameBack;
+						} else {
+							n = frameBlank;
+						}
 					}
 
 				// Update trashes.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraTrash) {
-					if (trashes.length > 0) {
-						n = trashes[trashes.length - 1].flag ? -1 : trashes[trashes.length - 1].frame;
-					} else {
-						n = frameBlank;
+					if (cardFrameMax > 0) {
+						if (trashes.length > 0) {
+							n = trashes[trashes.length - 1].flag ? -1 : trashes[trashes.length - 1].frame;
+						} else {
+							n = frameBlank;
+						}
 					}
 
 				// Update banks.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraBank) {
-					if (banks.length > 0) {
-						n = banks[banks.length - 1].frame;
-					} else {
-						n = frameBlank;
+					if (chipFrameMax > 0) {
+						if (banks.length > 0) {
+							n = banks[banks.length - 1].frame;
+						} else {
+							n = frameNone;
+						}
 					}
 
 				// Update holding card/chip.
@@ -1576,7 +1629,12 @@ a {
 							n = focuses[focuses.length - 1].frame;
 						}
 					} else if (holdCards.length > 0 && motion) {
-						n = frameBlank;
+						//n = frameBlank;
+						if (holdCards[holdCards.length - 1].flag && holdCards[holdCards.length - 1].frame > 0) {
+							n = frameBack;
+						} else {
+							n = holdCards[holdCards.length - 1].frame;
+						}
 					} else if (holdChips.length > 0 && motion) {
 						n = holdChips[holdChips.length - 1].frame;
 					} else {
@@ -1707,7 +1765,7 @@ a {
 					// Buttons on focusing.
 					if (focusingCardId == i) {
 						for (let k = 0; k < buttonMax; k++) {
-							cubeAnimate(8, buttonSprites[k]);
+							cubeAnimate(frameButtons[k], buttonSprites[k]);
 							cubeDilute(0.2, buttonSprites[k]);
 							let buttonScale = focusScale * 0.5;
 							if (touchingButtonId == k) {
@@ -1762,7 +1820,9 @@ a {
 					}
 
 					// Counter.
-					let m = decks.length > 54 ? -1 : decks.length > 0 ? decks.length + 10 : 10;
+					let m = cardFrameMax <= 0 ? frameNone :
+						decks.length > frameDigitCounts ? frameNone :
+						decks.length > 0 ? decks.length + frameDigitStart : frameDigitStart;
 					cubeAnimate(m, counterSprites[cardExtraDeck]);
 					cubeDilute(0.2, counterSprites[cardExtraDeck]);
 					cubeExpand(0.5, counterSprites[cardExtraDeck]);
@@ -1773,7 +1833,9 @@ a {
 					sx = ox + mx * 1 / 3;
 					sy = 25;//oy + my * (0 + 2 * deckScale) / 18;
 
-					if (focuses.length > 0) {
+					if (trashes.length <= 0) {
+						a0 = 0.25;
+					} else if (focuses.length > 0) {
 						a0 = 0.25;
 					}
 
@@ -1785,7 +1847,9 @@ a {
 					}
 
 					// Counter.
-					let m = trashes.length > 54 ? -1 : trashes.length > 0 ? trashes.length + 10 : 10;
+					let m = cardFrameMax <= 0 ? frameNone :
+						trashes.length > frameDigitCounts ? frameNone :
+						trashes.length > 0 ? trashes.length + frameDigitStart : frameDigitStart;
 					cubeAnimate(m, counterSprites[cardExtraTrash]);
 					cubeDilute(0.2, counterSprites[cardExtraTrash]);
 					cubeExpand(0.5, counterSprites[cardExtraTrash]);
@@ -1808,7 +1872,9 @@ a {
 					}
 
 					// Counter.
-					let m = banks.length > 54 ? -1 : banks.length > 0 ? banks.length + 10 : 10;
+					let m = chipFrameMax <= 0 ? frameNone :
+						banks.length > frameDigitCounts ? frameNone :
+						banks.length > 0 ? banks.length + frameDigitStart : frameNone;
 					cubeAnimate(m, counterSprites[cardExtraBank]);
 					cubeDilute(0.2, counterSprites[cardExtraBank]);
 					cubeExpand(0.5, counterSprites[cardExtraBank]);
@@ -1872,7 +1938,7 @@ a {
 						// Buttons.
 						//if (focusingCardId >= handCards.length) {
 							for (let k = 0; k < buttonMax; k++) {
-								cubeAnimate(8, buttonSprites[k]);
+								cubeAnimate(frameButtons[k], buttonSprites[k]);
 								cubeDilute(0.2, buttonSprites[k]);
 								let buttonScale = focusScale * 0.5;
 								if (touchingButtonId == k) {

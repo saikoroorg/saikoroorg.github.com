@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.48b";
-cube.timestamp = "20309";
+cube.version = "0.8.60b";
+cube.timestamp = "20520";
 /************************************* /VERSION*
 
 
@@ -20,6 +20,13 @@ async function cubeWait(time) {
 // Get a time count.
 function cubeTime() {
     return cube.count.time();
+}
+
+// Get date.
+function cubeDate() {
+    var today = new Date();
+    return Math.floor(today.getYear() % 100) * 10000 +
+        (today.getMonth() + 1) * 100 + today.getDate();
 }
 
 // Generate a random count.
@@ -54,6 +61,23 @@ function cubeMod(x, y) {
 // Calculate the square root.
 function cubeSqrt(x) {
     return Math.floor(Math.sqrt(x));
+}
+
+// Calculate the sine theta.
+function cubeSin(x, a=1) {
+    const angle_radian = 180 / Math.PI;
+    return Math.round(Math.sin(x/angle_radian)*a);
+}
+
+// Calculate the cosine theta.
+function cubeCos(x, a=1) {
+    const angle_radian = 180 / Math.PI;
+    return Math.round(Math.cos(x/angle_radian)*a);
+}
+
+// Clone structed object.
+function cubeClone(x) {
+    return Object.assign({}, x);
 }
 
 //************************************************************/
@@ -147,6 +171,14 @@ function cubeScreenSize(screen=null) {
     return screen.size;
 }
 
+// Get screen local pos.
+function cubeScreenLocalPos(pos, screen=null) {
+    if (!screen) {
+        screen = cube.screen;
+    }
+    return screen.posToLocalPos(pos);
+}
+
 //************************************************************/
 // Sprite object has these variables.
 //  .pos (.x/y) : Position vector on screen
@@ -157,14 +189,14 @@ function cubeScreenSize(screen=null) {
 //  .scale : Actual size is calculated by size * scale
 
 // Get master sprite or create new sprite.
-async function cubeSprite(imageName=null, width=0, height=0) {
+async function cubeSprite(imageName=null, width=0, height=0, baseScale=1) {
     if (imageName != null) {
         var sprite = new cube.Sprite(imageName);
         sprite.loadImage(imageName);
         await sprite.waitLoadingImage();
         sprite = sprite.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
         if (width > 0 && height > 0) {
-            sprite.resize(width, height);
+            sprite.resize(width, height, baseScale);
         }
         return sprite; //.clone(); // @todo: Need clone? to patch for mobile phone loading bug.
     }
@@ -205,12 +237,12 @@ function cubeMove(x, y, sprite=null) {
 }
 
 // Resize sprite resolution.
-function cubeResize(width, height, sprite=null) {
+function cubeResize(width, height, baseScale=1, sprite=null) {
     if (!sprite) {
         sprite = cube.sprite;
     }
     if (width > 0 && height > 0) {
-        sprite.resize(width, height);
+        sprite.resize(width, height, baseScale);
     }
 }
 
@@ -257,48 +289,57 @@ function cubeDraw(sprite=null, screen=null) {
     sprite.enable(screen);
 }
 
-// Get master pixel buffer or create new pixel buffer.
-function cubeBuffer(width=0, height=0, scale=10, frames=1) {
+// Check pos is in sprite rect.
+function cubeCheck(pos, margin=null, sprite=null) {
+    if (!sprite) {
+        sprite = cube.sprite;
+    }
+    return sprite.isInRect(pos, margin);
+}
+
+// Get master pixel canvas or create new pixel canvas.
+function cubeCanvas(width=0, height=0, scale=10, frames=1) {
     if (width > 0 && height > 0) {
-        var buffer = new cube.Buffer(width, height, scale, frames);
-        return buffer;
+        var canvas = new cube.Canvas(width, height, scale, frames);
+        return canvas;
     }
-    return cube.buffer;
+    return cube.canvas;
 }
 
-// Add pixels to pixel buffer.
-function cubeBufferPixels(pixels, frame=0, buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
+// Get master canvas or create new canvas.
+function cubeCanvas(width=0, height=0, scale=10, frames=1) {
+    if (width > 0 && height > 0) {
+        var canvas = new cube.Canvas(width, height, scale, frames);
+        return canvas;
     }
-    buffer.addPixels(pixels, frame);
+    return cube.canvas;
 }
 
-// Add lines to pixel buffer.
-function cubeBufferLines(lines, frame=0, buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
+// Clear canvas.
+function cubeCanvasClear(frame=0, canvas=null) {
+    if (!canvas) {
+        canvas = cube.canvas;
     }
-    buffer.addLines(lines, frame);
+    canvas.clear(frame);
 }
 
-// Add rects to pixel buffer.
-function cubeBufferRects(rects, frame=0, buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
+// Add pixel rect to canvas.
+function cubeCanvasRect(pos, size=cubeVector(1,1), color=cubeVector(0,0,0), frame=0, canvas=null) {
+    if (!canvas) {
+        canvas = cube.canvas;
     }
-    buffer.addRects(rects, frame);
+    canvas.addRect(pos, size, color, frame);
 }
 
-// Create new sprite from pixel buffer.
-async function cubeBufferSprite(buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
+// Create new sprite from canvas.
+async function cubeCanvasSprite(canvas=null) {
+    if (!canvas) {
+        canvas = cube.canvas;
     }
-    return buffer.toSprite();
-//    return cubeSprite(buffer.toImage(),
-//        buffer.width * buffer.scale,
-//        buffer.height * buffer.scale);
+    return canvas.toSprite();
+//    return cubeSprite(canvas.toImage(),
+//        canvas.width * canvas.scale,
+//        canvas.height * canvas.scale);
 }
 
 //************************************************************/
@@ -998,7 +1039,10 @@ cube.Params = class {
                             // console.log("parameter:" + kv[0] + " = " + kv[1]);
                         }
                     } else if (q.includes('+')) {
-                        this.keyvalues += q.split('+');
+                        let qs = q.split('+');
+                        for (var i = 0; i < qs.length; i++) {
+                            this.keyvalues[i] = qs[i];
+                        }
                     } else {
                         this.keyvalues[0] = q;
                     }
@@ -1010,7 +1054,7 @@ cube.Params = class {
                     // console.log("parameter:" + kv[0] + " = " + kv[1]);
                 }
             } else if (text.includes('+')) {
-                this.keyvalues += text.split('+');
+                this.keyvalues = text.split('+');
             } else {
                 this.keyvalues[0] = text;
             }
@@ -1190,6 +1234,7 @@ cube.Screen = class {
         this.screen.style.alignItems = "start";
         this.screen.style.justifyContent = "start";
         this.screen.style.clipPath = "border-box";
+        this.screen.style.imageRendering = "pixelated";
         window.addEventListener("resize", (evt) => this.onResize(evt));
     }
 
@@ -1374,6 +1419,7 @@ cube.Sprite = class {
         this.type = type ? type.replace(/[^0-9a-z]/gi, '') : null;
         this.root = null;
         this.sprite = null;
+        this.screen = null;
 
         this.imageType = null;
         this.imageSize = null; // Image natural size.
@@ -1438,6 +1484,7 @@ cube.Sprite = class {
                     "background-image:url(\"" + data + "\");" +
                     "width:" + imageSize.x + ";" +
                     "height:" + imageSize.y + ";" +
+                    "image-rendering: pixelated;"+
                     "}";
                 style.sheet.insertRule(rule);
 
@@ -1488,9 +1535,10 @@ cube.Sprite = class {
     }
 
     // Set resolution size of image.
-    resize(w, h) {
+    resize(w, h, u=1) {
         this.size.x = w;
         this.size.y = h;
+        this.size.z = u;
         if (this.imageType != null) {
             this.sprite.style.width = this.size.x;
             this.sprite.style.height = this.size.y;
@@ -1510,10 +1558,12 @@ cube.Sprite = class {
             if (enable) {
                 if (!screen.screen.contains(this.root)) {
                     screen.screen.appendChild(this.root);
+                    this.screen = screen;
                 }
             } else {
                 if (screen.screen.contains(this.root)) {
                     screen.screen.removeChild(this.root);
+                    this.screen = null;
                 }
             }
         }
@@ -1541,18 +1591,32 @@ cube.Sprite = class {
     // Set cliping frame pos of image.
     setFrame(frame) {
         if (this.imageType != null) {
-            this._frame = frame;
-            var nx = (this.imageSize.x / this.size.x);
-            this.imagePos.x = Math.floor(frame % nx) * this.size.x;
-            this.imagePos.y = Math.floor(frame / nx) * this.size.y;
-            this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+            if (frame > 0) {
+                this._frame = frame;
+                let nx = (this.imageSize.x / this.size.x);
+                this.imagePos.x = Math.floor((frame - 1) % nx) * this.size.x;
+                this.imagePos.y = Math.floor((frame - 1) / nx) * this.size.y;
+                this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+                this.sprite.style.backgroundSize = "";//"" + this.size.x + " " + this.size.y;
+            } else if (frame < 0) {
+                this._frame = frame;
+                let nx = (this.imageSize.x / this.size.x);
+                this.imagePos.x = Math.floor(frame % nx) * this.size.x;
+                this.imagePos.y = Math.floor(frame / nx) * this.size.y;
+                this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+                this.sprite.style.backgroundSize = "";//"" + this.size.x + " " + this.size.y;
+            } else {
+                this._frame = 0;
+                this.sprite.style.backgroundPosition = "" + 0 + " " + 0;
+                this.sprite.style.backgroundSize = "" + 0 + " " + 0;
+            }
         }
     }
 
     // Set frame rect of image.
     setFrameRect(x, y, w, h) {
         if (this.imageType != null) {
-            this._frame = 0;
+            this._frame = -1;
             this.sprite.style.width = this.size.x = w;
             this.sprite.style.height = this.size.y = h;
             this.imagePos.x = x;
@@ -1585,11 +1649,18 @@ cube.Sprite = class {
     }
 
     // Check pos is in sprite rect.
-    isInRect(pos) {
+    isInRect(pos, margin=null) {
         if (pos != null) {
             let rect = this.root.getBoundingClientRect();
-            return pos.x > rect.left && pos.x < rect.right &&
-                   pos.y > rect.top && pos.y < rect.bottom;
+            if (rect != null) {
+                if (margin != null) {
+                    return pos.x > rect.left - margin.x && pos.x < rect.right + margin.x &&
+                           pos.y > rect.top - margin.y && pos.y < rect.bottom + margin.y;
+                } else {
+                    return pos.x > rect.left && pos.x < rect.right &&
+                           pos.y > rect.top && pos.y < rect.bottom;
+                }
+            }
         }
         return false;
     }
@@ -1609,16 +1680,21 @@ cube.Sprite = class {
 
             // Update image frame rect.
             if (this._frame > 0) {
+                let nx = (imageSize.x / this.size.x);
                 this.imagePos.x = Math.floor(this._frame % nx) * this.size.x;
                 this.imagePos.y = Math.floor(this._frame / nx) * this.size.y;
                 this.sprite.style.backgroundPosition = "" + (-this.imagePos.x) + " " + (-this.imagePos.y);
+                this.sprite.style.backgroundSize = "";//"" + this.size.x + " " + this.size.y;
+            } else if (this._frame == 0) {
+                this.sprite.style.backgroundPosition = "" + 0 + " " + 0;
+                this.sprite.style.backgroundSize = "" + 0 + " " + 0;
             }
 
             // Update position.
             if (this.pos != null) {
                 this.root.style.position = "absolute";
-                let cx = this.size.x * this.scale / 2;
-                let cy = this.size.y * this.scale / 2;
+                let cx = this.size.x * this.scale * this.size.z / 2;
+                let cy = this.size.y * this.scale * this.size.z / 2;
                 this.root.style.left = this.pos.x - cx;
                 this.root.style.top = this.pos.y - cy;
             } else {
@@ -1631,13 +1707,13 @@ cube.Sprite = class {
                 this.angle = Math.atan2(this.dir.y, this.dir.x) * angle_radian;
             }
             this.root.style.transform =
-                "scale(" + this.scale + ")" +
+                "scale(" + (this.scale * this.size.z) + ")" +
                 "rotate(" + this.angle + "deg)";
 
             // Update center position.
             if (this.scale > 0) {
-                let mx = this.size.x * (this.scale - 1) / 2;
-                let my = this.size.y * (this.scale - 1) / 2;
+                let mx = this.size.x * (this.scale * this.size.z - 1) / 2;
+                let my = this.size.y * (this.scale * this.size.z - 1) / 2;
                 this.root.style.marginLeft = mx;
                 this.root.style.marginRight = mx;
                 this.root.style.marginTop = my;
@@ -1659,10 +1735,10 @@ cube.Sprite = class {
             this.pos = pos;
             if (pos != null) {
                 this.root.style.position = "absolute";
-                let w = this.size.x * this.scale / 2;
-                let h = this.size.y * this.scale / 2;
-                this.root.style.top = this.pos.y - w;
-                this.root.style.left = this.pos.x - h;
+                let w = this.size.x * this.scale * this.size.z / 2;
+                let h = this.size.y * this.scale * this.size.z / 2;
+                this.root.style.top = this.pos.y - h;
+                this.root.style.left = this.pos.x - w;
             } else {
                 this.root.style.position = "relative";
             }
@@ -1676,7 +1752,7 @@ cube.Sprite = class {
             const angle_radian = 180 / Math.PI;
             this.angle = Math.atan2(this.dir.y, this.dir.x) * angle_radian;
             this.root.style.transform =
-                "scale(" + this.scale + ")" +
+                "scale(" + (this.scale * this.size.z) + ")" +
                 "rotate(" + this.angle + "deg)";
         }
     }
@@ -1686,7 +1762,7 @@ cube.Sprite = class {
         this.dir = new cube.Vec(); // Can not set direction vector.
         this.angle = angle;
         this.root.style.transform =
-            "scale(" + this.scale + ")" +
+            "scale(" + (this.scale * this.size.z) + ")" +
             "rotate(" + this.angle + "deg)";
     }
 
@@ -1695,10 +1771,10 @@ cube.Sprite = class {
         if (this.imageType != null) {
             this.scale = scale;
             this.root.style.transform =
-                "scale(" + this.scale + ")" +
+                "scale(" + (this.scale * this.size.z) + ")" +
                 "rotate(" + this.angle + "deg)";
-            let mx = parseInt(this.sprite.style.width) * (scale - 1) / 2;
-            let my = parseInt(this.sprite.style.height) * (scale - 1) / 2;
+            let mx = parseInt(this.sprite.style.width) * (this.scale * this.size.z - 1) / 2;
+            let my = parseInt(this.sprite.style.height) * (this.scale * this.size.z - 1) / 2;
             this.root.style.marginLeft = mx;
             this.root.style.marginRight = mx;
             this.root.style.marginTop = my;
@@ -1709,12 +1785,16 @@ cube.Sprite = class {
     // Set sprite aplha.
     setAlpha(alpha) {
         this.alpha = alpha;
+
+        //@todo nazeka shokai no byouga mae ha 1 shika settei dekinai.
+        this.root.style.opacity = 1;
+
         this.root.style.opacity = this.alpha;
     }
 }
 
-// Pixel buffer class.
-cube.Buffer = class {
+// Pixel canvas class.
+cube.Canvas = class {
 
     // Constructor.
     constructor(width=16, height=16, scale=10, frames=1) {
@@ -1731,11 +1811,12 @@ cube.Buffer = class {
         this.svg.setAttribute("stroke-width", 1);
         this.svg.setAttribute("stroke-linecap", "butt");
         this.svg.setAttribute("fill", "none");
+        this.items = []; // Svg child node items.
     }
 
     // Clone.
     clone() {
-        let clone = new cube.Buffer(this.width, this.height, this.scale, this.frames);
+        let clone = new cube.Canvas(this.width, this.height, this.scale, this.frames);
         return clone;
     }
 
@@ -1746,69 +1827,41 @@ cube.Buffer = class {
 
     // Sprite.
     async toSprite(type=null) {
-        if (this.sprite) {
-            return this.sprite.clone();
-        }
+        //if (this.sprite) {
+        //    return this.sprite.clone();
+        //}
         this.sprite = new cube.Sprite(type);
         this.sprite.loadImage(this.toImage());
         await this.sprite.waitLoadingImage();
-        this.sprite.resize(this.width * this.scale, this.height * this.scale);
+        this.sprite.resize(this.width*this.scale, this.height*this.scale, 1);
         return this.sprite;
     }
 
-    // Add pixels.
-    addPixels(pixels, frame=0) {
-        let w = this.scale;
-        for (let i = 0; i < pixels.length; i++) {
-            if (pixels[i][0] >= 0 && pixels[i][1] >= 0) {
-                let x = pixels[i][0] * this.scale + w / 2, y = pixels[i][1] * this.scale + w / 2;
-                let c = pixels[i].length >= 5 ? ("rgb(" + pixels[i][2] + "," + pixels[i][3] + "," + pixels[i][4] + ")") : "#000";
-                let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute("stroke", c);
-                path.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
-                path.setAttribute("d", "M" + x + "," + y + "h" + w + "v" + w + "h-" + w + "Z");
-                this.svg.appendChild(path);
+    // Clear canvas.
+    clear(frame=0) {
+        while (this.items[frame].length) {
+            let rect = this.items[frame].shift();
+            if (this.svg.contains(rect)) {
+                this.svg.removeChild(rect);
             }
         }
     }
 
-    // Add lines.
-    addLines(lines, frame=0) {
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i][0] >= 0 && lines[i][1] >= 0 && lines[i][2] >= 0 && lines[i][3] >= 0) {
-                let x0 = lines[i][0] * this.scale + 1, y0 = lines[i][1] * this.scale + 1;
-                let x1 = lines[i][2] * this.scale + 1, y1 = lines[i][3] * this.scale + 1;
-                let c = lines[i].length >= 7 ? ("rgb(" + lines[i][4] + "," + lines[i][5] + "," + lines[i][6] + ")") : "#000";
-                let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute("stroke", c);
-                path.setAttribute("stroke-width", this.scale);
-                path.setAttribute("stroke-linecap", "square");
-                path.setAttribute("fill", "none");
-                path.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
-                path.setAttribute("d", "M" + x0 + "," + y0 + "L" + x1 + "," + y1);
-                this.svg.appendChild(path);
+    // Add pixel rect.
+    addRect(pos, size=cube.Vec(1,1), color=cube.Vec(0,0,0), frame=0) {
+        if (pos.x >= 0 && pos.y >= 0) {
+            if (this.items[frame] == null) {
+                this.items[frame] = [];
             }
-        }
-    }
-
-    // Add rects.
-    addRects(rects, frame=0) {
-        for (let i = 0; i < rects.length; i++) {
-            if (rects[i][0] >= 0 && rects[i][1] >= 0 && rects[i][2] >= 0 && rects[i][3] >= 0) {
-                let x = rects[i][0] * this.scale;
-                let y = rects[i][1] * this.scale;
-                let w = (rects[i][2] - rects[i][0] + 1) * this.scale;
-                let h = (rects[i][3] - rects[i][1] + 1) * this.scale;
-                let c = rects[i].length >= 7 ? ("rgb(" + rects[i][4] + "," + rects[i][5] + "," + rects[i][6] + ")") : "#000";
-                let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                rect.setAttribute("fill", c);
-                rect.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
-                rect.setAttribute("x", x);
-                rect.setAttribute("y", y);
-                rect.setAttribute("width", w);
-                rect.setAttribute("height", h);
-                this.svg.appendChild(rect);
-            }
+            let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute("fill", "rgb(" + color.x + "," + color.y + "," + color.z + ")");
+            rect.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
+            rect.setAttribute("x", (pos.x * this.scale * 2));
+            rect.setAttribute("y", (pos.y * this.scale * 2));
+            rect.setAttribute("width", (size.x * this.scale * 2));
+            rect.setAttribute("height", (size.y * this.scale * 2));
+            this.svg.appendChild(rect);
+            this.items[frame].push(rect);
         }
     }
 };
@@ -1823,8 +1876,8 @@ cube.sprite = new cube.Sprite("cubeSprite");
 // All sprites.
 cube.sprites = [cube.sprite];
 
-// Master pixel buffer.
-cube.buffer = new cube.Sprite("cubeBuffer");
+// Master pixel canvas.
+cube.canvas = new cube.Sprite("cubeCanvas");
 
 /*  */
 // javascript
@@ -2074,6 +2127,8 @@ cube.Input = class {
 
         // No input.
         if (this.keyCode <= 0 && this.points == null) {
+            //console.log("Mouse/Touch input:" + this.tapTime + " " + time);
+
             this._dirs[0] = null;
             this.keyTime = time;
             this.tapTime = time;
@@ -2102,47 +2157,58 @@ cube.Input = class {
                 // Ignore tap after point out of play radius.
                 this.tapTime = time - timeout;
 
-                // Timeout or Far depth check.
-                if (this.flickTime <= time - timeout
-                 || this.points[1].z - this.points[0].z >= depth) {
+                // Swipe timeout or far depth check.
+                if (this.flickTime <= time - timeout || this.points[1].z - this.points[0].z >= depth) {
                     this._dirs[0].add(cube.Dirs.far);
+                    //console.log("Swipe:" + this.flickTime + " " + time);
 
                     // Ignore flick after point reach to far depth.
                     this.flickTime = time - timeout;
+
+                // Flick check.
+                } else if (this.upEvent) {
+                    this._dirs[0].add(cube.Dirs.near);
+                    //console.log("Flick:" + this.flickTime + " " + time);
                 }
             } else {
 
                 // Tap/Touching.
                 this._dirs[0] = new cube.Dirs();
 
-                // Timeout or Far depth check.
-                if (this.tapTime <= time - timeout
-                 || this.points[1].z - this.points[0].z >= depth) {
+                // Press timeout or far depth check.
+                if (this.tapTime <= time - timeout || this.points[1].z - this.points[0].z >= depth) {
                     this._dirs[0].add(cube.Dirs.far);
+                    //console.log("Press:" + this.tapTime + " " + time);
 
                     // Ignore tap/flick after point reach to far depth.
                     this.tapTime = time - timeout;
                     this.flickTime = time - timeout;
+
+                // Tap check.
+                } else if (this.upEvent) {
+                    this._dirs[0] = cube.Dirs.near.clone();
+                    //console.log("Tap:" + this.tapTime + " " + time);
                 }
             }
-            // console.log("Mouse/Touch input:" + this.tapTime + " " + time);
+            //console.log("Mouse/Touch input:" + this.tapTime + " " + time);
         }
 
         // On down event, only update status.
         if (this.downEvent) {
-            console.log("Down Event:" + this._dirs[0].toString());
+            //console.log("Down Event:" + this._dirs[0].toString() + " " + this.points[1].toString());
             this._dirs[1] = null;
             this.downEvent = false;
 
         // On up event, update status and return dirs.
         } else if (this.upEvent) {
-            console.log("Up Event:" + this._dirs[0].toString());
+            //console.log("Up Event:" + this._dirs[0].toString() + " " + this.points[1].toString());
+
             this._dirs[1] = this._dirs[0];
             this.upEvent = false;
 
         // On after up event.
         } else if (this._dirs[1] != null) {
-            console.log("Up Event End.");
+            //console.log("Up Event End.");
             this._dirs[0] = null;
             this._dirs[1] = null;
             this.keyCode = null;
@@ -2240,7 +2306,8 @@ cube.Input = class {
     onMouseDown(evt) {
         evt = evt != null ? evt : window.event;
         evt.preventDefault();
-        let mouse = this.screen.posToGlobalPos(new cube.Vec(evt.pageX, evt.pageY));
+        let mouse = new cube.Vec(evt.pageX, evt.pageY);
+        //mouse = this.screen.posToGlobalPos(mouse);
         this.updatePointOnDown(mouse);
         // console.log("event:" + evt.type + " " + mouse.toString() + " " + evt.pageX + "," + evt.pageY);
     }
@@ -2249,7 +2316,8 @@ cube.Input = class {
     onMouseMove(evt) {
         evt = evt != null ? evt : window.event;
         evt.preventDefault();
-        let mouse = this.screen.posToGlobalPos(new cube.Vec(evt.pageX, evt.pageY));
+        let mouse = new cube.Vec(evt.pageX, evt.pageY);
+        //mouse = this.screen.posToGlobalPos(mouse);
         this.updatePointOnMove(mouse);
         // console.log("event:" + evt.type + " " + mouse.toString() + " " + evt.pageX + "," + evt.pageY);
     }
@@ -2258,7 +2326,8 @@ cube.Input = class {
     onMouseUp(evt) {
         evt = evt != null ? evt : window.event;
         evt.preventDefault();
-        let mouse = this.screen.posToGlobalPos(new cube.Vec(evt.pageX, evt.pageY));
+        let mouse = new cube.Vec(evt.pageX, evt.pageY);
+        //mouse = this.screen.posToGlobalPos(mouse);
         this.updatePointOnUp(mouse);
         // console.log("event:" + evt.type + " " + mouse.toString() + " " + evt.pageX + "," + evt.pageY);
     }
@@ -2279,7 +2348,7 @@ cube.Input = class {
                                        evt.touches[i].force));
             }
             touch.div(evt.touches.length);
-            touch = this.screen.posToGlobalPos(touch);
+            //touch = this.screen.posToGlobalPos(touch);
             this.updatePointOnDown(touch);
 
             // console.log("Touch 1:" + evt.touches.length + " " + touch.toString());
@@ -2293,8 +2362,10 @@ cube.Input = class {
                 touchesNext.push(evt.touches[i]);
                 for (let j = 0; j < this.touches.length; ++j) {
                     if (evt.touches[i].identifier == this.touches[j].identifier) {
-                        let touchNext = this.screen.posToGlobalPos(new cube.Vec(evt.touches[i].pageX, evt.touches[i].pageY, evt.touches[i].force));
-                        let touchPrev = this.screen.posToGlobalPos(new cube.Vec(this.touches[j].pageX, this.touches[j].pageY, this.touches[j].force));
+                        //let touchNext = this.screen.posToGlobalPos(new cube.Vec(evt.touches[i].pageX, evt.touches[i].pageY, evt.touches[i].force));
+                        let touchNext = new cube.Vec(evt.touches[i].pageX, evt.touches[i].pageY, evt.touches[i].force);
+                        //let touchPrev = this.screen.posToGlobalPos(new cube.Vec(this.touches[j].pageX, this.touches[j].pageY, this.touches[j].force));
+                        let touchPrev = new cube.Vec(this.touches[j].pageX, this.touches[j].pageY, this.touches[j].force);
                         moveVec.add(touchNext).sub(touchPrev);
                         moveCount += 1;
                         // console.log("Touch Move ["+i+"]: " + touchPrev.toString() + "->" + touchNext.toString());

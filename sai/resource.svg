@@ -1,6 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100" width="240" height="200">
+<!--
+    brew install inkscape
+    /Applications/Inkscape.app/Contents/MacOS/inkscape -p logo.svg -o logo.png
+ !-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" width="320" height="360">
+    <!--rect fill="#fff" x="0" y="0" width="100%" height="100%"/-->
+
+    <!-- Dice 1 .. 8 -->
     <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000" transform="translate(2,2)">
-        <!-- 1 .. 6 -->
         <g transform="translate(0,0)">
             <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
             <path d="M7,7h2v2h-2Z"/>
@@ -26,35 +32,42 @@
             <path d="M3,3h2v2h-2Z  M11,3h2v2h-2Z
                            M7,7h2v2h-2Z
                      M3,11h2v2h-2Z M11,11h2v2h-2Z"/>
-       </g>
+        </g>
         <g transform="translate(100,0)">
             <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
             <path d="M3,3h2v2h-2Z  M11,3h2v2h-2Z
                      M3,7h2v2h-2Z  M11,7h2v2h-2Z
                      M3,11h2v2h-2Z M11,11h2v2h-2Z"/>
         </g>
-        <!-- 7 .. 9 -->
-        <g transform="translate(0,20)">
+        <g transform="translate(120,0)">
             <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
             <path d="M3,3h2v2h-2Z               M11,3h2v2h-2Z
                      M3,7h2v2h-2Z  M7,7h2v2h-2Z M11,7h2v2h-2Z
                      M3,11h2v2h-2Z              M11,11h2v2h-2Z"/>
         </g>
-        <g transform="translate(20,20)">
+        <g transform="translate(140,0)">
             <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
             <path d="M3,3h2v2h-2Z  M7,3h2v2h-2Z  M11,3h2v2h-2Z
                      M3,7h2v2h-2Z                M11,7h2v2h-2Z
                      M3,11h2v2h-2Z M7,11h2v2h-2Z M11,11h2v2h-2Z"/>
         </g>
-        <g transform="translate(40,20)">
-            <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
-            <path d="M3,3h2v2h-2Z  M7,3h2v2h-2Z  M11,3h2v2h-2Z
-                     M3,7h2v2h-2Z  M7,7h2v2h-2Z  M11,7h2v2h-2Z
-                     M3,11h2v2h-2Z M7,11h2v2h-2Z M11,11h2v2h-2Z"/>
-        </g>
     </g>
-    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="#fff" transform="translate(2,2)">
-        <!-- 0 .. 2 -->
+
+    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,2)">
+        <!-- - + . -->
+        <g transform="translate(0,20)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,8h4"/>
+        </g>
+        <g transform="translate(20,20)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,8h4 M8,6v4"/>
+        </g>
+        <g transform="translate(40,20)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M7.5,7.5h1v1h-1Z" stroke-width="1"/>
+        </g>
+        <!-- Digit 0 1 2 3 4 -->
         <g transform="translate(60,20)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M6,4h4v8h-4v-8"/>
@@ -67,81 +80,261 @@
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M6,4h4v4h-4v4h4"/>
         </g>
-        <!-- 3 .. 8 -->
-        <g transform="translate(0,40)">
+        <g transform="translate(120,20)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M6,4h4v4M6,8h4v4h-4"/>
         </g>
-        <g transform="translate(20,40)">
+        <g transform="translate(140,20)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
-            <path d="M6,4v4h4M10,4v8"/>
+             <path d="M6,4v4h4M10,4v8"/>
         </g>
-        <g transform="translate(40,40)">
+        <!-- 5 .. 8 -->
+        <g transform="translate(0,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M10,4h-4v4h4v4h-4"/>
         </g>
-        <g transform="translate(60,40)">
+        <g transform="translate(20,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M10,4h-4v8h4v-4h-4"/>
         </g>
-        <g transform="translate(80,40)">
+        <g transform="translate(40,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M6,6v-2h4v8"/>
         </g>
-        <g transform="translate(100,40)">
+        <g transform="translate(60,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M10,4h-4v4h4v4h-4v-4h4v-4"/>
         </g>
-        <!-- 9 .. 14 -->
-        <g transform="translate(0,60)">
+        <!-- 9 .. 12 -->
+        <g transform="translate(80,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M10,8v-4h-4v4h4v4h-4"/>
         </g>
-        <g transform="translate(20,60)">
+        <g transform="translate(100,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M8,4h4v8h-4v-8"/>
         </g>
-        <g transform="translate(40,60)">
+        <g transform="translate(120,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M12,4v8"/>
         </g>
-        <g transform="translate(60,60)">
+        <g transform="translate(140,40)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M8,4h4v4h-4v4h4"/>
         </g>
-        <g transform="translate(80,60)">
+        <!-- 13 .. 20 -->
+        <g transform="translate(0,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M8,4h4v4M8,8h4v4h-4"/>
         </g>
-        <g transform="translate(100,60)">
+        <g transform="translate(20,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M8,4v4h4M12,4v8"/>
         </g>
-        <!-- 15 .. 20 -->
-        <g transform="translate(0,80)">
+        <g transform="translate(40,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M12,4h-4v4h4v4h-4"/>
         </g>
-        <g transform="translate(20,80)">
+        <g transform="translate(60,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M12,4h-4v8h4v-4h-4"/>
         </g>
-        <g transform="translate(40,80)">
+        <g transform="translate(80,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M8,6v-2h4v8"/>
         </g>
-        <g transform="translate(60,80)">
+        <g transform="translate(100,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M12,4h-4v4h4v4h-4v-4h4v-4"/>
         </g>
-        <g transform="translate(80,80)">
+        <g transform="translate(120,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <path d="M4,4v8M12,8v-4h-4v4h4v4h-4"/>
         </g>
-        <g transform="translate(100,80)">
+        <g transform="translate(140,60)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <!--path d="M2.5,4h4v4h-4v4h4M9.5,4h4v8h-4v-8"/-->
             <path d="M2,4h4v4h-4v4h4M10,4h4v8h-4v-8"/>
+        </g>
+        <!-- 21 .. 28 -->
+        <g transform="translate(0,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M12,4v8"/>
+        </g>
+        <g transform="translate(20,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M10,4h4v4h-4v4h4"/>
+        </g>
+        <g transform="translate(40,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M10,4h4v4M10,8h4v4h-4"/>
+        </g>
+        <g transform="translate(60,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M10,4v4h4M14,4v8"/>
+        </g>
+        <g transform="translate(80,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M14,4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(100,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M14,4h-4v8h4v-4h-4"/>
+        </g>
+        <g transform="translate(120,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M10,6v-2h4v8"/>
+        </g>
+        <g transform="translate(140,80)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M14,4h-4v4h4v4h-4v-4h4v-4"/>
+        </g>
+        <!-- 29 .. 36 -->
+        <g transform="translate(0,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4h-4v4h4M14,8v-4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(20,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M10,4h4v8h-4v-8"/>
+        </g>
+        <g transform="translate(40,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M12,4v8"/>
+        </g>
+        <g transform="translate(60,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M10,4h4v4h-4v4h4"/>
+        </g>
+        <g transform="translate(80,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M10,4h4v4M10,8h4v4h-4"/>
+        </g>
+        <g transform="translate(100,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M10,4v4h4M14,4v8"/>
+        </g>
+        <g transform="translate(120,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M14,4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(140,100)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M14,4h-4v8h4v-4h-4"/>
+        </g>
+        <!-- 37 .. 44 -->
+        <g transform="translate(0,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M10,6v-2h4v8"/>
+        </g>
+        <g transform="translate(20,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M14,4h-4v4h4v4h-4v-4h4v-4"/>
+        </g>
+        <g transform="translate(40,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4h4v4M2,8h4v4h-4M14,8v-4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(60,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M10,4h4v8h-4v-8"/>
+        </g>
+        <g transform="translate(80,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M12,4v8"/>
+        </g>
+        <g transform="translate(100,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M10,4h4v4h-4v4h4"/>
+        </g>
+        <g transform="translate(120,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M10,4h4v4M10,8h4v4h-4"/>
+        </g>
+        <g transform="translate(140,120)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M10,4v4h4M14,4v8"/>
+        </g>
+        <!-- 45 .. 52 -->
+        <g transform="translate(0,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M14,4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(20,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M14,4h-4v8h4v-4h-4"/>
+        </g>
+        <g transform="translate(40,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M10,6v-2h4v8"/>
+        </g>
+        <g transform="translate(60,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M14,4h-4v4h4v4h-4v-4h4v-4"/>
+        </g>
+        <g transform="translate(80,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M2,4v4h4M6,4v8M14,8v-4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(100,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,4h-4v4h4v4h-4M10,4h4v8h-4v-8"/>
+        </g>
+        <g transform="translate(120,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,4h-4v4h4v4h-4M12,4v8"/>
+        </g>
+        <g transform="translate(140,140)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,4h-4v4h4v4h-4M10,4h4v4h-4v4h4"/>
+        </g>
+        <!-- 53 54 55 56 -->
+        <g transform="translate(0,160)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,4h-4v4h4v4h-4M10,4h4v4M10,8h4v4h-4"/>
+        </g>
+        <g transform="translate(20,160)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,4h-4v4h4v4h-4M10,4v4h4M14,4v8"/>
+        </g>
+        <g transform="translate(40,160)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,4h-4v4h4v4h-4M14,4h-4v4h4v4h-4"/>
+        </g>
+        <g transform="translate(60,160)">
+            <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
+            <path d="M6,4h-4v4h4v4h-4M14,4h-4v8h4v-4h-4"/>
+        </g>
+        <!-- White -->
+        <g transform="translate(80,160)">
+            <path d="M4,4h8v8h-8Z" stroke="#bbb" fill="#fff"/>
+        </g>
+        <!-- Black -->
+        <g transform="translate(100,160)">
+            <path d="M4,4h8v8h-8Z" stroke="#333" fill="#000"/>
+        </g>
+    </g>
+
+    <!-- Blank -->
+    <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#888" transform="translate(2,2)">
+        <g transform="translate(120,160)">
+            <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
+            <!--path d="M-1,-1h2v2h-2Z M3,-1h2v2h-2Z M7,-1h2v2h-2Z M11,-1h2v2h-2Z M15,-1h2v2h-2Z
+                     M-1,3h2v2h-2Z                                             M15,3h2v2h-2Z
+                     M-1,7h2v2h-2Z                                             M15,7h2v2h-2Z
+                     M-1,11h2v2h-2Z                                            M15,11h2v2h-2Z
+                     M-1,15h2v2h-2Z M3,15h2v2h-2Z M7,15h2v2h-2Z M11,15h2v2h-2Z M15,15h2v2h-2Z"/!-->
+        </g>
+    </g>
+
+    <!-- Back -->
+    <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#fff" transform="translate(2,2)">
+        <g transform="translate(140,160)">
+            <path d="M0,0h16v16h-16Z" stroke="#888" fill="#888"/>
+            <path d="M1,1h2v2h-2Z  M5,1h2v2h-2Z  M9,1h2v2h-2Z  M13,1h2v2h-2Z
+                     M1,5h2v2h-2Z  M5,5h2v2h-2Z  M9,5h2v2h-2Z  M13,5h2v2h-2Z
+                     M1,9h2v2h-2Z  M5,9h2v2h-2Z  M9,9h2v2h-2Z  M13,9h2v2h-2Z
+                     M1,13h2v2h-2Z M5,13h2v2h-2Z M9,13h2v2h-2Z M13,13h2v2h-2Z"/>
         </g>
     </g>
 </svg>

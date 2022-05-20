@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.59b";
-cube.timestamp = "20519";
+cube.version = "0.8.60b";
+cube.timestamp = "20520";
 /************************************* /VERSION*
 
 
@@ -20,6 +20,13 @@ async function cubeWait(time) {
 // Get a time count.
 function cubeTime() {
     return cube.count.time();
+}
+
+// Get date.
+function cubeDate() {
+    var today = new Date();
+    return Math.floor(today.getYear() % 100) * 10000 +
+        (today.getMonth() + 1) * 100 + today.getDate();
 }
 
 // Generate a random count.
@@ -333,51 +340,6 @@ async function cubeCanvasSprite(canvas=null) {
 //    return cubeSprite(canvas.toImage(),
 //        canvas.width * canvas.scale,
 //        canvas.height * canvas.scale);
-}
-
-
-// Get master pixel buffer or create new pixel buffer.
-function cubeBuffer(width=0, height=0, scale=10, frames=1) {
-    if (width > 0 && height > 0) {
-        var buffer = new cube.Buffer(width, height, scale, frames);
-        return buffer;
-    }
-    return cube.buffer;
-}
-
-// Add pixels to pixel buffer.
-function cubeBufferPixels(pixels, frame=0, buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
-    }
-    buffer.addPixels(pixels, frame);
-}
-
-// Add lines to pixel buffer.
-function cubeBufferLines(lines, frame=0, buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
-    }
-    buffer.addLines(lines, frame);
-}
-
-// Add rects to pixel buffer.
-function cubeBufferRects(rects, frame=0, buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
-    }
-    buffer.addRects(rects, frame);
-}
-
-// Create new sprite from pixel buffer.
-async function cubeBufferSprite(buffer=null) {
-    if (!buffer) {
-        buffer = cube.buffer;
-    }
-    return buffer.toSprite();
-//    return cubeSprite(buffer.toImage(),
-//        buffer.width * buffer.scale,
-//        buffer.height * buffer.scale);
 }
 
 //************************************************************/
@@ -1077,7 +1039,10 @@ cube.Params = class {
                             // console.log("parameter:" + kv[0] + " = " + kv[1]);
                         }
                     } else if (q.includes('+')) {
-                        this.keyvalues += q.split('+');
+                        let qs = q.split('+');
+                        for (var i = 0; i < qs.length; i++) {
+                            this.keyvalues[i] = qs[i];
+                        }
                     } else {
                         this.keyvalues[0] = q;
                     }
@@ -1901,106 +1866,6 @@ cube.Canvas = class {
     }
 };
 
-// Pixel buffer class.
-cube.Buffer = class {
-
-    // Constructor.
-    constructor(width=16, height=16, scale=10, frames=1) {
-        this.width = width;
-        this.height = height;
-        this.scale = scale;
-        this.frames = frames;
-        this.sprite = null;
-        this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        this.svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        this.svg.setAttribute("width", "" + (width * scale * frames));
-        this.svg.setAttribute("height", "" + (height * scale));
-        this.svg.setAttribute("viewBox", "0 0 " + (width * 2 * frames) + " " + (height * 2));
-        this.svg.setAttribute("stroke-width", 1);
-        this.svg.setAttribute("stroke-linecap", "butt");
-        this.svg.setAttribute("fill", "none");
-    }
-
-    // Clone.
-    clone() {
-        let clone = new cube.Buffer(this.width, this.height, this.scale, this.frames);
-        return clone;
-    }
-
-    // Resource.
-    toImage() {
-        return "data:image/svg+xml;base64," + btoa(this.svg.outerHTML);
-    }
-
-    // Sprite.
-    async toSprite(type=null) {
-        if (this.sprite) {
-            return this.sprite.clone();
-        }
-        this.sprite = new cube.Sprite(type);
-        this.sprite.loadImage(this.toImage());
-        await this.sprite.waitLoadingImage();
-        this.sprite.resize(this.width, this.height, this.scale);
-        return this.sprite;
-    }
-
-    // Add pixels.
-    addPixels(pixels, frame=0) {
-        let w = this.scale;
-        for (let i = 0; i < pixels.length; i++) {
-            if (pixels[i][0] >= 0 && pixels[i][1] >= 0) {
-                let x = pixels[i][0] * this.scale + w / 2, y = pixels[i][1] * this.scale + w / 2;
-                let c = pixels[i].length >= 5 ? ("rgb(" + pixels[i][2] + "," + pixels[i][3] + "," + pixels[i][4] + ")") : "#000";
-                let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute("stroke", c);
-                path.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
-                path.setAttribute("d", "M" + x + "," + y + "h" + w + "v" + w + "h-" + w + "Z");
-                this.svg.appendChild(path);
-            }
-        }
-    }
-
-    // Add lines.
-    addLines(lines, frame=0) {
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i][0] >= 0 && lines[i][1] >= 0 && lines[i][2] >= 0 && lines[i][3] >= 0) {
-                let x0 = lines[i][0] * this.scale + 1, y0 = lines[i][1] * this.scale + 1;
-                let x1 = lines[i][2] * this.scale + 1, y1 = lines[i][3] * this.scale + 1;
-                let c = lines[i].length >= 7 ? ("rgb(" + lines[i][4] + "," + lines[i][5] + "," + lines[i][6] + ")") : "#000";
-                let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute("stroke", c);
-                path.setAttribute("stroke-width", this.scale);
-                path.setAttribute("stroke-linecap", "square");
-                path.setAttribute("fill", "none");
-                path.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
-                path.setAttribute("d", "M" + x0 + "," + y0 + "L" + x1 + "," + y1);
-                this.svg.appendChild(path);
-            }
-        }
-    }
-
-    // Add rects.
-    addRects(rects, frame=0) {
-        for (let i = 0; i < rects.length; i++) {
-            if (rects[i][0] >= 0 && rects[i][1] >= 0 && rects[i][2] >= 0 && rects[i][3] >= 0) {
-                let x = rects[i][0] * this.scale;
-                let y = rects[i][1] * this.scale;
-                let w = (rects[i][2] - rects[i][0] + 1) * this.scale;
-                let h = (rects[i][3] - rects[i][1] + 1) * this.scale;
-                let c = rects[i].length >= 7 ? ("rgb(" + rects[i][4] + "," + rects[i][5] + "," + rects[i][6] + ")") : "#000";
-                let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                rect.setAttribute("fill", c);
-                rect.setAttribute("transform", "translate(" + (this.width * this.scale * frame) + ",0)");
-                rect.setAttribute("x", x);
-                rect.setAttribute("y", y);
-                rect.setAttribute("width", w);
-                rect.setAttribute("height", h);
-                this.svg.appendChild(rect);
-            }
-        }
-    }
-};
-
 // Master screen.
 cube.screen = new cube.Screen("cubeScreen");
 // All screens.
@@ -2010,9 +1875,6 @@ cube.screens = [cube.screen];
 cube.sprite = new cube.Sprite("cubeSprite");
 // All sprites.
 cube.sprites = [cube.sprite];
-
-// Master pixel buffer.
-cube.buffer = new cube.Sprite("cubeBuffer");
 
 // Master pixel canvas.
 cube.canvas = new cube.Sprite("cubeCanvas");
