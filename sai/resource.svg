@@ -307,23 +307,23 @@
         </g>
         <!-- White -->
         <g transform="translate(80,160)">
-            <path d="M4,4h8v8h-8Z" stroke="#bbb" fill="#fff"/>
+            <path d="M4,4h8v8h-8Z" stroke="#aaa" fill="#fff"/>
         </g>
         <!-- Black -->
         <g transform="translate(100,160)">
-            <path d="M4,4h8v8h-8Z" stroke="#333" fill="#000"/>
+            <path d="M4,4h8v8h-8Z" stroke="#555" fill="#000"/>
         </g>
     </g>
 
     <!-- Blank -->
     <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#888" transform="translate(2,2)">
         <g transform="translate(120,160)">
-            <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
-            <!--path d="M-1,-1h2v2h-2Z M3,-1h2v2h-2Z M7,-1h2v2h-2Z M11,-1h2v2h-2Z M15,-1h2v2h-2Z
+            <!--path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/!-->
+            <path d="M-1,-1h2v2h-2Z M3,-1h2v2h-2Z M7,-1h2v2h-2Z M11,-1h2v2h-2Z M15,-1h2v2h-2Z
                      M-1,3h2v2h-2Z                                             M15,3h2v2h-2Z
                      M-1,7h2v2h-2Z                                             M15,7h2v2h-2Z
                      M-1,11h2v2h-2Z                                            M15,11h2v2h-2Z
-                     M-1,15h2v2h-2Z M3,15h2v2h-2Z M7,15h2v2h-2Z M11,15h2v2h-2Z M15,15h2v2h-2Z"/!-->
+                     M-1,15h2v2h-2Z M3,15h2v2h-2Z M7,15h2v2h-2Z M11,15h2v2h-2Z M15,15h2v2h-2Z"/>
         </g>
     </g>
 

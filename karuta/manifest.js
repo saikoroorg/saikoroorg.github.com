@@ -18,7 +18,7 @@ const manifest = {
     "start_url": "./" + (window.location.search ? window.location.search + "&" : "?") + "app=1",
     "scope": "/karuta/",
     "display": "standalone",
-    /**/
+    //*
     "resource": "resource.png",
     "params": {
         "hand": 5,

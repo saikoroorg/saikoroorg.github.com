@@ -475,7 +475,7 @@ a {
 		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
 		let boardCanvas = cubeCanvas(160 + boardGridPattern * 2, 160 + boardGridPattern * 2, 1);
-		let boardGridColor = [cubeVector(238, 238, 238), cubeVector(204, 204, 204), cubeVector(136, 136, 136)]; // #eee=rgb(238,238,238)  #d3d3d3=rgb(211,211,211) #ccc=rgb(204,204,204) #888=rgb(136,136,136) #333=rgb(51,51,51) #2c2c2c=rgb(44,44,44) #111=rgb(17,17,17) #000=rgb(0,0,0)
+		let boardGridColor = [cubeVector(238, 238, 238), cubeVector(204, 204, 204), cubeVector(136, 136, 136)]; // #eee=rgb(238,238,238)  #d3d3d3=rgb(211,211,211) #ccc=rgb(204,204,204) #aaa=rgb(170,170,170) #888=rgb(136,136,136) #555=rgb(85,85,85) #333=rgb(51,51,51) #2c2c2c=rgb(44,44,44) #111=rgb(17,17,17) #000=rgb(0,0,0)
 		boardGridSize = cubeVector(160 / boardGridCounts, 160 / boardGridCounts);
 		if (boardGridPattern > 0) {
 			cubeCanvasRect(cubeVector(0, 0), cubeVector(162, 162), boardGridColor[1], 0, boardCanvas);
@@ -1359,7 +1359,7 @@ a {
 			} else {
 
 				// Start holding.
-				if (holdingCardId != touchingCardId || rolling > holdingTime) {
+				if ((holdingCardId != touchingCardId || rolling > holdingTime) && drawCounts <= 0) {
 
 					// Start to hold released cards.
 					if (holdingCardId == touchingReleased) {
@@ -1402,6 +1402,7 @@ a {
 								angle = card.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
+								touchingBoardPos = cubeVector(card.x, card.y);
 
 								focusingCardId = touchingNothing;
 								focuses.pop();
@@ -1437,6 +1438,7 @@ a {
 								angle = card.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
+								touchingBoardPos = cubeVector(card.x, card.y);
 							}
 						}
 
@@ -1454,6 +1456,7 @@ a {
 								angle = chip.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
+								touchingBoardPos = cubeVector(chip.x, chip.y);
 							}
 						}
 
@@ -1655,7 +1658,7 @@ a {
 			//let playLines = cubeDiv(playCards.length - 1, playLineMax) + 1;
 			let cardScale = 0.04 * boardGridSize.y;//(holdCards.length > 0 ? 6 : 5) / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
 			let chipScale = 0.04 * boardGridSize.y;
-			let holdScale = 0.06 * boardGridSize.y;
+			let holdScale = 0.05 * boardGridSize.y;
 			let focusScale = 1.8;
 
 			// Deck/Trash card scales.
@@ -1889,12 +1892,12 @@ a {
 						sx = localPos.x;
 						sy = localPos.y;
 
-						// Scale.
-						if (touchingCardId <= touchingShade && holdCards.length > 0 && rolling < rotatingTime) {
-							s = holdScale * 1.0;
-						} else {
-							s = holdScale * 1.2;
+						if (touchingBoardPos) {
+							a0 = 0.25;
 						}
+
+						// Scale.
+						s = holdScale * 1.2;
 
 						// Rotation.
 						a = holdCards[holdCards.length - 1].angle;
@@ -1905,12 +1908,12 @@ a {
 						sx = localPos.x;
 						sy = localPos.y;
 
-						// Scale.
-						if (touchingCardId <= touchingShade && holdChips.length > 0 && rolling < rotatingTime) {
-							s = holdScale * 1.0;
-						} else {
-							s = holdScale * 1.2;
+						if (touchingBoardPos) {
+							a0 = 0.25;
 						}
+
+						// Scale.
+						s = holdScale * 1.2;
 
 						// Rotation.
 						a = holdChips[holdChips.length - 1].angle;
@@ -1956,7 +1959,8 @@ a {
 						sx = boardSprite.pos.x + touchingBoardPos.x * boardGridSize.x;
 						sy = boardSprite.pos.y + touchingBoardPos.y * boardGridSize.y;
 						s = holdScale;
-						a0 = 0.3;
+						a0 = 0.75;
+						s = holdScale * 1.0;
 
 						// Rotation.
 						a = holdCards[holdCards.length - 1].angle;
@@ -1968,7 +1972,8 @@ a {
 						sx = boardSprite.pos.x + touchingBoardPos.x * boardGridSize.x;
 						sy = boardSprite.pos.y + touchingBoardPos.y * boardGridSize.y;
 						s = holdScale;
-						a0 = 0.1;
+						a0 = 0.75;
+						s = holdScale * 1.0;
 
 						// Rotation.
 						a = holdChips[holdChips.length - 1].angle;
