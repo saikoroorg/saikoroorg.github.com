@@ -951,15 +951,10 @@ a {
 						if (action.z < 0 && focusingCardId != touchingCardId) {
 							console.log("Focus hand card on tapping.");
 
-							if (focuses.length <= 0) {
-								focuses.push(cubeClone(backsidedCard));
-							}
 							if (focusingCardId != touchingCardId) {
-								focuses[focuses.length - 1].frame = handCards[j].frame;
-								focuses[focuses.length - 1].x = handCards[j].x;
-								focuses[focuses.length - 1].y = handCards[j].y;
-								focuses[focuses.length - 1].flag = handCards[j].flag;
-								angle = focuses[focuses.length - 1].angle = handCards[j].angle = 0;
+								let card = handCards[j];
+								focuses.push(cubeClone(card));
+								angle = card.angle; // Reset angle animation.
 								focusingCardId = touchingCardId;
 							} else {
 								focuses.pop();
@@ -1008,16 +1003,12 @@ a {
 						if (action.z < 0 && focusingCardId != touchingCardId) {
 							console.log("Focus playing card on tapping.");
 
-							if (focuses.length <= 0) {
-								focuses.push(cubeClone(backsidedCard));
-							}
 							if (focusingCardId != touchingCardId) {
-								focuses[focuses.length - 1].frame = playCards[j].frame;
-								focuses[focuses.length - 1].x = playCards[j].x;
-								focuses[focuses.length - 1].y = playCards[j].y;
-								focuses[focuses.length - 1].flag = playCards[j].flag;
-								angle = focuses[focuses.length - 1].angle = playCards[j].angle;
-								focusingCardId = touchingCardId;
+								let card = playCards.splice(j, 1)[0];
+								focuses.push(cubeClone(card));
+								playCards.push(card); // Move card to bottom.
+								angle = card.angle; // Reset angle animation.
+								focusingCardId = touchingCardId = handCards.length + playCards.length - 1;
 							} else {
 								focuses.pop();
 								focusingCardId = touchingNothing;
