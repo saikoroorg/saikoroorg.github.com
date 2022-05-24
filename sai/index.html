@@ -161,8 +161,9 @@ a {
 </div>
 <script src="cube-api-0.8.js"></script>
 <!--Resource--><script>
-	var buffer = null; // Original design buffer.
+	console.log = () => {};
 
+	var buffer = null; // Original design buffer.
 
   // Example 1: Standard dotted dice with color pips (1~6) and playing card suit marks (7~12).
   // var query = "2d6&n0=f11099g22088&n1=a55&n2=b73b37&n3=c73c55c37&n4=d33d73d37d77&n5=e33e73e55e37e77&n6=f33f73f35f75f37f77&n7=c44067c35076c53054&n8=a44066a34075a43044a63064a56057&n9=d44066d53057d35075&n10=b43066b54057b35076&n11=e33e73e44066e37e77&n12=g44066&c1=d66&c2=6b6&c3=66d&c4=bb4&c5=888&c6=000&c7=fff"
@@ -283,13 +284,13 @@ a {
 
 	// Set counts of dice.
 	var setCounts = (x) => {
-		counts = (x > 20) ? 20 : (x < 1) ? 1 : x;
+		counts = (x > 30) ? 30 : (x < 1) ? 1 : x;
 		rolling = -1; // Reroll.
 	};
 
 	// Set maximum number.
 	var setMaximum = (x) => {
-		maximum = (x > 56) ? 56 : (x < 0) ? 0 : x;
+		maximum = (x > 20) ? 20 : (x < 0) ? 0 : x;
 
 		// Reset dice icon.
 		var icon = document.getElementById("icon");
@@ -360,8 +361,8 @@ a {
 		}
 
 		// Sprite frame.
-		var frameMax = maximum > 0 ? maximum : 10;
-		var frameMin = maximum > 0 ? 1 : 0;
+		var frameMax = buffer ? maximum : maximum > 0 ? maximum : 10;
+		var frameMin = buffer ? 1 : frameMax > 10 ? 34 - frameMax : frameMax == 10 ? 25 : 1;
 		var randoms = [];
 
 		// Sprite scale and angle.
@@ -410,12 +411,7 @@ a {
 				angle = cubeMod(angle + 20, 360);
 				for (var y = 0; y < lines; y++) {
 					for (var x = 0; x < rows[y]; x++) {
-						var framePlus = buffer ? (lineMax * y + x) * frameMax : 1;
-						if (frameMax <= 8) {
-							randoms[lineMax*y+x] = cubeRandom(frameMax) + frameMin + framePlus;
-						} else {
-							randoms[lineMax*y+x] = cubeMod(cubeRandom(frameMax), 56) + frameMin + 13;
-						}
+						randoms[lineMax*y+x] = frameMin + cubeRandom(frameMax);
 					}
 				}
 			}
@@ -424,7 +420,7 @@ a {
 			var n = result <= 0 ? counter : counter - 1;
 			var mx = size.x * 0.8, my = size.y * 1;
 			var ox = (size.x - mx) * 0.5, oy = (size.y - my) * 0.5;
-			cubeAnimate(n > 0 ? cubeMod(n - 1, 56) + 13 : 12, sprite);
+			cubeAnimate(n > 0 ? -4 - cubeMod(n - 1, 20) : -3, sprite);
 			cubeMove(ox + mx / 2, 16, sprite);
 
 			// Update sprites.
@@ -432,7 +428,7 @@ a {
 			for (var y = 0; y < lines; y++) {
 				for (var x = 0; x < rows[y]; x++) {
 					var i = lineMax * y + x;
-					cubeAnimate(randoms[i] - 1, sprites[i]);
+					cubeAnimate(randoms[i], sprites[i]);
 					cubeExpand(s, sprites[i]);
 					cubeRotate(angle, sprites[i]);
 					var sx = ox + mx * (x + 1) / (rows[y] + 1);

@@ -1,7 +1,7 @@
 // Web app manifest for progressive web app.
 const manifest = {
     "name": "Sai",
-    "version": "0.8.20520",
+    "version": "0.8.20524",
     "short_name": "Sai",
     "author": "saikoro.org",
     "background_color": "#000",
