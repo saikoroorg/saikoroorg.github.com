@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.60b";
-cube.timestamp = "20520";
+cube.version = "0.8.61b";
+cube.timestamp = "20525";
 /************************************* /VERSION*
 
 
@@ -438,6 +438,14 @@ function cubeParamValue(key=0, value=null, param=null) {
         return param.setValue(key, value);
     }
     return param.value(key);
+}
+
+// Check contains the character in parameter.
+function cubeParamContains(key=0, character=null, param=null) {
+    if (!param) {
+        param = cube.param;
+    }
+    return param.contains(key, character);
 }
 
 // Get interger numbers of parameter.
@@ -967,6 +975,16 @@ cube.Params = class {
     // Get value.
     value(key) {
         return this.keyvalues[key] ? this.keyvalues[key] : "";
+    }
+
+    // Check the value string contains characters.
+    contains(key, character) {
+        if (this.keyvalues[key]) {
+            if (this.keyvalues[key].includes(character)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Get value by integer numbers.

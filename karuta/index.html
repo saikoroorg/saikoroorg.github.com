@@ -308,42 +308,126 @@ a {
 	// Constant parameters.
 	const frameNone = 0, frameBack = -1, frameBlank = -2;
 	const frameCardStart = -3, frameDigitStart = -3, frameDigitCounts = 20, frameButtons = [12, 12];
-	const defaultHandCounts = 0, defaultCardCounts = [21], defaultChipStart = 10, defaultChipCounts = [1,2], defaultGridCounts = 8;
+	var frameChipStart = 10; // Chip start frame.
 
-	// Get query parameters.
-	var params0 = cubeParamNumbers(0); // c52
-	var handCounts = params0[0] >= 0 ? params0[0] : manifest.params && manifest.params.hand >= 0 ? manifest.params.hand : defaultHandCounts; // Hand card counts.
-	var cardCounts = params0.length >= 2 ? params0.slice(1) : manifest.params && manifest.params.cards.length >= 1 ? manifest.params.cards : defaultCardCounts; // Deck card counts.
-	var params1 = cubeParamNumbers(1); // b2x8
-	var chipFrameMax = params1[1] >= 0 ? params1[1] : manifest.params && manifest.params.chips ? manifest.params.chips[0] : defaultChipCounts[0];// Chip pattern size.
-	var frameChipStart = manifest.resource ? 1 : defaultChipStart;
-	var counts = params1.length >= 3 ? params1[params1.length - 1] : manifest.params && manifest.params.board ? manifest.params.board : defaultGridCounts; // Grid counts.
-	var frameChipDepth = params1.length >= 4 ? params1[2] : params1.length == 3 ? 1 : manifest.params && manifest.params.chips ? manifest.params.chips[1] : defaultChipCounts[1];// Chip changable size.
+	// Card parameters.
+	var handCounts = 0, cardCounts = 0;
+
+	// Board(Chips) parameters.
+	var chipFrameMax = 0, frameChipDepth = 0;
+
+	var counts = 8; // Grid counts.
 	var pattern = 0; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
-	var playerParams = cubeParamNumbers("p"); // Player number/counts. p=1/1
-	var playerNumber = playerParams[0] > 0 ? playerParams[0] : manifest.params && manifest.params.players.length >= 1 ? manifest.params.players[0] : 1; // Player number.
-	var playerCounts = playerParams[1] > 0 ? playerParams[1] : manifest.params && manifest.params.players.length >= 2 ? manifest.params.players[1] : 1; // Player counts.
-	var randomParams = cubeParamNumbers("r"); // Random seed. r=0
-	var seed = randomParams[0] > 0 ? randomParams[0] : manifest.params && manifest.params.seed ? manifest.params.seed : 0; // Random seed.
+	var playerNumber = 1; // Player number.
+	var playerCounts = 1; // Player counts.
 
-	// Initialize goban grids.
+	// Random parameter.
+	var seed = 0; // Random seed.
+
+	// Check query parameters.
+	for (let i = 0; i < 3; i++) {
+		if (cubeParamContains(i, "c")) {
+			let params = cubeParamNumbers(i);
+			console.log("Load card parameters " + i + ":" + params)
+			if (params.length >= 1) {
+				handCounts = params[0];
+			}
+			if (params.length >= 2) {
+				cardCounts = params.slice(1);
+			}
+		} else if (cubeParamContains(i, "b")) {
+			let params = cubeParamNumbers(i);
+			console.log("Load board parameters " + i + ":" + params)
+			if (params.length >= 2) {
+				chipFrameMax = params[1];
+			}
+			if (params.length >= 3) {
+				counts = params[params.length - 1];
+			}
+			if (params.length >= 4) {
+				frameChipDepth = params[2];
+			} else if (params.length == 3) {
+				frameChipDepth = 1;
+			}
+		}
+	}
+
+	// Check manifest parameters.
+	if (manifest.params) {
+		if (cardCounts == 0 && chipFrameMax == 0) {
+			if (manifest.params.hand >= 0) {
+				handCounts = manifest.params.hand;
+			}
+			if (manifest.params.cards.length >= 1) {
+				cardCounts = manifest.params.cards;
+			}
+			if (manifest.params.board > 0) {
+				counts = manifest.params.board;
+			}
+			if (manifest.params.chips.length >= 1) {
+				chipFrameMax = manifest.params.chips[0];
+			}
+			if (manifest.params.chips.length >= 2) {
+				frameChipDepth = manifest.params.chips[1];
+			}
+		}
+	}
+
+
+	// Check player/random parameters.
+	if (manifest.params) {
+		if (cardCounts == 0 && chipFrameMax == 0) {
+			if (manifest.params.players.length >= 1) {
+				playerNumber = manifest.params.players[0];
+			}
+			if (manifest.params.players.length >= 2) {
+				playerCounts = manifest.params.players[1];
+			}
+			if (manifest.params.seed > 0) {
+				seed = manifest.params.seed;
+			}
+		}
+	}
+
+	// Check query parameters.
+	var playerParams = cubeParamNumbers("p"); // Player number/counts. p=1/1
+	if (playerParams.length >= 1) {
+		playerNumber = playerParams[0];
+	}
+	if (playerParams.length >= 2) {
+		playerCounts = playerParams[1];
+	}
+	var randomParams = cubeParamNumbers("r"); // Random seed. r=0
+	if (randomParams.length >= 1) {
+		seed = randomParams[0];
+	}
+
+	// Set default parameters.
+	if (cardCounts == 0 && chipFrameMax == 0) {
+		handCounts = 0; // Hand card counts.
+		cardCounts = [21]; // Deck card counts.
+		chipFrameMax = 1;// Chip pattern size.
+		frameChipDepth = 2;// Chip changable size.
+	}
+
+	// Set goban grids.
 	if (cubeMod(counts, 2)) {
 		counts -= 1;
 		pattern = 1;
 	}
 
 	//Example b1: Mini Reversi.
-	// c0+b1x2x6&b=a43b33a34b44
+	// b1x2x6&b=a43b33a34b44
 	//Example b2: Reversi.
-	// c0+b1x2x8&b=a54b44a45b55
+	// b1x2x8&b=a54b44a45b55
 	//Example b3: Mini Checker.
-	// c0+b2x2x6&p=1/2&b=a16a25a36a45a56a65b12b21b32b41b52b61
+	// b2x2x6&p=1/2&b=a16a25a36a45a56a65b12b21b32b41b52b61
 	//Example b4: Checker.
-	// c0+b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81
+	// b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81
 	//Example b5: 9-Ro Goban.
-	// c0+b2x9
+	// b2x9
 	//Example b6: 13-Ro Goban.
-	// c0+b2x13
+	// b2x13
 
 	// Initialize placement pieces.
 	var placements = []; // Placement pieces.
@@ -367,6 +451,7 @@ a {
 	var resource = "resource.svg", resourceCounts = 6;
 	if (manifest.resource) {
 		resource = manifest.resource;
+		frameChipStart = 1;
 	}
 
 	var original = 0; // Original design icon frame.
