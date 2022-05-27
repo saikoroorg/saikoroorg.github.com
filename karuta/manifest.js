@@ -1,7 +1,7 @@
 // Web app manifest for progressive web app.
 const manifest = {
     "name": "Karuta",
-    "version": "0.8.20525",
+    "version": "0.8.20528",
     "short_name": "Karuta",
     "author": "saikoro.org",
     "background_color": "#000",
@@ -21,9 +21,10 @@ const manifest = {
     //*
     "resource": "resource.png",
     "params": {
+        "dice": [2,9],
         "hand": 5,
         "cards": [54],
-        "chips": [1,2],
+        "chips": [1,6],
         "board": 8,
         "players": [1,2],
         "seed": 0

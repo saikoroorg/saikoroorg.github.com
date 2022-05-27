@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.61b";
-cube.timestamp = "20525";
+cube.version = "0.8.62b";
+cube.timestamp = "20528";
 /************************************* /VERSION*
 
 
@@ -46,6 +46,11 @@ function cubeSeed() {
 // Vector object has x,y and z variables.
 function cubeVector(x, y, z=0) {
     return new cube.Vec(x, y, z);
+}
+
+// Cut decimal to integer.
+function cubeCut(x) {
+    return x >= 0 ? Math.floor(x) : Math.ceil(x);
 }
 
 // Calculate the division.
