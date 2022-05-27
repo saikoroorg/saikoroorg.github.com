@@ -26,7 +26,7 @@ const manifest = {
         "cards": [54],
         "chips": [1,6],
         "board": 8,
-        "players": [1,2],
+        "players": [1,1],
         "seed": 0
     },//*/
     "json": "manifest.json"
