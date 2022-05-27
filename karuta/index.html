@@ -394,21 +394,6 @@ a {
 		}
 	}
 
-	// Check player/random parameters.
-	if (manifest.params) {
-		if (diceCounts == 0 && cardCounts[0] == 0 && chipFrameMax == 0) {
-			if (manifest.params.players.length >= 1) {
-				playerNumber = manifest.params.players[0];
-			}
-			if (manifest.params.players.length >= 2) {
-				playerCounts = manifest.params.players[1];
-			}
-			if (manifest.params.seed > 0) {
-				seed = manifest.params.seed;
-			}
-		}
-	}
-
 	// Check query parameters.
 	var playerParams = cubeParamNumbers("p"); // Player number/counts. p=1/1
 	if (playerParams.length >= 1) {
@@ -420,6 +405,21 @@ a {
 	var randomParams = cubeParamNumbers("r"); // Random seed. r=0
 	if (randomParams.length >= 1) {
 		seed = randomParams[0];
+	}
+
+	// Check player/random parameters.
+	if (manifest.params) {
+		if (playerNumber == 1 && playerCounts == 1 && seed == 0) {
+			if (manifest.params.players.length >= 1) {
+				playerNumber = manifest.params.players[0];
+			}
+			if (manifest.params.players.length >= 2) {
+				playerCounts = manifest.params.players[1];
+			}
+			if (manifest.params.seed > 0) {
+				seed = manifest.params.seed;
+			}
+		}
 	}
 
 	// Set default parameters.
