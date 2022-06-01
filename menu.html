@@ -289,7 +289,8 @@ a {
 	cubeResizeScreen(60, 60);
 
 	// Create sprites.
-	var sprite = await cubeSprite("sai/resource.svg", 40, 40);
+	var sprite = await cubeSprite("resource.png", 40, 40);
+	cubeResize(20, 20, 2, sprite);
 
 	// Main loop.
 	while (true) {
