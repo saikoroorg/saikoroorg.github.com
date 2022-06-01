@@ -1,166 +1,13 @@
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
-<title>Karuta</title>
-<script src="manifest.js"></script>
-<link rel="icon" type="image/svg" href="icon.svg">
-<link rel="apple-touch-icon" href="icon.png" sizes="192x192">
-<style>
-body {
-	font-family: Courier, monospace, sans-serif;
-	background-color: #fff;
-}
-a {
-	color: #000;
-	text-decoration: none;
-}
-#container {
-	//position: absolute;
-	//left: 0; top: 0;
-	width: 100%; height: 100%;
-	display: flex; display: -webkit-flex;
-	flex-direction: column; -webkit-flex-direction: column;
-	justify-content: flex-start; -webkit-justify-content: flex-start;
-	align-items: center; -webkit-align-items: center;
-	overflow: hidden;
-}
-#header {
-	width: 95%; margin: 0px;
-	flex: 0 1 auto;
-	display: flex; display: -webkit-flex;
-	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: space-between; -webkit-justify-content: space-between;
-	align-items: center; -webkit-align-items: center;
-}
-#contents {
-	position: relative;
-	width: 95%; height: 90%;
-	flex: 1 1 auto;
-	display: flex; display: -webkit-flex;
-	flex-direction: column; -webkit-flex-direction: column;
-	justify-content: center; -webkit-justify-content: center;
-	align-items: center; -webkit-align-items: center;
-	background-color: #eee;
-}
-#screens {
-	width: 100%; height: 100%;
-	flex: 1 1 auto;
-	display: grid; display: -webkit-grid;
-	background-color: #ddd;
-}
-#footer {
-	width: 95%; margin: 0px;
-	flex: 0 1 auto;
-	display: flex; display: -webkit-flex;
-	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: flex-end; -webkit-justify-content: flex-end;
-	align-items: center; -webkit-align-items: center;
-}
-#author,#version {
-	font-size: 12px;
-	opacity: 0.06;
-}
-#logo {
-	height: 60px;
-	display: flex; display: -webkit-flex;
-	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: flex-start; -webkit-justify-content: flex-start;
-	align-items: center; -webkit-align-items: center;
-}
-#logo span:hover {
-	transform: scale(1);
-	opacity: 0.6;
-	cursor: pointer;
-}
-#logo span:active {
-	transform: scale(0.9);
-	opacity: 1;
-}
-#icon {
-	width: 40px; height: 40px; margin-right: 10px;
-	/*background-image: url('resource.svg');*/
-}
-#title {
-	margin: 0px;
-	font-size: 24px;
-}
-#menu {
-	width: 120px; height: 40px;
-	display: flex; display: -webkit-flex;
-	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: center; -webkit-justify-content: center;
-	align-items: center; -webkit-align-items: center;
-	opacity: 0.5;
-}
-#menu span {
-	width: 40px; height: 44px;
-	display: flex; display: -webkit-flex;
-	flex-direction: column; -webkit-flex-direction: column;
-	justify-content: center; -webkit-justify-content: center;
-	align-items: center; -webkit-align-items: center;
-	color: #000;
-	font-size: 30px;
-	text-decoration: none;
-	user-select: none; -webkit-user-select: none;
-	transform: scale(1);
-	opacity: 1;
-}
-#menu span:hover {
-	transform: scale(1);
-	opacity: 0.6;
-	cursor: pointer;
-}
-#menu span:active {
-	transform: scale(0.9);
-	opacity: 1;
-}
-@media (max-height: 479px) {
-	#logo {
-		height: 20px;
-	}
-	#icon {
-		margin-left: -12px;
-		margin-right: -8px;
-		transform: scale(0.4);
-	}
-	#title {
-		font-size: 12px;
-	}
-	#menu {
-		height: 20px;
-	}
-	#menu span {
-		font-size: 12px;
-	}
-	#author,#version {
-		height: 10px;
-		font-size: 8px;
-	}
-}
-</style>
-</head>
-<body>
-<div id="container">
-	<h1 id="header">
-		<a href="?" id="logo">
-			<img id="icon" src="icon.png"/>
-			<span id="title" href="#" onclick="javascript:window.top.location.reload();">Karuta</span>
-		</a>
-		<div id="menu">
-			<span href="#" onclick="javascript:changeCounts(-1);">-</span>
-			<span href="#" onclick="javascript:changePattern();">|</span>
-			<span href="#" onclick="javascript:changeCounts(+1);">+</span>
-		</div>
-	</h1>
-	<div id="contents" class="cubeScreen"></div>
-	<h6 id="footer">
-		<div id="author">.</div>
-		<div id="version">.</div>
-	</h6>
-</div>
-<script src="cube-api-0.8.js"></script>
-<!--Resource!--><script>
+/* SQUARE User App Script. */
+
+// Namespace.
+var square = square || {};
+
+/* VERSION/ *****************************/
+square.version = "0.8.63b";
+square.timestamp = "20601";
+/************************************* /VERSION*/
+
 	//console.log = () => {};
 
 	var buffer = null; // Original design canvas.
@@ -295,30 +142,21 @@ a {
 		}
 	}
 
-</script><!--/Resource-->
-
-<!--Menu--><script>
-	// Get manifest parameters.
-	document.querySelector("#title").innerText = document.querySelector("title").innerText = manifest.name;
-	document.querySelector("#author").innerText = manifest.author + manifest.scope.slice(0, -1);
-	document.querySelector("#version").innerText = "#" + manifest.version.substr(-4);
-	document.querySelector("#icon").src = manifest.icons[0].src;
-	document.querySelector("#logo").href = window.location.search;
 
 	// Constant parameters.
 	const frameNone = 0, frameBack = -1, frameBlank = -2;
 	const frameCardStart = -3, frameButtons = [11, 11];
 	const frameDigitStart = -3, frameDigitDirs = -1, frameDigitCounts = 20;
-	const frameDiceStart = 1;
+	var frameChipStart = 10, frameDiceStart = 1;
 
 	// Dice parameters.
-	var diceCounts = 0, diceFrameMax = 0;
+	var rollCounts = 0, diceCounts = 0, diceFrameMax = 0;
 
 	// Card parameters.
 	var handCounts = 0, cardCounts = [0], cardFrameMax = 0;
 
 	// Board(Chips) parameters.
-	var chipFrameMax = 0, frameChipDepth = 0, frameChipStart = 10;
+	var chipFrameMax = 0, frameChipDepth = 0;
 
 	var counts = 8; // Grid counts.
 	var pattern = 0; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
@@ -328,18 +166,100 @@ a {
 	// Random parameter.
 	var seed = 0; // Random seed.
 
+	// Check manifest parameters.
+	if (manifest.params) {
+		console.log("Load manifest parameters.")
+		//if (chipFrameMax == 0 && diceCounts == 0 && cardCounts[0] == 0) {
+			if (manifest.params.dice) {
+				if (manifest.params.dice.count) {
+					console.log("Load dice count parameters:" + manifest.params.dice.count);
+					rollCounts = manifest.params.dice.count[0];
+					diceCounts = manifest.params.dice.count[1];
+				}
+				if (manifest.params.dice.face) {
+					console.log("Load dice face parameters:" + manifest.params.dice.face);
+					if (manifest.params.dice.face.length >= 2) {
+						diceFrameMax = manifest.params.dice.face[1];
+						frameChipStart = frameDiceStart + diceFrameMax;
+						diceFrameMax = manifest.params.dice.face[0];
+					} else if (manifest.params.dice.face.length == 1) {
+						chipFrameMax = manifest.params.board.face[0];
+						frameChipStart = frameDiceStart + diceFrameMax;
+					}
+				}
+			}
+			if (manifest.params.cards) {
+				if (manifest.params.cards.count) {
+					console.log("Load cards count parameters:" + manifest.params.cards.count)
+					handCounts = manifest.params.cards.count;
+				}
+				if (manifest.params.cards.faces) {
+					console.log("Load cards faces parameters:" + manifest.params.cards.faces);
+					cardCounts = manifest.params.cards.faces;
+				}
+			}
+			if (manifest.params.board) {
+				counts = manifest.params.board.size;
+				pattern = manifest.params.board.type;
+				if (manifest.params.board.face) {
+					console.log("Load board face parameters:" + manifest.params.board.face);
+					if (manifest.params.board.face.length >= 2) {
+						chipFrameMax = manifest.params.board.face[0];
+						frameChipDepth = manifest.params.board.face[1];
+					} else if (manifest.params.board.face.length == 1) {
+						chipFrameMax = manifest.params.board.face[0];
+					}
+				}
+			}
+		//}
+
+	// Set default parameters.
+	} else {
+		diceCounts = 9;
+		rollCounts = 1;
+		diceFrameMax = 6;
+		counts = 6;
+		pattern = 1;
+	}
+
 	// Check query parameters.
 	for (let i = 0; i < 3; i++) {
-		if (cubeParamContains(i, "d")) {
+		if (cubeParamContains(i, ["b","c","d"])) {
+			console.log("Reset parameters.");
+			chipFrameMax = 0;
+			diceCounts = 0;
+			cardCounts = [0];
+		}
+	}
+	for (let i = 0; i < 3; i++) {
+		if (cubeParamContains(i, "b")) {
+			let params = cubeParamNumbers(i);
+			console.log("Load board parameters " + i + ":" + params)
+			if (params.length >= 4) {
+				chipFrameMax = params[1];
+				frameChipDepth = params[2];
+				counts = params[params.length - 1];
+				pattern = 0;
+			} else if (params.length == 3) {
+				chipFrameMax = params[1];
+				frameChipDepth = 1;
+				counts = params[params.length - 1];
+				pattern = 0;
+			} else if (params.length == 2) {
+				chipFrameMax = params[1];
+				frameChipDepth = 1;
+				console.log("Chips parameters:" + chipFrameMax + "x" + frameChipDepth)
+			}
+		} else if (cubeParamContains(i, "d")) {
 			let params = cubeParamNumbers(i);
 			console.log("Load dice parameters " + i + ":" + params)
 			if (params.length >= 1) {
-				diceCounts = params[0];
+				diceCounts = rollCounts = params[0] > 0 ? params[0] : 1;
 			}
 			if (params.length >= 2) {
-				diceFrameMax = params[1];
-				frameChipStart = frameDiceStart + diceFrameMax;
+				diceFrameMax = params[1] < frameChipStart ? params[1] : frameChipStart - 1;
 			}
+			console.log("Dice parameters:" + rollCounts + "d" + diceFrameMax)
 		} else if (cubeParamContains(i, "c")) {
 			let params = cubeParamNumbers(i);
 			console.log("Load card parameters " + i + ":" + params)
@@ -348,48 +268,6 @@ a {
 			}
 			if (params.length >= 2) {
 				cardCounts = params.slice(1);
-			}
-		} else if (cubeParamContains(i, "b")) {
-			let params = cubeParamNumbers(i);
-			console.log("Load board parameters " + i + ":" + params)
-			if (params.length >= 2) {
-				chipFrameMax = params[1];
-			}
-			if (params.length >= 3) {
-				counts = params[params.length - 1];
-			}
-			if (params.length >= 4) {
-				frameChipDepth = params[2];
-			} else if (params.length == 3) {
-				frameChipDepth = 1;
-			}
-		}
-	}
-
-	// Check manifest parameters.
-	if (manifest.params) {
-		if (diceCounts == 0 && cardCounts[0] == 0 && chipFrameMax == 0) {
-			if (manifest.params.dice.length >= 1) {
-				diceCounts = manifest.params.dice[0];
-			}
-			if (manifest.params.dice.length >= 2) {
-				diceFrameMax = manifest.params.dice[1];
-				frameChipStart = frameDiceStart + diceFrameMax;
-			}
-			if (manifest.params.hand >= 0) {
-				handCounts = manifest.params.hand;
-			}
-			if (manifest.params.cards.length >= 1) {
-				cardCounts = manifest.params.cards;
-			}
-			if (manifest.params.board > 0) {
-				counts = manifest.params.board;
-			}
-			if (manifest.params.chips.length >= 1) {
-				chipFrameMax = manifest.params.chips[0];
-			}
-			if (manifest.params.chips.length >= 2) {
-				frameChipDepth = manifest.params.chips[1];
 			}
 		}
 	}
@@ -422,18 +300,8 @@ a {
 		}
 	}
 
-	// Set default parameters.
-	if (diceCounts == 0 && cardCounts[0] == 0 && chipFrameMax == 0) {
-		diceCounts = 5; // Dice counts: 5d6
-		handCounts = 0; // Hand card counts.
-		cardCounts = [21]; // Deck card counts: c21
-		cardFrameMax = 21; // Card frame pattern size.
-		chipFrameMax = 1;
-		frameChipDepth = 2; // Chip frame pattern size: b1x2x8
-	}
-
 	// Set goban grids.
-	if (cubeMod(counts, 2)) {
+	if (pattern == 0 && cubeMod(counts, 2)) {
 		counts -= 1;
 		pattern = 1;
 	}
@@ -470,35 +338,15 @@ a {
 	}
 
 	// Deck sets.
-	var resource = "resource.svg", resourceCounts = 6;
+	var resource0 = resource1 = resource, resourceCounts = 6;
 	if (manifest.resource) {
-		resource = manifest.resource;
+		resource1 = manifest.resource;
 	}
 
 	var original = 0; // Original design icon frame.
 	var rolling = 0; // Rolling count.
 
-	// Set counts.
-	var setCounts = (x) => {
-		counts = (x > 18) ? 18 : (x < 1) ? 1 : x;
-		rolling = -1; // Reset.
-	};
-
-	// Set pattern.
-	var changePattern = () => {
-		pattern = pattern > 0 ? 0 : 1;
-		rolling = -1; // Reset.
-	};
-
-	var changeCounts = (x) => {
-		setCounts(counts + x);
-	};
-
-	// Initialize settings.
-	setCounts(counts);
-</script><!--/Menu-->
-
-<!--Main--><script>(async()=>{
+(async()=>{
 	//var maximum = 6; // Maximum deck counts.
 	//var rolling = 0; // Rolling count.
 
@@ -510,7 +358,7 @@ a {
 	// Create button sprites.
 	var buttonSprites = [], buttonMax = 2;
 	for (var i = 0; i < buttonMax; i++) {
-		buttonSprites[i] = await cubeSprite("resource.svg", 40, 40);
+		buttonSprites[i] = await cubeSprite(resource0, 40, 40);
 	}
 
 	// Card/Chip count max.
@@ -529,7 +377,7 @@ a {
 			cardSprites[i] = await cubeCanvasSprite(buffer);
 			//cubeResize(cardSpriteWidth, cardSpriteWidth, 1, cardSprites[i]);
 		} else {
-			cardSprites[i] = await cubeSprite(resource);
+			cardSprites[i] = await cubeSprite(resource1);
 			let width = cardSprites[i].imageSize.x / resourceCounts;
 			cubeResize(width, width, cardSpriteWidth / width, cardSprites[i]);
 		}
@@ -538,7 +386,7 @@ a {
 	// Create count sprites.
 	var counterSprites = [];
 	for (var i = 0; i < counterMax; i++) {
-		counterSprites[i] = await cubeSprite("resource.svg", 40, 40);
+		counterSprites[i] = await cubeSprite(resource0, 40, 40);
 	}
 
 	// Create shade sprite.
@@ -575,7 +423,7 @@ a {
 	var dice = [];
 	const backsidedDice = { x:0, y:0, angle:0, frame:frameDiceStart, flag:0 };
 	const rollingMaxOnRoll = 30, rollingMaxOnReroll = 60;
-	var rollCounts = 0;
+	var rollingCounts = 0, rollingMax = 0;
 
 	// Chips.
 	var banks = [], playChips = [], holdChips = [];
@@ -586,13 +434,15 @@ a {
 	while (true) {
 
 		// Load board sprite.
+		let boardSize = 180, boardPosX = 120;
+		let boardPosY = cardCounts.length > 0 && cardCounts[0] > 0 ? 100 : 150;
 		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
-		let boardCanvas = cubeCanvas(160 + boardGridPattern * 2, 160 + boardGridPattern * 2, 1);
+		let boardCanvas = cubeCanvas(boardSize + boardGridPattern * 2, boardSize + boardGridPattern * 2, 1);
 		let boardGridColor = [cubeVector(238,238,238), cubeVector(204,204,204), cubeVector(136,136,136)]; // #fff=rgb(255,255,255) #eee=rgb(238,238,238) #ccc=rgb(204,204,204) #aaa=rgb(170,170,170) #888=rgb(136,136,136) #555=rgb(85,85,85) #333=rgb(51,51,51) #111=rgb(17,17,17) #000=rgb(0,0,0)
-		boardGridSize = cubeVector(160 / boardGridCounts, 160 / boardGridCounts);
+		boardGridSize = cubeVector(boardSize / boardGridCounts, boardSize / boardGridCounts);
 		if (boardGridPattern > 0) {
-			cubeCanvasRect(cubeVector(0, 0), cubeVector(162, 162), boardGridColor[1], 0, boardCanvas);
+			cubeCanvasRect(cubeVector(0, 0), cubeVector(boardSize+2, boardSize+2), boardGridColor[1], 0, boardCanvas);
 		}
 		for (let j = 0; j < boardGridCounts; j++) {
 			for (let i = 0; i < boardGridCounts; i++) {
@@ -610,7 +460,7 @@ a {
 			}
 		}
 		boardSprite = await cubeCanvasSprite(boardCanvas);
-		cubeMove(120, 150, boardSprite);
+		cubeMove(boardPosX, boardPosY, boardSprite);
 
 		// Collision margin.
 		let colorMargin = cubeVector(-80 / boardGridCounts, -80 / boardGridCounts);
@@ -619,6 +469,7 @@ a {
 		if (rolling < 0) {
 
 			// Create new decks.
+			console.log("Create new decks:" + cardCounts.length);
 			decks = [], trashes = [], focuses = [];
 			handCards = [], playCards = [], holdCards = [];
 			drawCounts = 0;
@@ -636,12 +487,13 @@ a {
 			}
 
 			// Create new dice.
+			console.log("Create new dice:" + diceCounts);
 			dice = [];
 			for (let i = 0; i < diceCounts; i++) {
 				dice[i] = cubeClone(backsidedDice);
 				dice[i].frame = frameDiceStart + (diceFrameMax - 1);
 			}
-			rollCounts = 0;
+			rollingCounts = 0;
 
 			// Create new chips.
 			banks = [], playChips = [], holdChips = [];
@@ -694,7 +546,7 @@ a {
 								} else {
 									drawCounts += 1;
 								}
-								rollCounts = 0;
+								rollingCounts = 0;
 
 							// Discard to trashes from deck.
 							} else {
@@ -709,53 +561,61 @@ a {
 
 			// Roll the initial dice.
 			var diceLayouts = [];
-			if (diceCounts > playChips.length) {
+			if (rollCounts > playChips.length) {
 				//console.log("Draw the initial card from decks.");
-				var rowsMax = cubeSqrt(diceCounts - 1) + 1;
-				var lines = cubeDiv(diceCounts - 1, rowsMax) + 1;
-				//console.log("diceCounts="+diceCounts+" rowsMax="+rowsMax+" lines=" + lines);
+				var rowsMax = cubeSqrt(rollCounts - 1) + 1;
+				var lines = cubeDiv(rollCounts - 1, rowsMax) + 1;
+				//console.log("rollCounts="+rollCounts+" rowsMax="+rowsMax+" lines=" + lines);
 				for (var y = 0; y < lines; y++) {
-					let rows = y > 0 ? rowsMax : cubeMod(diceCounts - 1, rowsMax) + 1;
+					let rows = y > 0 ? rowsMax : cubeMod(rollCounts - 1, rowsMax) + 1;
 					//console.log("y=" + y + " rows=" + rows);
 					for (var x = 0; x < rows; x++) {
 						let dx = (x + 1) / (rows + 1) * (rowsMax + 1) * 2;
 						let dy = (y + 1) / (lines + 1) * (rowsMax + 1) * 2;
 						let lx = cubeCut(dx - (rowsMax + 1));
 						let ly = cubeCut(dy - (rowsMax + 1));
-						diceLayouts.push([lx, ly]);
-						//console.log("x=" + x + " layout = "+lx+","+ly+" : "+(x + 1)+"/"+(rows + 1)+" "+(y + 1)+"/"+(lines + 1));
+						let l = cubeVector(lx, ly);
+						diceLayouts.push(l);
+						console.log("x=" + x + " layout = "+l+" : "+(x + 1)+"/"+(rows + 1)+" "+(y + 1)+"/"+(lines + 1));
 					}
 				}
 
 				// Discard all playing dice.
 				for (var j = playChips.length - 1; j >= 0; j--) {
-					if (playChips[j].frame < frameChipStart) {
+					if (playChips[j].frame >= frameDiceStart) {
 						let chip = playChips.splice(j, 1)[0];
+						//chip.frame = frameDiceStart + diceFrameMax - 1;
 						dice.push(chip);
 					}
 				}
 				// Roll the initial dice.
-				while (diceCounts > playChips.length && dice.length > 0) {
-					if (dice.length > 0) {
-						console.log("Roll the initial dice.");
+				if (rollCounts > 0) {
+					while (rollCounts > playChips.length && dice.length > 0) {
+						if (dice.length > 0) {
+							console.log("Roll the initial dice.");
 
-						// Add chip to playing board and roll dice.
-						let chip = dice.pop();
-						chip.angle = 0;
-						chip.flag = false;
-						let i = cubeMod(diceCounts - dice.length - 1, diceLayouts.length);
-						chip.x = diceLayouts[i][0];
-						chip.y = diceLayouts[i][1];
-						chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
-						playChips.push(chip);
-						if (result > 0) {
-							rollCounts = 1;
-						} else {
-							rollCounts += 1;
+							// Add chip to playing board and roll dice.
+							let chip = dice.pop();
+							chip.angle = 0;
+							chip.flag = false;
+							let i = cubeMod(diceCounts - dice.length - 1, diceLayouts.length);
+							console.log("Roll the initial dice:" + i);
+							chip.x = diceLayouts[i].x;
+							chip.y = diceLayouts[i].y;
+							chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
+							playChips.push(chip);
+							if (result > 0) {
+								rollingCounts = 1;
+							} else {
+								rollingCounts += 1;
+							}
+							rollingMax = rollingMaxOnRoll;
 						}
-						rollingMax = rollingMaxOnRoll;
+						result = 0;
 					}
-					result = 0;
+					if (dice.length > 0) {
+						dice[dice.length - 1].frame = frameDiceStart + diceFrameMax - 1;
+					}
 				}
 			}
 		}
@@ -797,42 +657,42 @@ a {
 			}
 
 			// Check touching decks.
-			if (touchingCardId == touchingSomething && cardFrameMax > 0 &&
+			if (touchingCardId == touchingSomething && cardFrameMax > 0 && rollingCounts <= 0 &&
 				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0 &&
 				cubeCheck(motion, null, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraDeck])) {
 				touchingCardId = handCards.length + playCards.length + playChips.length + cardExtraDeck;
 			}
 
 			// Check touching trashes.
-			if (touchingCardId == touchingSomething && trashes.length > 0 &&
+			if (touchingCardId == touchingSomething && trashes.length > 0 && drawCounts <= 0 && rollingCounts <= 0 &&
 				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0 &&
 				cubeCheck(motion, null, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraTrash])) {
 				touchingCardId = handCards.length + playCards.length + playChips.length + cardExtraTrash;
 			}
 
 			// Check touching banks.
-			if (touchingCardId == touchingSomething && banks.length > 0 &&
+			if (touchingCardId == touchingSomething && banks.length > 0 && drawCounts <= 0 && rollingCounts <= 0 &&
 				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0 &&
 				cubeCheck(motion, null, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraBank])) {
 				touchingCardId = handCards.length + playCards.length + playChips.length + cardExtraBank;
 			}
 
 			// Check touching dice.
-			if (touchingCardId == touchingSomething && diceCounts > 0 &&
+			if (touchingCardId == touchingSomething && diceCounts > 0 && drawCounts <= 0 && (rollingCounts <= 0 || dice.length > 0) &&
 				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0 &&
 				cubeCheck(motion, null, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraDice])) {
 				touchingCardId = handCards.length + playCards.length + playChips.length + cardExtraDice;
 			}
 
 			// Check touching focuses.
-			if (touchingCardId == touchingSomething &&
+			if (touchingCardId == touchingSomething && drawCounts <= 0 && rollingCounts <= 0 &&
 				focuses.length > 0 &&
 				cubeCheck(motion, colorMargin, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraFocus])) {
 				touchingCardId = touchingFocus;
 			}
 
 			// Check touching hand card.
-			if (touchingCardId == touchingSomething &&
+			if (touchingCardId == touchingSomething && drawCounts <= 0 && rollingCounts <= 0 &&
 				holdCards.length <= 0 && holdChips.length <= 0) {
 				for (let i = handCards.length - 1; i >= 0; i--) {
 					if (cubeCheck(motion, null, cardSprites[i])) {
@@ -843,7 +703,7 @@ a {
 			}
 
 			// Check touching play cards.
-			if (touchingCardId == touchingSomething &&
+			if (touchingCardId == touchingSomething && drawCounts <= 0 && rollingCounts <= 0 &&
 				holdCards.length <= 0 && holdChips.length <= 0) {
 				for (let i = handCards.length + playCards.length - 1; i >= handCards.length; i--) {
 					if (cubeCheck(motion, colorMargin, cardSprites[i])) {
@@ -854,19 +714,22 @@ a {
 			}
 
 			// Check touching play chips.
-			if (touchingCardId == touchingSomething &&
+			if (touchingCardId == touchingSomething && drawCounts <= 0 &&
 				holdCards.length <= 0 && holdChips.length <= 0) {
 				for (let i = handCards.length + playCards.length + playChips.length - 1; i >= handCards.length + playCards.length; i--) {
 					if (cubeCheck(motion, colorMargin, cardSprites[i])) {
-						touchingCardId = i;
-						break;
+						let j = i - handCards.length - playCards.length;
+						if (playChips[j].frame < frameChipStart || rollingCounts <= 0) {
+							touchingCardId = i;
+							break;
+						}
 					}
 				}
 			}
 
 			// Check touching hand shade.
 			if (touchingCardId == touchingSomething && holdCards.length > 0) {
-				for (let i = 0; i < 2/*shadeSpriteMax*/; i++) {
+				for (let i = 0; i < 1/*shadeSpriteMax*/; i++) {
 					if (cubeCheck(motion, null, shadeSprites[i])) {
 						touchingCardId = touchingShade - i;
 						break;
@@ -925,7 +788,7 @@ a {
 					}
 
 				// Draw card from decks.
-				} else if (decks.length > 0 && rollCounts <= 0) {
+				} else if (decks.length > 0 && rollingCounts <= 0) {
 
 					// Draw card from decks.
 					if (action) {
@@ -1062,11 +925,10 @@ a {
 					// Roll dice on tapping.
 					if (action) {
 						console.log("Dice roll on tapping.");
-						let newRollCount = dice.length > 0 ? diceCounts - dice.length + 1 : diceCounts;
+						let newRollCount = dice.length > 0 ? diceCounts - dice.length + 1 : 0;
 
 						// Reroll the dice.
 						var diceLayouts = [];
-						//console.log("Draw the initial card from decks.");
 						var rowsMax = cubeSqrt(newRollCount - 1) + 1;
 						var lines = cubeDiv(newRollCount - 1, rowsMax) + 1;
 						//console.log("newRollCount="+newRollCount+" rowsMax="+rowsMax+" lines=" + lines);
@@ -1087,27 +949,34 @@ a {
 						// Discard all playing dice.
 						for (var j = playChips.length - 1; j >= 0; j--) {
 							if (playChips[j].frame < frameChipStart) {
+								console.log("Discard the dice." +j +"/"+ newRollCount);
 								let chip = playChips.splice(j, 1)[0];
+								//chip.frame = frameDiceStart + diceFrameMax - 1;
 								dice.push(chip);
 							}
 						}
-						rollCounts = 0;
+						rollingCounts = 0;
 						// Reroll the dice.
-						for (let i = 0; i < newRollCount; i++) {
-							//console.log("Reroll the dice." +i +"/"+ newRollCount);
+						if (newRollCount > 0) {
+							for (let i = 0; i < newRollCount && dice.length > 0; i++) {
+								console.log("Reroll the dice." +i +"/"+ newRollCount);
 
-							// Add chip to playing board and roll dice.
-							let chip = dice.pop();
-							chip.angle = 0;
-							chip.flag = false;
-							chip.x = diceLayouts[i][0];
-							chip.y = diceLayouts[i][1];
-							chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
-							playChips.push(chip);
-							rollCounts += 1;
-							rollingMax = rollingMaxOnRoll;
+								// Add chip to playing board and roll dice.
+								let chip = dice.pop();
+								chip.angle = 0;
+								chip.flag = false;
+								chip.x = diceLayouts[i][0];
+								chip.y = diceLayouts[i][1];
+								chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
+								playChips.push(chip);
+								rollingCounts += 1;
+								rollingMax = rollingMaxOnRoll;
+							}
+							if (dice.length > 0) {
+								dice[dice.length - 1].frame = frameDiceStart + diceFrameMax - 1;
+							}
+							result = 0;
 						}
-						result = 0;
 
 						holdingCardId = touchingSomething;
 						touchingCardId = touchingSomething;
@@ -1303,26 +1172,28 @@ a {
 
 						if (action.z < 0) {
 
-							if (playChips[j].frame >= frameChipStart) {
+							if (playChips[j].frame < frameChipStart) {
+								if (j < playChips.length - rollingCounts) {
+									console.log("Reroll the playing dice on tapping.");
+
+									let chip = playChips.splice(j, 1)[0];
+									chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
+									playChips.push(chip);
+									if (result > 0) {
+										rollingCounts = 1;
+									} else {
+										rollingCounts += 1;
+									}
+									rollingMax = rollingMaxOnReroll;
+									result = 0;
+								}
+							} else {
 								if (frameChipDepth > 1) {
 									console.log("Turn over the playing chip on tapping.");
 
 									// Turn over the playing chip on tapping.
 									playChips[j].frame = frameChipStart + cubeMod(playChips[j].frame - frameChipStart + chipFrameMax, chipFrameMax * frameChipDepth);
 								}
-							} else if (j < playChips.length - rollCounts) {
-								console.log("Reroll the playing dice on tapping.");
-
-								let chip = playChips.splice(j, 1)[0];
-								chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
-								playChips.push(chip);
-								if (result > 0) {
-									rollCounts = 1;
-								} else {
-									rollCounts += 1;
-								}
-								rollingMax = rollingMaxOnReroll;
-								result = 0;
 							}
 
 							holdingCardId = touchingSomething;
@@ -1333,7 +1204,7 @@ a {
 
 					// Start to touch playing chips.
 					} else {
-						if (holdingCardId < 0 && drawCounts <= 0 && rollCounts <= 0) {
+						if (holdingCardId < 0 && drawCounts <= 0 && rollingCounts <= 0) {
 							holdingCardId = touchingCardId;
 							releasedCardId = -1;
 							rolling = 0;
@@ -1468,6 +1339,7 @@ a {
 											chip.frame = frameChipStart + cubeMod(chip.frame - frameChipStart, chipFrameMax);
 											banks.push(chip);
 										} else {
+											//chip.frame = frameDiceStart + diceFrameMax - 1;
 											dice.push(chip);
 										}
 									}
@@ -1512,6 +1384,7 @@ a {
 											chip.frame = frameChipStart + cubeMod(chip.frame - frameChipStart, chipFrameMax);
 											banks.push(chip);
 										} else {
+											//chip.frame = frameDiceStart + diceFrameMax - 1;
 											dice.push(chip);
 										}
 									}
@@ -1598,6 +1471,8 @@ a {
 				// Cancel holding cards.
 				if (action) {
 
+					console.log("Cancel holding cards.");
+
 					// Discard to trashes.
 					while (holdCards.length > 0) {
 						let hold = holdCards.pop();
@@ -1613,13 +1488,16 @@ a {
 				// Cancel holding chips.
 				if (action) {
 
-					// Discard to banks/dice/dice.
+					console.log("Cancel holding chips.");
+
+					// Discard to banks/dice.
 					while (holdChips.length > 0) {
 						let hold = holdChips.pop();
 						if (hold.frame >= frameChipStart) {
 							hold.frame = frameChipStart + cubeMod(hold.frame - frameChipStart, chipFrameMax);
 							banks.push(hold);
 						} else {
+							//hold.frame = frameDiceStart + diceFrameMax - 1;
 							dice.push(hold);
 						}
 					}
@@ -1630,7 +1508,7 @@ a {
 			} else {
 
 				// Start holding.
-				if ((holdingCardId != touchingCardId || rolling > holdingTime) && drawCounts <= 0 && rollCounts <= 0) {
+				if ((holdingCardId != touchingCardId || rolling > holdingTime) && drawCounts <= 0 && rollingCounts <= 0) {
 
 					// Start to hold released cards.
 					if (holdingCardId == touchingReleased) {
@@ -1794,7 +1672,7 @@ a {
 							if (dice[j].frame != 0) {
 								let chip = dice.pop();
 								if (dice.length > 0) {
-									dice[dice.length - 1].frame = chip.frame;
+									dice[dice.length - 1].frame = frameDiceStart + diceFrameMax - 1;
 								}
 								holdChips.push(chip);
 								angle = 0;
@@ -1829,18 +1707,18 @@ a {
 					result = 1;
 					rolling = 1;
 					drawCounts = 0;
-					rollCounts = 0;
+					rollingCounts = 0;
 
 				// Timeout and show result.
-				} else if (rollCounts > 0 && rolling > rollingMax) {
+				} else if (rollingCounts > 0 && rolling > rollingMax) {
 					angle = 0;
 					result = 1;
 					rolling = 1;
 					drawCounts = 0;
-					rollCounts = 0;
+					rollingCounts = 0;
 				}
 
-				//console.log("result="+result+" "+rolling+" drawCounts="+drawCounts+" rollCounts="+rollCounts);
+				//console.log("result="+result+" "+rolling+" drawCounts="+drawCounts+" rollingCounts="+rollingCounts);
 			}
 
 			// Update sprite animations.
@@ -1870,7 +1748,7 @@ a {
 				// Update playing chips.
 				} else if (i < handCards.length + playCards.length + playChips.length) {
 					let j = i - handCards.length - playCards.length;
-					if (result <= 0 && rolling < rollingMax - 5 && j >= playChips.length - rollCounts) { // Rolling.
+					if (result <= 0 && rolling < rollingMax - 5 && j >= playChips.length - rollingCounts) { // Rolling.
 						n = frameDiceStart + cubeRandom(diceFrameMax);
 					} else if (playChips[j].flag) {
 						n = frameBack;
@@ -1918,7 +1796,7 @@ a {
 
 				// Update dice.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDice) {
-					if (diceFrameMax > 0) {
+					if (diceCounts > 0) {
 						if (dice.length > 0) {
 							n = dice[dice.length - 1].frame;
 						} else {
@@ -1979,14 +1857,23 @@ a {
 			// Play card lines and scales.
 			//const playLineMax = 8;//cardFrameMax > 7 ? cubeSqrt(playCards.length - 1) + 1 : 7;
 			//let playLines = cubeDiv(playCards.length - 1, playLineMax) + 1;
-			let cardScale = 0.04 * boardGridSize.y;//(holdCards.length > 0 ? 6 : 5) / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
-			let chipScale = 0.04 * boardGridSize.y;
-			let holdScale = 0.05 * boardGridSize.y;
-			let focusScale = 1.8;
+			const cardScale = 0.04 * boardGridSize.y;//(holdCards.length > 0 ? 6 : 5) / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
+			const chipScale = 0.04 * boardGridSize.y;
+			const holdScale = 0.05 * boardGridSize.y;
+			const focusScale = 1.8;
 
 			// Deck/Trash card scales.
-			let deckScale = 1;//holdCards.length > 0 ? 1 : 1.5;
-			let bankScale = 1;//holdCards.length > 0 ? 1 : 1.5;
+			const deckScale = 0.75;//holdCards.length > 0 ? 1 : 1.5;
+			const bankScale = 0.75;//holdCards.length > 0 ? 1 : 1.5;
+			const diceScale = 0.75;//holdCards.length > 0 ? 1 : 1.5;
+
+			// Reset bank/dice position.
+			let deckPosY = cardFrameMax > 0 ? 90 : 40;
+			let bankPosY = cardFrameMax > 0 ? (diceCounts > 0 ? 65 : 90) : 260;
+			let dicePosY = cardFrameMax > 0 ? 90 : 40;
+
+			// Counter number position.
+			const numberPosY = 5;
 
 			// Grid and center positions.
 			let mx = size.x * 1, my = size.y * 1;
@@ -2022,6 +1909,8 @@ a {
 						} else {
 							a0 = 0.25;
 						}
+					} else if (drawCounts > 0 || rollingCounts > 0) {
+						a0 = 0.5;
 					}
 
 					// Position direct setting.
@@ -2078,6 +1967,10 @@ a {
 						s = cardScale;
 						a0 = 0.25;
 
+					} else if (drawCounts > 0 || rollingCounts > 0) {
+						s = cardScale;
+						a0 = 0.5;
+
 					// Default animation.
 					} else {
 						s = cardScale;
@@ -2113,7 +2006,8 @@ a {
 					a = playChips[j].angle;
 
 					// Alpha,Angle animation.
-					if (j >= playChips.length - rollCounts) {
+					if (j >= playChips.length - rollingCounts) {
+						s = chipScale;
 
 						// Drawing.
 						if (rolling < rollingMax - 5) {
@@ -2133,6 +2027,10 @@ a {
 						s = chipScale;
 						a0 = 0.25;
 
+					} else if (drawCounts > 0 || (rollingCounts > 0 && playChips[j].frame >= frameChipStart)) {
+						s = chipScale;
+						a0 = 0.5;
+
 					// Default animation.
 					} else {
 						s = chipScale;
@@ -2141,12 +2039,14 @@ a {
 				// Set deck position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDeck) {
 					sx = ox + mx * 2 / 3;
-					sy = 25;//oy + my * (0 + 2 * deckScale) / 18;
+					sy = size.y - deckPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (decks.length <= 0) {
 						a0 = 0.25;
 					} else if (focuses.length > 0) {
 						a0 = 0.25;
+					} else if (rollingCounts > 0) {
+						a0 = 0.5;
 					}
 
 					// Scale animation.
@@ -2156,23 +2056,34 @@ a {
 						s = deckScale;
 					}
 
-					// Counter.
+					// Number.
 					let m = cardFrameMax <= 0 ? frameNone :
 						decks.length > frameDigitCounts ? frameNone :
 						decks.length > 0 ? frameDigitStart + frameDigitDirs * decks.length : frameNone;
 					cubeAnimate(m, counterSprites[cardExtraDeck]);
 					cubeDilute(0.2, counterSprites[cardExtraDeck]);
 					cubeExpand(0.5, counterSprites[cardExtraDeck]);
-					cubeMove(sx, sy + deckScale * 20 + 10, counterSprites[cardExtraDeck]);
+					cubeMove(sx, sy - deckScale * 20 - numberPosY, counterSprites[cardExtraDeck]);
+
+					// Number.
+					m = cardFrameMax <= 0 ? frameNone :
+						handCards.length > frameDigitCounts ? frameNone :
+						handCards.length > 0 ? frameDigitStart + frameDigitDirs * handCards.length : frameNone;
+					cubeAnimate(m, counterSprites[cardExtraBank]);
+					cubeDilute(0.2, counterSprites[cardExtraBank]);
+					cubeExpand(0.5, counterSprites[cardExtraBank]);
+					cubeMove(ox + mx / 2, sy - deckScale * 20 - numberPosY, counterSprites[cardExtraBank]);
 
 				// Set trash position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraTrash) {
 					sx = ox + mx * 1 / 3;
-					sy = 25;//oy + my * (0 + 2 * deckScale) / 18;
+					sy = size.y - deckPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (trashes.length <= 0) {
 						a0 = 0.25;
 					} else if (focuses.length > 0) {
+						a0 = 0.25;
+					} else if (drawCounts > 0 || rollingCounts > 0) {
 						a0 = 0.25;
 					} else {
 						a0 = 0.5;
@@ -2185,21 +2096,23 @@ a {
 						s = deckScale;
 					}
 
-					// Counter.
+					// Number.
 					let m = cardFrameMax <= 0 ? frameNone :
 						trashes.length > frameDigitCounts ? frameNone :
 						trashes.length > 0 ? frameDigitStart + frameDigitDirs * trashes.length : frameNone;
 					cubeAnimate(m, counterSprites[cardExtraTrash]);
 					cubeDilute(0.2, counterSprites[cardExtraTrash]);
 					cubeExpand(0.5, counterSprites[cardExtraTrash]);
-					cubeMove(sx, sy + deckScale * 20 + 10, counterSprites[cardExtraTrash]);
+					cubeMove(sx, sy - deckScale * 20 - numberPosY, counterSprites[cardExtraTrash]);
 
 				// Set bank position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraBank) {
 					sx = ox + mx * 1 / 2;
-					sy = 55;//oy + my * (0 + 2 * deckScale) / 18;
+					sy = size.y - bankPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (focuses.length > 0) {
+						a0 = 0.25;
+					} else if (drawCounts > 0 || rollingCounts > 0) {
 						a0 = 0.25;
 					}
 
@@ -2209,33 +2122,25 @@ a {
 					} else {
 						s = bankScale;
 					}
-
-					/*// Counter.
-					let m = chipFrameMax <= 0 ? frameNone :
-						banks.length > frameDigitCounts ? frameNone :
-						banks.length > 0 ? frameDigitStart + frameDigitDirs * banks.length : frameNone;
-					cubeAnimate(m, counterSprites[cardExtraBank]);
-					cubeDilute(0.2, counterSprites[cardExtraBank]);
-					cubeExpand(0.5, counterSprites[cardExtraBank]);
-					cubeMove(sx, sy + deckScale * 20 + 10, counterSprites[cardExtraBank]);
-					//*/
 
 				// Set dice position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDice) {
 					sx = ox + mx * 1 / 2;
-					sy = 25;//oy + my * (0 + 2 * deckScale) / 18;
+					sy = size.y - dicePosY;//oy + my * (0 + 2 * deckScale) / 18;
 
-					if (dice.length <= 0) {
+					if (focuses.length > 0) {
 						a0 = 0.25;
-					} else if (focuses.length > 0) {
+					} else if (drawCounts > 0 || (rollingCounts > 0 && dice.length <= 0)) {
 						a0 = 0.25;
+					} else if (dice.length <= 0) {
+						a0 = 0.5;
 					}
 
 					// Scale animation.
 					if (touchingCardId == i) {
-						s = bankScale * (rolling < 5 ? (1.4 - 0.04 * rolling) : 1.2);
+						s = diceScale * (rolling < 5 ? (1.4 - 0.04 * rolling) : 1.2);
 					} else {
-						s = bankScale;
+						s = diceScale;
 					}
 
 				// Set holding card/chip position.
@@ -2377,6 +2282,4 @@ a {
 			await cubeWait(10);
 		}
 	}
-})();</script><!--/Main-->
-</body>
-</html>
+})();

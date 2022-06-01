@@ -1,7 +1,4 @@
-<!-- # How to convert.
-    brew install inkscape
-    /Applications/Inkscape.app/Contents/MacOS/inkscape -p resource.svg -o resource.png
- !-->
+var resource = "data:image/svg+xml;base64," + btoa(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="240" height="240">
     <!--rect fill="#eee" x="0" y="0" width="100%" height="100%"/!-->
 
@@ -63,33 +60,31 @@
         </g>
     </g>
 
-    <!-- x -->
-    <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000" transform="translate(2,22)">
-        <g transform="translate(60,0)">
-            <path d="M5,5h2v2h-2Z                M9,5h2v2h-2Z
-                                   M7,7h2v2h-2Z
-                     M5,9h2v2h-2Z                M9,9h2v2h-2Z"/>
-        </g>
-    </g>
-
-    <!-- o + -->
+    <!-- o + - -->
     <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,22)">
-        <g transform="translate(80,0)">
+        <g transform="translate(60,0)">
             <!--path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/!-->
             <path d="M6,6h4v4h-4Z"/>
         </g>
-        <g transform="translate(100,0)">
+        <g transform="translate(80,0)">
             <!--path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/!-->
             <path d="M6,8h4 M8,6v4"/>
         </g>
-    </g>
-
-    <!-- - 20 .. 16 -->
-    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,42)">
-        <g transform="translate(0,0)">
+        <g transform="translate(100,0)">
             <!--path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/!-->
             <path d="M6,8h4"/>
         </g>
+    </g>
+
+    <!-- . -->
+    <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000" transform="translate(2,42)">
+        <g transform="translate(0,0)">
+            <path d="M7,7h2v2h-2Z"/>
+        </g>
+    </g>
+
+    <!-- . 20 .. 16 -->
+    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,42)">
         <g transform="translate(20,0)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <!--path d="M2.5,4h4v4h-4v4h4M9.5,4h4v8h-4v-8"/-->
@@ -212,4 +207,4 @@
 
     </g>
 </svg>
-
+`);

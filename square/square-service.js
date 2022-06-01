@@ -1,34 +1,19 @@
-// Web app manifest for progressive web app.
-const manifest = {
-    "name": "Goban",
-    "version": "0.8.11001a",
-    "short_name": "Goban",
-    "background_color": "#fff",
-    "theme_color": "#fff",
-    "icons": [{
-        "src": "./icon.svg",
-        "sizes": "300x300",
-        "type": "image/svg"
-    },{
-        "src": "./icon.png",
-        "sizes": "192x192",
-        "type": "image/png"
-    }],
-    "start_url": "./?app",
-    "scope": "/goban/",
-    "display": "standalone",
-    "json": "manifest.json"
-};
+/* SQUARE User App Service Worker. */
 
 // Script for client to register service worker.
 if (!self || !self.registration) {
-    navigator.serviceWorker.register("./manifest.js", {"scope": manifest.scope}).then(() => {
-        let head = document.getElementsByTagName("head")[0];
-        let link = document.createElement("link");
-        link.setAttribute("rel", "manifest");
-        link.setAttribute("href", manifest.json);
-        head.appendChild(link);
-    });
+    let head = document.querySelector("head");
+    let link = document.createElement("link");
+    link.setAttribute("rel", "manifest");
+    link.setAttribute("href", "manifest.json");
+    head.appendChild(link);
+
+    //const str = JSON.stringify(manifest);
+    //const blob = new Blob([str], {type: 'application/json'});
+    //const url = URL.createObjectURL(blob);
+    //document.querySelector('#manifest').setAttribute('href', url);
+
+    navigator.serviceWorker.register(manifest.service, {"scope": manifest.scope});
 
 // Script for service worker.
 } else {
@@ -42,8 +27,7 @@ if (!self || !self.registration) {
 
             // Contents to cache.
             // (need to set relative path "./" or absolute path "/")
-            const contents = ["./"];
-            return cache.addAll(contents).then(() => self.skipWaiting());
+            return cache.addAll(manifest.contents).then(() => self.skipWaiting());
         }));
     });
 
@@ -65,7 +49,7 @@ if (!self || !self.registration) {
 
         // Returns manifest.
         let reqCloned = evt.request.clone();
-        if (reqCloned.url.match(manifest.json + "$")) {
+        if (reqCloned.url.match("manifest.json" + "$")) {
 
             let res = new Response(JSON.stringify(manifest),
                 {"status": 200, "statusText": "OK",
