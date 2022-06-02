@@ -2,6 +2,13 @@
 
 // Script for client to register service worker.
 if (!self || !self.registration) {
+
+    // Set manifest parameters.
+    document.querySelector("#title").innerText = document.querySelector("title").innerText = manifest.name;
+    document.querySelector("#author").innerText = manifest.author + manifest.scope.slice(0, -1);
+    document.querySelector("#version").innerText = "#" + manifest.version.substr(-4);
+    document.querySelector("#icon").src = manifest.icons[0].src;
+
     let head = document.querySelector("head");
     let link = document.createElement("link");
     link.setAttribute("rel", "manifest");

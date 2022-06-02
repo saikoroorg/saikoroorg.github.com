@@ -4,10 +4,14 @@ const manifest = {
     "version": "0.8.20601",
     "short_name": "Dice",
     "author": "saikoro.org",
-    "background_color": "#000",
-    "theme_color": "#000",
+    "background_color": "#fff",
+    "theme_color": "#fff",
     "icons": [{
-        "src": "icon.png",
+        "src": "./icon.svg",
+        "sizes": "300x300",
+        "type": "image/svg"
+    },{
+        "src": "./icon.png",
         "sizes": "192x192",
         "type": "image/png"
     }],
@@ -19,7 +23,11 @@ const manifest = {
     "params": {
         "dice": {
             "count": [1, 16],
-            "face": [10, 20]
+            "face": [10, 21]
+        },
+        "board": {
+            "size": 10,
+            "type": 1,
         },
         "players": [1,1],
         "seed": 0

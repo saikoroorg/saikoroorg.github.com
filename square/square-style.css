@@ -59,12 +59,12 @@ a {
 	justify-content: flex-start; -webkit-justify-content: flex-start;
 	align-items: center; -webkit-align-items: center;
 }
-#logo span:hover {
+#icon:hover {
 	transform: scale(1);
 	opacity: 0.6;
 	cursor: pointer;
 }
-#logo span:active {
+#icon:active {
 	transform: scale(0.9);
 	opacity: 1;
 }

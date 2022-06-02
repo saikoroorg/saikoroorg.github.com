@@ -8,7 +8,23 @@ square.version = "0.8.63b";
 square.timestamp = "20601";
 /************************************* /VERSION*/
 
-	//console.log = () => {};
+// Global variables.
+var counts = 8; // Grid counts.
+var pattern = 0; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
+var rolling = -1; // Rolling count.
+
+function squarePattern() {
+	pattern = pattern > 0 ? 0 : 1;
+	rolling = -1;
+};
+
+function squareCounts(x) {
+	counts = (counts + x > 18) ? 18 : (counts + x < 1) ? 1 : counts + x;
+	rolling = -1;
+};
+
+// Main loop.
+(async()=>{
 
 	var buffer = null; // Original design canvas.
 	var bufferSpriteWidth = 0;
@@ -142,7 +158,6 @@ square.timestamp = "20601";
 		}
 	}
 
-
 	// Constant parameters.
 	const frameNone = 0, frameBack = -1, frameBlank = -2;
 	const frameCardStart = -3, frameButtons = [11, 11];
@@ -158,8 +173,6 @@ square.timestamp = "20601";
 	// Board(Chips) parameters.
 	var chipFrameMax = 0, frameChipDepth = 0;
 
-	var counts = 8; // Grid counts.
-	var pattern = 0; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
 	var playerNumber = 1; // Player number.
 	var playerCounts = 1; // Player counts.
 
@@ -344,9 +357,7 @@ square.timestamp = "20601";
 	}
 
 	var original = 0; // Original design icon frame.
-	var rolling = 0; // Rolling count.
 
-(async()=>{
 	//var maximum = 6; // Maximum deck counts.
 	//var rolling = 0; // Rolling count.
 
@@ -584,7 +595,7 @@ square.timestamp = "20601";
 				for (var j = playChips.length - 1; j >= 0; j--) {
 					if (playChips[j].frame >= frameDiceStart) {
 						let chip = playChips.splice(j, 1)[0];
-						//chip.frame = frameDiceStart + diceFrameMax - 1;
+						chip.frame = frameDiceStart + diceFrameMax - 1;
 						dice.push(chip);
 					}
 				}
@@ -951,7 +962,7 @@ square.timestamp = "20601";
 							if (playChips[j].frame < frameChipStart) {
 								console.log("Discard the dice." +j +"/"+ newRollCount);
 								let chip = playChips.splice(j, 1)[0];
-								//chip.frame = frameDiceStart + diceFrameMax - 1;
+								chip.frame = frameDiceStart + diceFrameMax - 1;
 								dice.push(chip);
 							}
 						}
@@ -1860,7 +1871,8 @@ square.timestamp = "20601";
 			const cardScale = 0.04 * boardGridSize.y;//(holdCards.length > 0 ? 6 : 5) / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
 			const chipScale = 0.04 * boardGridSize.y;
 			const holdScale = 0.05 * boardGridSize.y;
-			const focusScale = 1.8;
+			const focusScale = 3.0;
+			const focusPosY = -8;
 
 			// Deck/Trash card scales.
 			const deckScale = 0.75;//holdCards.length > 0 ? 1 : 1.5;
@@ -1909,8 +1921,10 @@ square.timestamp = "20601";
 						} else {
 							a0 = 0.25;
 						}
-					} else if (drawCounts > 0 || rollingCounts > 0) {
-						a0 = 0.5;
+
+					// Drawing cards or rolling dice.
+					//} else if (drawCounts > 0 || rollingCounts > 0) {
+					//	a0 = 0.75;
 					}
 
 					// Position direct setting.
@@ -1967,9 +1981,10 @@ square.timestamp = "20601";
 						s = cardScale;
 						a0 = 0.25;
 
-					} else if (drawCounts > 0 || rollingCounts > 0) {
-						s = cardScale;
-						a0 = 0.5;
+					// Drawing cards or rolling dice.
+					//} else if (drawCounts > 0 || rollingCounts > 0) {
+					//	s = cardScale;
+					//	a0 = 0.75;
 
 					// Default animation.
 					} else {
@@ -2027,9 +2042,13 @@ square.timestamp = "20601";
 						s = chipScale;
 						a0 = 0.25;
 
-					} else if (drawCounts > 0 || (rollingCounts > 0 && playChips[j].frame >= frameChipStart)) {
-						s = chipScale;
-						a0 = 0.5;
+					} else if (touchingCardId == handCards.length + playCards.length + playChips.length + cardExtraDice && playChips[j].frame < frameChipStart) {
+						s = chipScale * 0.8;
+
+					// Drawing cards or rolling dice.
+					//} else if (drawCounts > 0 || (rollingCounts > 0 && playChips[j].frame >= frameChipStart)) {
+					//	s = chipScale;
+					//	a0 = 0.75;
 
 					// Default animation.
 					} else {
@@ -2038,15 +2057,15 @@ square.timestamp = "20601";
 
 				// Set deck position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDeck) {
-					sx = ox + mx * 2 / 3;
+					sx = ox + mx * 1 / 3;
 					sy = size.y - deckPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (decks.length <= 0) {
 						a0 = 0.25;
 					} else if (focuses.length > 0) {
 						a0 = 0.25;
-					} else if (rollingCounts > 0) {
-						a0 = 0.5;
+					//} else if (rollingCounts > 0) {
+					//	a0 = 0.75;
 					}
 
 					// Scale animation.
@@ -2076,15 +2095,18 @@ square.timestamp = "20601";
 
 				// Set trash position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraTrash) {
-					sx = ox + mx * 1 / 3;
+					sx = ox + mx * 2 / 3;
 					sy = size.y - deckPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (trashes.length <= 0) {
 						a0 = 0.25;
 					} else if (focuses.length > 0) {
 						a0 = 0.25;
-					} else if (drawCounts > 0 || rollingCounts > 0) {
-						a0 = 0.25;
+
+					// Drawing cards or rolling dice.
+					//} else if (drawCounts > 0 || rollingCounts > 0) {
+					//	a0 = 0.25;
+
 					} else {
 						a0 = 0.5;
 					}
@@ -2112,8 +2134,10 @@ square.timestamp = "20601";
 
 					if (focuses.length > 0) {
 						a0 = 0.25;
-					} else if (drawCounts > 0 || rollingCounts > 0) {
-						a0 = 0.25;
+
+					// Drawing cards or rolling dice.
+					//} else if (drawCounts > 0 || rollingCounts > 0) {
+					//	a0 = 0.5;
 					}
 
 					// Scale animation.
@@ -2130,15 +2154,22 @@ square.timestamp = "20601";
 
 					if (focuses.length > 0) {
 						a0 = 0.25;
-					} else if (drawCounts > 0 || (rollingCounts > 0 && dice.length <= 0)) {
-						a0 = 0.25;
+
+					// Drawing cards or rolling dice.
+					//} else if (drawCounts > 0 || (rollingCounts > 0 && dice.length <= 0)) {
+					//	a0 = 0.25;
+
 					} else if (dice.length <= 0) {
+						a0 = 0.25;
+					} else {
 						a0 = 0.5;
 					}
 
 					// Scale animation.
 					if (touchingCardId == i) {
 						s = diceScale * (rolling < 5 ? (1.4 - 0.04 * rolling) : 1.2);
+					} else if (dice.length <= 0) {
+						s = diceScale * 0.8;
 					} else {
 						s = diceScale;
 					}
@@ -2181,13 +2212,13 @@ square.timestamp = "20601";
 						a0 = 0;
 					}
 
-				// Set focusing card position.
+				// Set focusing hand card position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraFocus) {
 
 					// Set focuses position.
 					if (focuses.length > 0 && focusingCardId < handCards.length) {
 						sx = ox + mx * 1 / 2;
-						sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 + 5);
+						sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 + focusPosY);
 
 						if (touchingCardId == touchingFocus) {
 							s = focusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);

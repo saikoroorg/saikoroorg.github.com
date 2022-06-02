@@ -3,23 +3,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
 <title>#</title>
-<link rel="icon" type="image/png" href="icon.png">
+<link rel="icon" type="image/svg" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.png" sizes="192x192">
 <link rel="stylesheet" href="../square/square-style.css">
 <script src="manifest.js"></script>
-<script src="../square/square-service.js"></script>
 </head>
 <body>
 <div id="container">
 	<h1 id="header">
 		<div id="logo">
-			<a href="../menu.html"><img id="icon" src="icon.png"/></a>
-			<span id="title" href="#" onclick="javascript:window.top.location.reload();">#</span>
+			<img id="icon" src="icon.svg" href="#" onclick="javascript:window.top.location.href = '../menu.html';"/>
+			<span id="title">#</span>
 		</div>
 		<div id="menu">
-			<span href="#" onclick="javascript:changeCounts(+1);">-</span>
-			<span href="#" onclick="javascript:changePattern();">|</span>
-			<span href="#" onclick="javascript:changeCounts(-1);">+</span>
+			<span href="#" onclick="javascript:squarePattern(+1);">-</span>
+			<span href="#" onclick="javascript:squarePattern();">|</span>
+			<span href="#" onclick="javascript:squareCounts(-1);">+</span>
 		</div>
 	</h1>
 	<div id="contents" class="cubeScreen"></div>
@@ -28,35 +27,10 @@
 		<div id="version">.</div>
 	</h6>
 </div>
+<script>console.log = () => {};</script>
+<script src="../square/square-service.js"></script>
 <script src="../square/cube-api-0.8.js"></script>
 <script src="../square/square-resource.js"></script>
 <script src="../square/square-script.js"></script>
-<script>
-	// Get manifest parameters.
-	document.querySelector("#title").innerText = document.querySelector("title").innerText = manifest.name;
-	document.querySelector("#author").innerText = manifest.author + manifest.scope.slice(0, -1);
-	document.querySelector("#version").innerText = "#" + manifest.version.substr(-4);
-	document.querySelector("#icon").src = manifest.icons[0].src;
-	document.querySelector("#logo").href = window.location.search;
-
-	// Set counts.
-	var setCounts = (x) => {
-		counts = (x > 18) ? 18 : (x < 1) ? 1 : x;
-		rolling = -1; // Reset.
-	};
-
-	// Set pattern.
-	var changePattern = () => {
-		pattern = pattern > 0 ? 0 : 1;
-		rolling = -1; // Reset.
-	};
-
-	var changeCounts = (x) => {
-		setCounts(counts + x);
-	};
-
-	// Initialize settings.
-	setCounts(counts);
-</script>
 </body>
 </html>
