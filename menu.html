@@ -9,25 +9,15 @@
 <script src="manifest.js"></script>
 <script src="square/square-service.js"></script>
 <style>
+body {
+	background-color: #fff;
+}
 #container {
 	width: 100%; height: auto;
 }
-#menu a {
-	text-decoration: none;
-	transform: scale(1);
-}
-#menu a:hover {
-	transform: scale(1.2);
-}
-#menu a:active {
-	transform: scale(0.9);
-}
 #menu .lang {
-	padding: 4px; margin-top: -24px;
+	width: 20px; height: 20px;
 	font-size: 12px;
-}
-#menu a.lang {
-	color: #888;
 }
 #contents {
 	width: 95%; padding: 20px;
@@ -108,71 +98,71 @@
 			<span id="title">Saikoro.org</span>
 		</div>
 		<div id="menu">
-			<div class="lang en">en</div>
-			<a class="lang no ja" href="javascript:setLanguage('en');">en</a>
-			<div class="lang ja">ja</div>
-			<a class="lang no en" href="javascript:setLanguage('ja');">ja</a>
+			<span class="lang en">en</span>
+			<span class="lang no ja" href="#" onclick="javascript:setLanguage('en');">en</span>
+			<span class="lang ja">ja</span>
+			<span class="lang no en" href="#" onclick="javascript:setLanguage('ja');">ja</span>
 		</div>
 	</h1>
 	<div id="contents">
 		<div class="app">
 			<div class="item">
-				<a class="name" href="./?">
-					<img class="icon" src="icon.svg"/>
+				<a class="name" href="sai">
+					<img class="icon" src="sai/icon.svg"/>
 					Sai (Dice)
 				</a>
 			</div>
 			<div class="disc en">
 				<b>Sai</b> is the web app that rolls dice by tapping.
-				<a href="./?2d">2d</a> is for 2 dice.
-				<a href="./?3d6">3d6</a> is for 3 dice.
-				<a href="./?2d10">2d10</a> is for 2 dice 10 sided.
+				<a href="sai/?2d">2d</a> is for 2 dice.
+				<a href="sai/?3d6">3d6</a> is for 3 dice.
+				<a href="sai/?2d10">2d10</a> is for 2 dice 10 sided.
 				<span class="note">"Add to Homescreen" to use like as native app.</span>
 			</div>
 			<div class="disc ja">
 				<b>Sai</b> はタップでサイコロをふるウェブアプリです。<!--
-			 --><a href="./?2d">2d</a> は2つのサイコロです。<!--
-			 --><a href="./?3d6">3d6</a> は3つのサイコロです。<!--
-			 --><a href="./?2d10">2d10</a> は2つの10面サイコロです。<!--
+			 --><a href="sai/?2d">2d</a> は2つのサイコロです。<!--
+			 --><a href="sai/?3d6">3d6</a> は3つのサイコロです。<!--
+			 --><a href="sai/?2d10">2d10</a> は2つの10面サイコロです。<!--
 			 --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
 			</div>
 		</div>
 		<div class="app">
 			<div class="item">
-				<a class="name" href="./?c52">
-					<img class="icon" src="icon2.svg"/>
+				<a class="name" href="karuta">
+					<img class="icon" src="karuta/icon.svg"/>
 					Karuta (Card)
 				</a>
 			</div>
 			<div class="disc en">
 				<b>Karuta</b> is the web app that draws or places cards by touching.
-				<a href="./?2c52">2c52</a> (Blackjack) draws 2 playing cards. <a href="./?5c54">5c54</a> (Poker) draws 5 playing cards including jokers.
+				<a href="karuta/?2c52">2c52</a> (Blackjack) draws 2 playing cards. <a href="karuta/?5c54">5c54</a> (Poker) draws 5 playing cards including jokers.
 				<span class="note">"Add to Homescreen" to use like as native app.</span>
 			</div>
 			<div class="disc ja">
 				<b>Karuta</b> はタッチでトランプをひいたりおいたりするウェブアプリです。<!--
-			 --><a href="./?2c52">2c52</a>(ブラックジャック) はトランプを2まいひきます。<!--
-			 --><a href="./?5c54">5c54</a>(ポーカー) はジョーカーありのトランプを5まいひきます。<!--
+			 --><a href="karuta/?2c52">2c52</a>(ブラックジャック) はトランプを2まいひきます。<!--
+			 --><a href="karuta/?5c54">5c54</a>(ポーカー) はジョーカーありのトランプを5まいひきます。<!--
 			 --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
 			</div>
 		</div>
 		<div class="app">
 			<div class="item">
-				<a class="name" href="./?b2x9">
-					<img class="icon" src="icon3.svg"/>
+				<a class="name" href="goban">
+					<img class="icon" src="goban/icon.svg"/>
 					Goban (Board)
 				</a>
 			</div>
 			<div class="disc en">
 				<b>Goban</b> is the web app that places pieces on the board by touching.
-				<a href="./?b1x2x8&b=a54b44a45b55">b1x2x8</a> (Reversi) / <a href="./?b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">b2x2x8</a> (Checker) places or flips black and white pieces on the board.
-				<a href="./?b2x7">b2x7</a> (7x7) / <a href="./?b2x9">b2x9</a> (9x9) / <a href="./?b2x13">b2x13</a> (13x13) is the board for the Igo.
+				<a href="goban/?b1x2x8&b=a54b44a45b55">b1x2x8</a> (Reversi) / <a href="goban/?b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">b2x2x8</a> (Checker) places or flips black and white pieces on the board.
+				<a href="goban/?b2x7">b2x7</a> (7x7) / <a href="goban/?b2x9">b2x9</a> (9x9) / <a href="goban/?b2x13">b2x13</a> (13x13) is the board for the Igo.
 				<span class="note">"Add to Homescreen" to use like as native app.</span>
 			</div>
 			<div class="disc ja">
 				<b>Goban</b> はタッチでコマをボードにおくウェブアプリです。<!--
-			 --><a href="./?b1x2x8&b=a54b44a45b55">b1x2x8</a>(リバーシ)・<a href="./?b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">b2x2x8</a>(チェッカー) はボードに黒と白のコマをおいたりひっくりかえしたりします。<!--
-			 --><a href="./?b2x7">b2x7</a>(七路盤)・<a href="?b2x9">b2x9</a>(九路盤)・<a href="./?b2x13">b2x13</a>(十三路盤) は囲碁盤です。<!--
+			 --><a href="goban/?b1x2x8&b=a54b44a45b55">b1x2x8</a>(リバーシ)・<a href="goban/?b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">b2x2x8</a>(チェッカー) はボードに黒と白のコマをおいたりひっくりかえしたりします。<!--
+			 --><a href="goban/?b2x7">b2x7</a>(七路盤)・<a href="?b2x9">b2x9</a>(九路盤)・<a href="goban/?b2x13">b2x13</a>(十三路盤) は囲碁盤です。<!--
 			 --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
 			</div>
 		</div>

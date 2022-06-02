@@ -171,7 +171,7 @@ function squareCounts(x) {
 	var handCounts = 0, cardCounts = [0], cardFrameMax = 0;
 
 	// Board(Chips) parameters.
-	var chipFrameMax = 0, frameChipDepth = 0;
+	var chipCountsMax = 0, chipFrameMax = 0, frameChipDepth = 0;
 
 	var playerNumber = 1; // Player number.
 	var playerCounts = 1; // Player counts.
@@ -249,16 +249,19 @@ function squareCounts(x) {
 			let params = cubeParamNumbers(i);
 			console.log("Load board parameters " + i + ":" + params)
 			if (params.length >= 4) {
+				chipCountsMax = params[0];
 				chipFrameMax = params[1];
 				frameChipDepth = params[2];
 				counts = params[params.length - 1];
 				pattern = 0;
 			} else if (params.length == 3) {
+				chipCountsMax = params[0];
 				chipFrameMax = params[1];
 				frameChipDepth = 1;
 				counts = params[params.length - 1];
 				pattern = 0;
 			} else if (params.length == 2) {
+				chipCountsMax = params[0];
 				chipFrameMax = params[1];
 				frameChipDepth = 1;
 				console.log("Chips parameters:" + chipFrameMax + "x" + frameChipDepth)
@@ -372,10 +375,15 @@ function squareCounts(x) {
 		buttonSprites[i] = await cubeSprite(resource0, 40, 40);
 	}
 
-	// Card/Chip count max.
-	var cardCountsMax = 0, chipCountsMax = counts * counts;
+	// Card count max.
+	var cardCountsMax = 0;
 	for (let i = 0; i < cardCounts.length; i++) {
 		cardCountsMax += cardCounts[i];
+	}
+
+	// Chip count max.
+	if (chipFrameMax > 0 && chipCountsMax == 0) {
+		chipCountsMax = counts * counts;
 	}
 
 	// Create card sprites.
@@ -383,7 +391,7 @@ function squareCounts(x) {
 	const cardExtraDice = 3, cardExtraHold = 4, cardExtraFocus = 5, cardExtraMax = 6;
 	const cardSpriteScale = 1, cardSpriteWidth = 40;
 	var cardSprites = [];
-	for (var i = 0; i < cardCountsMax + chipCountsMax + cardExtraMax; i++) {
+	for (var i = 0; i < cardCountsMax + chipCountsMax + diceCounts + cardExtraMax; i++) {
 		if (buffer) {
 			cardSprites[i] = await cubeCanvasSprite(buffer);
 			//cubeResize(cardSpriteWidth, cardSpriteWidth, 1, cardSprites[i]);
@@ -2162,7 +2170,7 @@ function squareCounts(x) {
 					} else if (dice.length <= 0) {
 						a0 = 0.25;
 					} else {
-						a0 = 0.5;
+						a0 = 0.75;
 					}
 
 					// Scale animation.

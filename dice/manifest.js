@@ -29,7 +29,7 @@ const manifest = {
             "size": 10,
             "type": 1,
         },
-        "players": [1,1],
+        "players": [1, 1],
         "seed": 0
     },//*/
     "json": "manifest.json"

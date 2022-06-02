@@ -1,23 +1,19 @@
 /* Manifest. */
 const manifest = {
-    "name": "Saikoro.org",
-    "version": "0.8.20601",
-    "short_name": "Saikoro",
+    "name": "Sai",
+    "version": "0.8.20602",
+    "short_name": "Sai",
     "author": "saikoro.org",
-    "scope": "/",
+    "scope": "/sai/",
     "background_color": "#000",
     "theme_color": "#000",
     "icons": [{
         "src": "./icon.svg",
         "sizes": "300x300",
         "type": "image/svg"
-    },{
-        "src": "./icon.png",
-        "sizes": "192x192",
-        "type": "image/png"
     }],
     //*
-    "resource": "resource.png",
+    "resource": "../resource.png",
     "params": {
         "dice": {
             "count": [1, 9],
@@ -30,7 +26,7 @@ const manifest = {
         "board": {
             "size": 6,
             "type": 1,
-            "face": [0, 6]
+            "face": [0, 0]
         },
         "players": [1, 1],
         "seed": 0
@@ -39,5 +35,5 @@ const manifest = {
     //*/
     "start_url": "./" + (window.location.search ? window.location.search + "&" : "?") + "app=1",
     "display": "standalone",
-    "service": "./square/square-service.js"
+    "service": "../square/square-service.js"
 };
