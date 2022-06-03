@@ -28,6 +28,7 @@ const manifest = {
         "board": {
             "size": 10,
             "type": 1,
+            "count": 0
         },
         "players": [1, 1],
         "seed": 0

@@ -21,7 +21,8 @@ const manifest = {
         },
         "board": {
             "size": 6,
-            "type": 1
+            "type": 1,
+            "count": 0
         },
         "players": [1, 1],
         "seed": 0
