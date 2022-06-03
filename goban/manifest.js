@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Goban",
-    "version": "0.8.20602",
+    "version": "0.8.20603",
     "short_name": "Goban",
     "author": "saikoro.org",
     "scope": "/goban/",

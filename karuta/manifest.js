@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Karuta",
-    "version": "0.8.20602",
+    "version": "0.8.20603",
     "short_name": "Karuta",
     "author": "saikoro.org",
     "scope": "/karuta/",
