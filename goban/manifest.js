@@ -16,16 +16,12 @@ const manifest = {
     "resource": "../resource.png",
     "params": {
         "dice": {
-            "count": [0, 0],
             "face": [0, 10]
-        },
-        "cards": {
-            "count": 0,
-            "faces": []
         },
         "board": {
             "size": 8,
             "type": 1,
+            "count": 81,
             "face": [2, 0]
         },
         "players": [1, 1],

@@ -24,13 +24,14 @@ const manifest = {
             "face": [6, 10]
         },
         "cards": {
-            "count": 0,
-            "faces": []
+            "count": [0, 0],
+            "faces": [52]
         },
         "board": {
             "size": 6,
             "type": 1,
-            "face": [0, 6]
+            "count": 0,
+            "face": [0, 2]
         },
         "players": [1, 1],
         "seed": 0

@@ -19,14 +19,9 @@ const manifest = {
             "count": [1, 9],
             "face": [6, 10]
         },
-        "cards": {
-            "count": 0,
-            "faces": []
-        },
         "board": {
             "size": 6,
-            "type": 1,
-            "face": [0, 0]
+            "type": 1
         },
         "players": [1, 1],
         "seed": 0

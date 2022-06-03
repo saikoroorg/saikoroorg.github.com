@@ -15,18 +15,13 @@ const manifest = {
     //*
     "resource": "../resource.png",
     "params": {
-        "dice": {
-            "count": [0, 0],
-            "face": [0, 10]
-        },
         "cards": {
-            "count": 0,
+            "count": [0, 54],
             "faces": [54]
         },
         "board": {
             "size": 6,
-            "type": 1,
-            "face": [0, 0]
+            "type": 1
         },
         "players": [1, 1],
         "seed": 0

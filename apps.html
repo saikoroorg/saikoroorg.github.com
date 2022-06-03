@@ -2,7 +2,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
-<title>Saikoro.org</title>
+<title>Saikoro.org/Apps</title>
 <link rel="icon" type="image/svg" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.png" sizes="192x192">
 <link rel="stylesheet" href="square/square-style.css">
@@ -10,10 +10,17 @@
 <script src="square/square-service.js"></script>
 <style>
 body {
-	background-color: #fff;
+	background-color: #888;
+}
+input {
+	background-color: #ddd;
+	border: solid 4px #ddd;
 }
 #container {
 	width: 100%; height: auto;
+}
+#icon {
+	opacity: 1;
 }
 #menu .lang {
 	width: 20px; height: 20px;
@@ -21,7 +28,7 @@ body {
 }
 #contents {
 	width: 95%; padding: 20px;
-	background-color: #fff;
+	background-color: #888;
 }
 .cubeScreen {
 	width: 60px; height: 60px; margin-left: -28px;
@@ -93,9 +100,10 @@ body {
 <div id="container">
 	<h1 id="header">
 		<div id="logo">
-			<img id="icon" class="no" src="icon.svg"/>
-			<div class="cubeScreen en ja"></div>
-			<span id="title">Saikoro.org</span>
+			<!--img id="icon" class="no" src="icon.svg"/>
+			<div class="cubeScreen en ja"></div-->
+			<span href="#" onclick="javascript:locate();" id="title"><img id="icon" src="icon.svg"/></span>
+			<input id="input" type="text" placeholder="1d6"/>
 		</div>
 		<div id="menu">
 			<span class="lang en">en</span>
@@ -113,18 +121,16 @@ body {
 				</a>
 			</div>
 			<div class="disc en">
-				<b>Sai</b> is the web app that rolls dice by tapping.
 				<a href="sai/?2d">2d</a> is for 2 dice.
 				<a href="sai/?3d6">3d6</a> is for 3 dice.
 				<a href="sai/?2d10">2d10</a> is for 2 dice 10 sided.
 				<span class="note">"Add to Homescreen" to use like as native app.</span>
 			</div>
 			<div class="disc ja">
-				<b>Sai</b> はタップでサイコロをふるウェブアプリです。<!--
-			 --><a href="sai/?2d">2d</a> は2つのサイコロです。<!--
-			 --><a href="sai/?3d6">3d6</a> は3つのサイコロです。<!--
-			 --><a href="sai/?2d10">2d10</a> は2つの10面サイコロです。<!--
-			 --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
+			<a href="sai/?2d">2d</a> は2つのサイコロです。<!--
+			--><a href="sai/?3d6">3d6</a> は3つのサイコロです。<!--
+			--><a href="sai/?2d10">2d10</a> は2つの10面サイコロです。<!--
+			--><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
 			</div>
 		</div>
 		<div class="app">
@@ -135,15 +141,13 @@ body {
 				</a>
 			</div>
 			<div class="disc en">
-				<b>Karuta</b> is the web app that draws or places cards by touching.
 				<a href="karuta/?2c52">2c52</a> (Blackjack) draws 2 playing cards. <a href="karuta/?5c54">5c54</a> (Poker) draws 5 playing cards including jokers.
 				<span class="note">"Add to Homescreen" to use like as native app.</span>
 			</div>
 			<div class="disc ja">
-				<b>Karuta</b> はタッチでトランプをひいたりおいたりするウェブアプリです。<!--
-			 --><a href="karuta/?2c52">2c52</a>(ブラックジャック) はトランプを2まいひきます。<!--
-			 --><a href="karuta/?5c54">5c54</a>(ポーカー) はジョーカーありのトランプを5まいひきます。<!--
-			 --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
+			<a href="karuta/?2c52">2c52</a>(ブラックジャック) はトランプを2まいひきます。<!--
+			--><a href="karuta/?5c54">5c54</a>(ポーカー) はジョーカーありのトランプを5まいひきます。<!--
+			--><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
 			</div>
 		</div>
 		<div class="app">
@@ -154,17 +158,18 @@ body {
 				</a>
 			</div>
 			<div class="disc en">
-				<b>Goban</b> is the web app that places pieces on the board by touching.
 				<a href="goban/?b1x2x8&b=a54b44a45b55">b1x2x8</a> (Reversi) / <a href="goban/?b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">b2x2x8</a> (Checker) places or flips black and white pieces on the board.
 				<a href="goban/?b2x7">b2x7</a> (7x7) / <a href="goban/?b2x9">b2x9</a> (9x9) / <a href="goban/?b2x13">b2x13</a> (13x13) is the board for the Igo.
 				<span class="note">"Add to Homescreen" to use like as native app.</span>
 			</div>
 			<div class="disc ja">
-				<b>Goban</b> はタッチでコマをボードにおくウェブアプリです。<!--
-			 --><a href="goban/?b1x2x8&b=a54b44a45b55">b1x2x8</a>(リバーシ)・<a href="goban/?b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">b2x2x8</a>(チェッカー) はボードに黒と白のコマをおいたりひっくりかえしたりします。<!--
-			 --><a href="goban/?b2x7">b2x7</a>(七路盤)・<a href="?b2x9">b2x9</a>(九路盤)・<a href="goban/?b2x13">b2x13</a>(十三路盤) は囲碁盤です。<!--
-			 --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
+			<a href="goban/?b1x2x8&b=a54b44a45b55">b1x2x8</a>(リバーシ)・<a href="goban/?b2x2x8&p=1/2&b=a18a27a38a47a58a67a78a87b12b21b32b41b52b61b72b81">b2x2x8</a>(チェッカー) はボードに黒と白のコマをおいたりひっくりかえしたりします。<!--
+			--><a href="goban/?b2x7">b2x7</a>(七路盤)・<a href="?b2x9">b2x9</a>(九路盤)・<a href="goban/?b2x13">b2x13</a>(十三路盤) は囲碁盤です。<!--
+			--><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
 			</div>
+		</div>
+		<div>
+			------
 		</div>
 		<div class="app">
 			<div class="item">
@@ -174,20 +179,20 @@ body {
 				</a>
 			</div>
 			<div class="disc en">
-				<b>Kuku</b> is the web app for practicing mental arithmetic by tapping.
+				The web app for practicing mental arithmetic by tapping.
 				You can see the time it took for the 20 questions.
-				<a href="kuku/?t10">t10</a> (Tashite 10) is addition / subtraction up to 10.
-				<a href="kuku/?t20">t20</a> (Tashite 20) is addition / subtraction up to 20.
-				<a href="kuku/?x9">x9</a> (Kuku) is multiplication up to 9x9.
-				<a href="kuku/?x19">x19</a> (Indian Kuku) is multiplication from 11x1 to 19x19.
+				<a href="kuku/?t10">kuku?t10</a> (Tashite 10) is addition / subtraction up to 10.
+				<a href="kuku/?t20">kuku?t20</a> (Tashite 20) is addition / subtraction up to 20.
+				<a href="kuku/?x9">kuku?x9</a> (Kuku) is multiplication up to 9x9.
+				<a href="kuku/?x19">kuku?x19</a> (Indian Kuku) is multiplication from 11x1 to 19x19.
 				<span class="note">"Add to Homescreen" to use like as native app.</span>
 			</div>
 			<div class="disc ja">
-				<b>Kuku</b> はタップであんざんのれんしゅうをするウェブアプリです。20もんおわると、かかったじかんがわかります。<!--
-			 --><a href="kuku/?t10">t10</a>(たして10) は10までのたしざん/ひきざんです。<!--
-			 --><a href="kuku/?t20">t20</a>(たして20) は20までのたしざん/ひきざんです。<!--
-			 --><a href="kuku/?x9">x9</a>(九九) は9×9までのかけざんです。<!--
-			 --><a href="kuku/?x19">x19</a>(インド式九九) は11×1から19×19までのかけざんです。<!--
+				タップであんざんのれんしゅうをするウェブアプリです。20もんおわると、かかったじかんがわかります。<!--
+			 --><a href="kuku/?t10">kuku?t10</a>(たして10) は10までのたしざん/ひきざんです。<!--
+			 --><a href="kuku/?t20">kuku?t20</a>(たして20) は20までのたしざん/ひきざんです。<!--
+			 --><a href="kuku/?x9">kuku?x9</a>(九九) は9×9までのかけざんです。<!--
+			 --><a href="kuku/?x19">kuku?x19</a>(インド式九九) は11×1から19×19までのかけざんです。<!--
 			 --><span class="note">"ホーム画面に追加"をするとアプリのようにつかえます。</span>
 			</div>
 		</div>
@@ -197,35 +202,65 @@ body {
 		<div id="version">.</div>
 	</h6>
 </div>
-<script src="square/cube-api-0.8.js"></script>
-<script src="square/square-resource.js"></script>
 <!--Language--><script>
 	console.log = () => {};
 
+	// Locate.
+	const root0 = "./";
+	const root1 = "./index.html";
+	var locate = () => {
+		let element = document.getElementById('input');
+		if (element && element.value) {
+			if (element.value.includes("?")) {
+				window.top.location.href = root0 + element.value;
+			} else {
+				window.top.location.href = root1 + '?' + element.value;
+			}
+		} else {
+			window.top.location.href = root1;
+		}
+	}
+
 	// Set language.
 	var setLanguage = (lang="en") => {
-		var ids = ["no", "en", "ja"];
+		const ids = ["no", "en", "ja"];
 		for (let i = 0; i < ids.length; ++i) {
 			let elements = document.getElementsByClassName(ids[i]);
 			for (let j = 0; j < elements.length; ++j) {
 				elements[j].style.display = "none";
 			}
 		}
-		var settings = (window.navigator.userLanguage ||
-						window.navigator.language ||
-						window.navigator.browserLanguage).substr(0,2);
-		var id = lang.match("^no$|^en$|^ja$") ? lang :
-					 settings == "ja" ? "ja" : "en";
+		let settings = (window.navigator.userLanguage ||
+			window.navigator.language ||
+			window.navigator.browserLanguage).substr(0,2);
+		let id = lang.match("^no$|^en$|^ja$") ? lang :
+			settings == "ja" ? "ja" : "en";
 		elements = document.getElementsByClassName(id);
 		for (let j = 0; j < elements.length; ++j) {
 			elements[j].style.display = "block";
 		}
 	};
 
-	var query = "" + cubeLoadParam();
+	// Set language by query.
+	var query = "" + window.location.search.slice(1);
 	setLanguage(query);
+
+	// Enter key event handling.
+	var input = document.getElementById("input");
+	if (input) {
+		input.focus();
+		input.onkeypress = (e) => {
+			const key = e.keyCode || e.charCode || 0;
+			if (key == 13) {
+				locate();
+			}
+		};
+	}
 </script><!--/Language-->
-<!--Logo--><script>(async()=>{
+
+<!--script src="square/cube-api-0.8.js"></script>
+<script src="square/square-resource.js"></script-->
+<!--Logo><script>(async()=>{
 	var maximum = 6; // Maximum of dice faces.
 	var rolling = 0; // Rolling count.
 

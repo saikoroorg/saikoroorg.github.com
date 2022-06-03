@@ -4,14 +4,16 @@
 var square = square || {};
 
 /* VERSION/ *****************************/
-square.version = "0.8.63b";
-square.timestamp = "20601";
+square.version = "0.8.64b";
+square.timestamp = "20603";
 /************************************* /VERSION*/
 
 // Global variables.
+var rolling = -1; // Running counter.
+
+// Board grid parameters.
 var counts = 8; // Grid counts.
 var pattern = 0; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
-var rolling = -1; // Rolling count.
 
 function squarePattern() {
 	pattern = pattern > 0 ? 0 : 1;
@@ -168,15 +170,14 @@ function squareCounts(x) {
 	var rollCounts = 0, diceCounts = 0, diceFrameMax = 0;
 
 	// Card parameters.
-	var handCounts = 0, cardCounts = [0], cardFrameMax = 0;
+	var cardCountsMax = 0, handCounts = 0, cardCounts = [0], cardFrameMax = 0;
 
 	// Board(Chips) parameters.
 	var chipCountsMax = 0, chipFrameMax = 0, frameChipDepth = 0;
 
+	// Player and random parameter.
 	var playerNumber = 1; // Player number.
 	var playerCounts = 1; // Player counts.
-
-	// Random parameter.
 	var seed = 0; // Random seed.
 
 	// Check manifest parameters.
@@ -204,7 +205,8 @@ function squareCounts(x) {
 			if (manifest.params.cards) {
 				if (manifest.params.cards.count) {
 					console.log("Load cards count parameters:" + manifest.params.cards.count)
-					handCounts = manifest.params.cards.count;
+					handCounts = manifest.params.cards.count[0];
+					cardCountsMax = manifest.params.cards.count[1];
 				}
 				if (manifest.params.cards.faces) {
 					console.log("Load cards faces parameters:" + manifest.params.cards.faces);
@@ -214,6 +216,7 @@ function squareCounts(x) {
 			if (manifest.params.board) {
 				counts = manifest.params.board.size;
 				pattern = manifest.params.board.type;
+				chipCountsMax = manifest.params.board.count;
 				if (manifest.params.board.face) {
 					console.log("Load board face parameters:" + manifest.params.board.face);
 					if (manifest.params.board.face.length >= 2) {
@@ -241,31 +244,35 @@ function squareCounts(x) {
 			console.log("Reset parameters.");
 			chipFrameMax = 0;
 			diceCounts = 0;
-			cardCounts = [0];
+			cardCountsMax = 0;
 		}
 	}
 	for (let i = 0; i < 3; i++) {
+
+		// Board and pieces parameters.
 		if (cubeParamContains(i, "b")) {
 			let params = cubeParamNumbers(i);
 			console.log("Load board parameters " + i + ":" + params)
 			if (params.length >= 4) {
-				chipCountsMax = params[0];
+				chipCountsMax = params[0] > 0 ? params[0] : -1;
 				chipFrameMax = params[1];
 				frameChipDepth = params[2];
 				counts = params[params.length - 1];
 				pattern = 0;
 			} else if (params.length == 3) {
-				chipCountsMax = params[0];
+				chipCountsMax = params[0] > 0 ? params[0] : -1;
 				chipFrameMax = params[1];
 				frameChipDepth = 1;
 				counts = params[params.length - 1];
 				pattern = 0;
 			} else if (params.length == 2) {
-				chipCountsMax = params[0];
+				chipCountsMax = params[0] > 0 ? params[0] : -1;
 				chipFrameMax = params[1];
 				frameChipDepth = 1;
 				console.log("Chips parameters:" + chipFrameMax + "x" + frameChipDepth)
 			}
+
+		// Dice parameters.
 		} else if (cubeParamContains(i, "d")) {
 			let params = cubeParamNumbers(i);
 			console.log("Load dice parameters " + i + ":" + params)
@@ -276,13 +283,17 @@ function squareCounts(x) {
 				diceFrameMax = params[1] < frameChipStart ? params[1] : frameChipStart - 1;
 			}
 			console.log("Dice parameters:" + rollCounts + "d" + diceFrameMax)
+
+		// Cards parameters.
 		} else if (cubeParamContains(i, "c")) {
 			let params = cubeParamNumbers(i);
 			console.log("Load card parameters " + i + ":" + params)
-			if (params.length >= 1) {
+			if (params.length == 1) {
 				handCounts = params[0];
+				cardCountsMax = -1;
 			}
 			if (params.length >= 2) {
+				handCounts = params[0];
 				cardCounts = params.slice(1);
 			}
 		}
@@ -322,6 +333,32 @@ function squareCounts(x) {
 		pattern = 1;
 	}
 
+	// Card count max.
+	if (cardCounts.length > 0 && cardCountsMax < 0) {
+		cardCountsMax = 0;
+		for (let i = 0; i < cardCounts.length; i++) {
+			cardCountsMax += cardCounts[i];
+		}
+	}
+
+	// Chip count max.
+	if (chipFrameMax > 0 && chipCountsMax < 0) {
+		chipCountsMax = counts * counts;
+	}
+
+	// Initialize random seed.
+	if (seed) {
+		seed = cubeDate() * 1000000 + cubeMod(seed, 1000000);
+		console.log("Seed=" + seed);
+		cubeRandom(0, seed);
+	}
+
+	// Initialize resource sets.
+	var resource0 = resource1 = resource, resourceCounts = 6;
+	if (manifest.resource) {
+		resource1 = manifest.resource;
+	}
+
 	//Example b1: Mini Reversi.
 	// b1x2x6&b=a43b33a34b44
 	//Example b2: Reversi.
@@ -346,19 +383,6 @@ function squareCounts(x) {
 		placements.push(cubeVector(x, y, z));
 	}
 
-	// Initialize random seed.
-	if (seed) {
-		seed = cubeDate() * 1000000 + cubeMod(seed, 1000000);
-		console.log("Seed=" + seed);
-		cubeRandom(0, seed);
-	}
-
-	// Deck sets.
-	var resource0 = resource1 = resource, resourceCounts = 6;
-	if (manifest.resource) {
-		resource1 = manifest.resource;
-	}
-
 	var original = 0; // Original design icon frame.
 
 	//var maximum = 6; // Maximum deck counts.
@@ -373,17 +397,6 @@ function squareCounts(x) {
 	var buttonSprites = [], buttonMax = 2;
 	for (var i = 0; i < buttonMax; i++) {
 		buttonSprites[i] = await cubeSprite(resource0, 40, 40);
-	}
-
-	// Card count max.
-	var cardCountsMax = 0;
-	for (let i = 0; i < cardCounts.length; i++) {
-		cardCountsMax += cardCounts[i];
-	}
-
-	// Chip count max.
-	if (chipFrameMax > 0 && chipCountsMax == 0) {
-		chipCountsMax = counts * counts;
 	}
 
 	// Create card sprites.
@@ -454,7 +467,7 @@ function squareCounts(x) {
 
 		// Load board sprite.
 		let boardSize = 180, boardPosX = 120;
-		let boardPosY = cardCounts.length > 0 && cardCounts[0] > 0 ? 100 : 150;
+		let boardPosY = cardCountsMax > 0 ? 100 : 150;
 		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
 		let boardCanvas = cubeCanvas(boardSize + boardGridPattern * 2, boardSize + boardGridPattern * 2, 1);

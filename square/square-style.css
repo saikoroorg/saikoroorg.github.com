@@ -75,11 +75,20 @@ a {
 	margin: 0px;
 	font-size: 24px;
 }
+#title:hover {
+	transform: scale(1);
+	opacity: 0.6;
+	cursor: pointer;
+}
+#title:active {
+	transform: scale(0.9);
+	opacity: 1;
+}
 #menu {
 	width: 120px; height: 40px;
 	display: flex; display: -webkit-flex;
 	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: center; -webkit-justify-content: center;
+	justify-content: end; -webkit-justify-content: end;
 	align-items: center; -webkit-align-items: center;
 	opacity: 0.5;
 }

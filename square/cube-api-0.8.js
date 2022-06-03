@@ -5,8 +5,8 @@
 var cube = cube || {};
 
 /* VERSION/ *****************************/
-cube.version = "0.8.63b";
-cube.timestamp = "20601";
+cube.version = "0.8.64b";
+cube.timestamp = "20603";
 /************************************* /VERSION*
 
 
@@ -1002,6 +1002,8 @@ cube.Params = class {
             for (var i = 0; i < params.length; i++) {
                 if (params[i]) {
                     result[i] = parseInt(params[i], 10);
+                } else if (i < params.length - 1) {
+                    result[i] = 0;
                 }
             }
         }
