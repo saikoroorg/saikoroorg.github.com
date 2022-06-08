@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Saikoro.org",
-    "version": "0.8.20603",
+    "version": "0.8.20608",
     "short_name": "Saikoro",
     "author": "saikoro.org",
     "scope": "/",
@@ -25,13 +25,13 @@ const manifest = {
         },
         "cards": {
             "count": [0, 0],
-            "faces": [52]
+            "faces": [54]
         },
         "board": {
             "size": 6,
             "type": 1,
             "count": 0,
-            "face": [0, 2]
+            "face": [1, 6]
         },
         "players": [1, 1],
         "seed": 0

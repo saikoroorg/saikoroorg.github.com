@@ -16,7 +16,7 @@ const manifest = {
     "resource": "../resource.png",
     "params": {
         "cards": {
-            "count": [0, 54],
+            "count": [1, 54],
             "faces": [54]
         },
         "board": {
