@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Saikoro.org",
-    "version": "0.8.20609",
+    "version": "0.8.20609a",
     "short_name": "Saikoro",
     "author": "saikoro.org",
     "scope": "/",
