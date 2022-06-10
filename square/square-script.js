@@ -4,8 +4,8 @@
 var square = square || {};
 
 /* VERSION/ *****************************/
-square.version = "0.8.67b";
-square.timestamp = "20609a";
+square.version = "0.8.68b";
+square.timestamp = "20610";
 /************************************* /VERSION*/
 
 // Global variables.
@@ -401,8 +401,11 @@ function squareCounts(x) {
 	//var maximum = 6; // Maximum deck counts.
 	//var rolling = 0; // Rolling count.
 
+	// Screen size.
+	const screenSizeX = 180, screenSizeY = 280;
+
 	// Resize screen.
-	cubeResizeScreen(240, 300);
+	cubeResizeScreen(screenSizeX, screenSizeY);
 
 	var joypad = cubeJoypad();
 
@@ -434,13 +437,40 @@ function squareCounts(x) {
 		counterSprites[i] = await cubeSprite(resource0, 40, 40);
 	}
 
+	// Board size.
+	const boardSize = 160, boardPosX = screenSizeX/2;
+
+	// Card scales.
+	const handScale = 1.0;
+	const playScale = 1.0;
+	const handFocusScale = 3.0;
+	const playFocusScale = 3.0;
+	const focusPosY = -8;
+	const deckScale = 0.75;
+	const bankScale = 0.75;
+	const diceScale = 0.75;
+
+	// Reset bank/dice position.
+	let boardPosY = cardCountsMax > 0 ? 90 : 120;
+	let deckPosY = boardPosY + boardSize/2 + 20;
+	let bankPosY = boardPosY + boardSize/2 + 20;
+	let dicePosY = boardPosY + boardSize/2 + 50;
+	let handPosY = boardPosY + boardSize/2 + 90;
+
+	// Counter number position.
+	const numberPosY = 5;
+
 	// Create shade sprite.
 	const shadeStarts = [cubeVector(0, 0), cubeVector(0, 0)];
-	const shadeSizes = [cubeVector(240, 40), cubeVector(32, 160)];
+	const shadeSizes = [cubeVector(screenSizeX, 40), cubeVector(screenSizeX, 40)];
 	const shadeColors = [cubeVector(204, 204, 204), cubeVector(204, 204, 204)];
-	var shadeCanvases = [cubeCanvas(240, 40, 1), cubeCanvas(240, 40, 1), cubeCanvas(32, 160, 1), cubeCanvas(32, 160, 1)];
-	const shadeSpriteMax = 4;
-	const shadePoses = [cubeVector(120, 280), cubeVector(120, 20), cubeVector(16, 150), cubeVector(224, 150)];
+	var shadeCanvases = [
+		cubeCanvas(shadeSizes[0].x, shadeSizes[0].y, 1),
+		cubeCanvas(shadeSizes[1].x, shadeSizes[1].y, 1)];
+	const shadeSpriteMax = 2;
+	const shadePoses = [
+		cubeVector(screenSizeX/2, handPosY),
+		cubeVector(screenSizeX/2, 20)];
 	var shadeSprites = [];
 	var shadeOffsets = [0, 0];
 	//for (var i = 0; i < shadeSpriteMax/2; i++) {
@@ -480,8 +510,6 @@ function squareCounts(x) {
 	while (true) {
 
 		// Load board sprite.
-		let boardSize = 180, boardPosX = 120;
-		let boardPosY = cardCountsMax > 0 ? 100 : 120;
 		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
 		let boardCanvas = cubeCanvas(boardSize + boardGridPattern * 2, boardSize + boardGridPattern * 2, 1);
@@ -510,6 +538,11 @@ function squareCounts(x) {
 		}
 		boardSprite = await cubeCanvasSprite(boardCanvas);
 		cubeMove(boardPosX, boardPosY, boardSprite);
+
+		// Reset play card lines and scales.
+		let cardScale = playScale * boardGridSize.y * 0.04;
+		let chipScale = playScale * boardGridSize.y * 0.04;
+		let holdScale = playScale * boardGridSize.y * 0.05;
 
 		// Collision margin.
 		let colorMargin = cubeVector(-80 / boardGridCounts, -80 / boardGridCounts);
@@ -681,9 +714,6 @@ function squareCounts(x) {
 		let holdingCardId = -1, releasedCardId = -1, focusingCardId = -1;
 		for (rolling = 1; rolling >= 1; rolling++) {
 
-			// Screen size.
-			var size = cubeScreenSize();
-
 			// Wait for input.
 			await cubeReadJoypad(0, joypad);
 			let action = cubeJoypadAction(joypad);
@@ -693,6 +723,7 @@ function squareCounts(x) {
 			// Check touching each cards.
 			const touchingNothing = -1, touchingSomething = -2, touchingReleased = -3;
 			const touchingButton = -4, touchingFocus = -5, touchingBoard = -6, touchingShade = -7;
+			const touchingRolling = -8, touchingClosing = -9;
 			let touchingCardId = touchingNothing;
 			let touchingShadeL = -1, touchingShadeR = -1;
 			let touchingBoardPos = null;
@@ -704,6 +735,17 @@ function squareCounts(x) {
 					if (cubeCheck(motion, null, buttonSprites[i])) {
 						touchingCardId = touchingButton;
 						touchingButtonId = i;
+						break;
+					}
+				}
+			}
+
+			// Check touching hand card.
+			if (touchingCardId == touchingNothing && drawCounts <= 0 && rollingCounts <= 0 &&
+				/*opening > 10 &&*/ focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0) {
+				for (let i = handCards.length - 1; i >= 0; i--) {
+					if (cubeCheck(motion, null, cardSprites[i])) {
+						touchingCardId = i;
 						break;
 					}
 				}
@@ -728,7 +770,7 @@ function squareCounts(x) {
 			// Check touching banks.
 			if (touchingCardId == touchingNothing && 
 				((chipCountsMax > 0 && banks.length > 0)/* || (cardCountsMax > 0 && opening > 0)*/) &&
-				drawCounts <= 0 && rollingCounts <= 0 && opening <= 0 &&
+				drawCounts <= 0 && rollingCounts <= 0 && /*opening <= 0 &&*/
 				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0 &&
 				cubeCheck(motion, null, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraBank])) {
 				touchingCardId = handCards.length + playCards.length + playChips.length + cardExtraBank;
@@ -742,23 +784,20 @@ function squareCounts(x) {
 				touchingCardId = handCards.length + playCards.length + playChips.length + cardExtraDice;
 			}
 
+			// Check touching closing.
+			/*if (touchingCardId == touchingNothing && diceCounts > 0 &&
+				drawCounts <= 0 && (rollingCounts <= 0 || dice.length > 0) && opening > 0 &&
+				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0 &&
+				cubeCheck(motion, null, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraDice])) {
+				touchingCardId = touchingClosing;
+			}*/
+
 			// Check touching focuses.
 			if (touchingCardId == touchingNothing &&
 				drawCounts <= 0 && rollingCounts <= 0 &&
 				focuses.length > 0 &&
 				cubeCheck(motion, colorMargin, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraFocus])) {
 				touchingCardId = touchingFocus;
-			}
-
-			// Check touching hand card.
-			if (touchingCardId == touchingNothing && drawCounts <= 0 && rollingCounts <= 0 &&
-				/*opening > 10 &&*/ focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0) {
-				for (let i = handCards.length - 1; i >= 0; i--) {
-					if (cubeCheck(motion, null, cardSprites[i])) {
-						touchingCardId = i;
-						break;
-					}
-				}
 			}
 
 			// Check touching play chips.
@@ -788,7 +827,7 @@ function squareCounts(x) {
 
 			// Check touching hand shade.
 			if (touchingCardId == touchingNothing &&
-				(holdCards.length > 0 /*|| handCards.length > 0 || opening <= 0*/)) {
+				(holdCards.length > 0 || (handCards.length > 0 || opening > 0))) {
 				for (let i = 0; i < 1/*shadeSpriteMax*/; i++) {
 					if (cubeCheck(motion, null, shadeSprites[i])) {
 						touchingCardId = touchingShade - i;
@@ -798,8 +837,8 @@ function squareCounts(x) {
 			}
 
 			// Check touching playing board.
-			if (touchingCardId == touchingNothing &&
-				(holdCards.length > 0 || holdChips.length > 0 /*|| (cardCountsMax > 0 && opening > 0)*/)) {
+			if (touchingCardId == touchingNothing/* &&
+				(holdCards.length > 0 || holdChips.length > 0 || (cardCountsMax > 0 && opening > 0))*/) {
 				if (cubeCheck(motion, boardMargin, boardSprite)) {
 					touchingCardId = touchingBoard;
 				}
@@ -992,7 +1031,7 @@ function squareCounts(x) {
 			// Touch dice.
 			if (touchingCardId == handCards.length + playCards.length + playChips.length + cardExtraDice) {
 
-				//if (drawCounts <= 0) {
+				if (opening <= 0) {
 
 					// Roll dice on tapping.
 					if (action) {
@@ -1066,7 +1105,7 @@ function squareCounts(x) {
 						}
 					}
 
-				//}
+				}
 			}
 
 			// Touch buttons.
@@ -1152,8 +1191,8 @@ function squareCounts(x) {
 
 							if (focusingCardId != touchingCardId) {
 								let card = handCards[j];
+								angle = card.angle = 0; // Reset angle animation.
 								focuses.push(cubeClone(card));
-								angle = card.angle; // Reset angle animation.
 								focusingCardId = touchingCardId;
 							} else {
 								focuses.pop();
@@ -1302,7 +1341,7 @@ function squareCounts(x) {
 			const shadeGridLineMax = 10;
 			let shadeGridLine = handCards.length < shadeGridLineMax ? handCards.length : shadeGridLineMax;
 			let shadeLines = cubeDiv(handCards.length - 1, shadeGridLine);
-			let shadeGridSize = cubeVector(240 / (shadeGridLine + 1), 40 / (shadeLines + 1));
+			let shadeGridSize = cubeVector(shadeSizes[0].x / (shadeGridLine + 1), shadeSizes[0].y / (shadeLines + 1));
 
 			// Update shade offset.
 			let offset = 0;
@@ -1451,6 +1490,11 @@ function squareCounts(x) {
 								playCards.push(hold);
 							}
 
+							// Close hand cards when out of cards.
+							if (handCards.length <= 0) {
+								opening = 0;
+							}
+
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
 
@@ -1499,10 +1543,20 @@ function squareCounts(x) {
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
 
-						/*} else if (focuses.length <= 0 && opening > 0) {
-							console.log("Close hand cards on tapping.");
+						} else if (focuses.length > 0) {
 
-							opening = 0;*/
+							if (rolling > 10) {
+								console.log("Cancel focusing cards.");
+								focuses.pop();
+								focusingCardId = touchingNothing;
+							}
+
+						/*} else if (opening > 0) {
+							if (rolling > 10) {
+								console.log("Close hand cards on tapping.");
+
+								opening = 0;
+							}*/
 
 						} else {
 							console.log("Touch playing board.");
@@ -1511,44 +1565,146 @@ function squareCounts(x) {
 							touchingCardId = touchingSomething;
 						}
 
-					// Start to touch playing cards.
-					} else {
+					// Start to touch playing board.
+					/*} else {
 						if (holdingCardId < 0) {
+							//console.log("Start to touch playing board.");
 							holdingCardId = touchingCardId;
 							releasedCardId = -1;
-						}
+						}*/
 					}
 
 				}
 			}
 
-			// Touch nothing.
-			if (touchingCardId == touchingNothing) {
-				if (result > 0 && rolling > 10) {
+			// Touch closing.
+			/*if (touchingCardId == touchingClosing) {
+				if (result > 0) {
+					if (opening > 0) {
+						if (action) {
+							console.log("Close hand cards on tapping.");
 
-					// Check release action.
-					if (action) {
+							opening = 0;
 
-						if (holdCards.length <= 0 /*&& holdChips.length <= 0*/) {
-							if (focuses.length > 0) {
-								console.log("Cancel focusing cards.");
-								focuses.pop();
-								focusingCardId = touchingNothing;
+						// Start to touch dice.
+						} else if (motion) {
+							console.log("Start tapping.");
+							if (holdingCardId < 0) {
+								holdingCardId = touchingClosing;
+								touchingCardId = touchingClosing;
+								releasedCardId = -1;
 
-							} else if (opening > 0) {
-								console.log("Close hand cards on tapping.");
-
-								opening = 0;
+								// Reset for touching animation.
+								rolling = 0;
 							}
 						}
 					}
 				}
+			}*/
+
+			// Touch nothing.
+			if (touchingCardId == touchingNothing) {
+				//if (result > 0) {
+
+					if (holdCards.length <= 0 && holdChips.length <= 0) {
+						if (focuses.length > 0) {
+
+							if (action && rolling > 10) {
+								console.log("Cancel focusing cards.");
+								focuses.pop();
+								focusingCardId = touchingNothing;
+							}
+
+						/*} else if (opening > 0) {
+							if (action && rolling > 10) {
+								console.log("Close hand cards on tapping.");
+
+								opening = 0;
+							}*/
+
+						// Roll dice on tapping.
+						/*} else if (diceCounts > 0 && drawCounts <= 0 && opening <= 0 && (dice.length > 0 || result > 0)) {
+							if (action) {
+								console.log("Dice roll on tapping.");
+								let newRollCount = dice.length > 0 ? diceCounts - dice.length + 1 : 0;
+
+								// Reroll the dice.
+								var diceLayouts = [];
+								var rowsMax = cubeSqrt(newRollCount - 1) + 1;
+								var lines = cubeDiv(newRollCount - 1, rowsMax) + 1;
+								//console.log("newRollCount="+newRollCount+" rowsMax="+rowsMax+" lines=" + lines);
+								for (var y = 0; y < lines; y++) {
+									let rows = y > 0 ? rowsMax : cubeMod(newRollCount - 1, rowsMax) + 1;
+									//console.log("y=" + y + "/" + lines + " rows=" + rows);
+									for (var x = 0; x < rows; x++) {
+										let dx = (x + 1) / (rows + 1) * (rowsMax + 1) * 2;
+										let dy = (y + 1) / (lines + 1) * (rowsMax + 1) * 2;
+										let lx = cubeCut(dx - (rowsMax + 1));
+										let ly = cubeCut(dy - (rowsMax + 1));
+										diceLayouts.push([lx, ly]);
+										//console.log("x=" + x + " y=" + y + " layout = "+lx+","+ly+" : "+(x + 1)+"/"+(rows + 1)+" "+(y + 1)+"/"+(lines + 1));
+									}
+								}
+								//console.log("layouts=" + diceLayouts.length);
+
+								// Discard all playing dice.
+								for (var j = playChips.length - 1; j >= 0; j--) {
+									if (playChips[j].frame < frameChipStart) {
+										console.log("Discard the dice." +j +"/"+ newRollCount);
+										let chip = playChips.splice(j, 1)[0];
+										//chip.frame = frameDiceStart + diceFrameMax - 1;
+										dice.push(chip);
+									}
+								}
+								rollingCounts = 0;
+
+								// Reroll the dice.
+								if (newRollCount > 0) {
+									for (let i = 0; i < newRollCount && dice.length > 0; i++) {
+										console.log("Reroll the dice." +i +"/"+ newRollCount);
+
+										// Add chip to playing board and roll dice.
+										let chip = dice.pop();
+										chip.angle = 0;
+										chip.flag = false;
+										chip.x = diceLayouts[i][0];
+										chip.y = diceLayouts[i][1];
+										chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
+										playChips.push(chip);
+										rollingCounts += 1;
+										rollingMax = rollingMaxOnRoll;
+									}
+									if (dice.length > 0) {
+										dice[dice.length - 1].frame = frameDiceStart + diceFrameMax - 1;
+									}
+									result = 0;
+								}
+
+								holdingCardId = touchingSomething;
+								touchingCardId = touchingSomething;
+
+							// Start to touch dice.
+							} else if (motion) {
+								console.log("Start tapping.");
+								if (holdingCardId < 0) {
+									holdingCardId = touchingRolling;
+									touchingCardId = touchingRolling;
+									releasedCardId = -1;
+
+									// Reset for touching animation.
+									rolling = 0;
+								}
+							}*/
+						}
+					}
+
+				//}
 			}
 
 			// Update hand shade grid.
 			shadeGridLine = handCards.length < shadeGridLineMax ? handCards.length : shadeGridLineMax;
 			shadeLines = cubeDiv(handCards.length - 1, shadeGridLine);
-			shadeGridSize = cubeVector(240 / (shadeGridLine + 1), 40 / (shadeLines + 1));
+			shadeGridSize = cubeVector(screenSizeX / (shadeGridLine + 1), 40 / (shadeLines + 1));
 
 			// Update focusing card angle animation.
 			if (focuses.length > 0 && focusingCardId >= 0) {
@@ -1594,7 +1750,6 @@ function squareCounts(x) {
 
 				// Cancel holding cards.
 				if (action) {
-
 					console.log("Cancel holding cards.");
 
 					// Discard to trashes.
@@ -1603,6 +1758,12 @@ function squareCounts(x) {
 						hold.angle = 0;
 						trashes.push(hold);
 					}
+
+					// Close hand cards when out of cards.
+					if (handCards.length <= 0) {
+						opening = 0;
+					}
+
 					holdingCardId = touchingSomething;
 				}
 
@@ -1636,6 +1797,9 @@ function squareCounts(x) {
 
 					// Start to hold released cards.
 					if (holdingCardId == touchingReleased) {
+
+						console.log("Start to hold released cards.");
+
 						while (releasedCards.length > 0) {
 							let card = releasedCards.pop();
 							holdCards.push(card);
@@ -1696,8 +1860,8 @@ function squareCounts(x) {
 								}*/
 								holdCards.push(card);
 								angle = 0;
-								holdingCardId = touchingSomething;
-								touchingCardId = touchingSomething;
+								holdingCardId = touchingShade;
+								touchingCardId = touchingShade;
 							}
 						}
 
@@ -1924,7 +2088,9 @@ function squareCounts(x) {
 
 				// Update dice.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDice) {
-					if (/*opening <= 0 &&*/ diceCounts > 0) {
+					if (opening > 0) {
+						//n = frameBlank;
+					} else {
 						if (dice.length > 0) {
 							n = dice[dice.length - 1].frame;
 						} else {
@@ -1979,37 +2145,9 @@ function squareCounts(x) {
 				cubeAnimate(n, cardSprites[i]);
 			}
 
-			// Hand card lines and scales.
-			//const handLineMax = 18;//cardFrameMax > 7 ? cubeSqrt(handCards.length - 1) + 1 : 7;
-			//let handLines = cubeDiv(handCards.length - 1, handLineMax) + 1;
-			let handScale = 1;// / ((handCards.length < handLineMax ? handCards.length : handLines >= handLineMax ? handLines : handLineMax) + 2);
-
-			// Play card lines and scales.
-			//const playLineMax = 8;//cardFrameMax > 7 ? cubeSqrt(playCards.length - 1) + 1 : 7;
-			//let playLines = cubeDiv(playCards.length - 1, playLineMax) + 1;
-			const cardScale = 0.04 * boardGridSize.y;//(holdCards.length > 0 ? 6 : 5) / ((playCards.length < playLineMax ? playCards.length : playLines >= playLineMax ? playLines : playLineMax) + 2);
-			const chipScale = 0.04 * boardGridSize.y;
-			const holdScale = 0.05 * boardGridSize.y;
-			const focusScale = 3.0;
-			const focusPosY = -8;
-
-			// Deck/Trash card scales.
-			const deckScale = 0.75;//holdCards.length > 0 ? 1 : 1.5;
-			const bankScale = 0.75;//holdCards.length > 0 ? 1 : 1.5;
-			const diceScale = 0.75;//holdCards.length > 0 ? 1 : 1.5;
-
-			// Reset bank/dice position.
-			//let posYOffset = cardFrameMax > 0 ? 90 : 60; //=210,240
-			let deckPosY = boardPosY + boardSize/2 + 20;
-			let bankPosY = boardPosY + boardSize/2 + 20;
-			let dicePosY = boardPosY + boardSize/2 + 60;
-
-			// Counter number position.
-			const numberPosY = 5;
-
 			// Grid and center positions.
-			let mx = size.x * 1, my = size.y * 1;
-			let ox = (size.x - mx) * 0.5, oy = (size.y - my) * 0.5;
+			let mx = screenSizeX * 1, my = screenSizeY * 1;
+			let ox = (screenSizeX - mx) * 0.5, oy = (screenSizeY - my) * 0.5;
 
 			// Reset buttons.
 			for (let k = 0; k < buttonMax; k++) {
@@ -2164,6 +2302,9 @@ function squareCounts(x) {
 						s = chipScale;
 						a0 = 0.25;
 
+					// Touching dice animation.
+					//} else if (touchingCardId == touchingRolling && playChips[j].frame < frameChipStart) {
+					//	s = chipScale * 0.8;
 					} else if (touchingCardId == handCards.length + playCards.length + playChips.length + cardExtraDice && playChips[j].frame < frameChipStart) {
 						s = chipScale * 0.8;
 
@@ -2179,13 +2320,17 @@ function squareCounts(x) {
 
 				// Set deck position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDeck) {
-					sx = ox + mx * 1 / 3;
+					sx = ox + mx * 1 / 4;
 					sy = deckPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (decks.length <= 0) {
 						a0 = 0.25;
 					} else if (focuses.length > 0) {
 						a0 = 0.25;
+
+					//} else if (opening > 0) {
+					//	a0 = (opening < 5 ? (1 - 0.05 * opening) : 0.5);
+
 					//} else if (rollingCounts > 0) {
 					//	a0 = 0.75;
 					}
@@ -2217,13 +2362,16 @@ function squareCounts(x) {
 
 				// Set trash position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraTrash) {
-					sx = ox + mx * 2 / 3;
+					sx = ox + mx * 3 / 4;
 					sy = deckPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (trashes.length <= 0) {
 						a0 = 0.25;
 					} else if (focuses.length > 0) {
 						a0 = 0.25;
+
+					//} else if (opening > 0) {
+					//	a0 = (opening < 5 ? (1 - 0.05 * opening) : 0.5);
 
 					// Drawing cards or rolling dice.
 					//} else if (drawCounts > 0 || rollingCounts > 0) {
@@ -2255,10 +2403,13 @@ function squareCounts(x) {
 					sy = bankPosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (focuses.length > 0) {
-						a0 = 0.1;
+						a0 = 0.25;
 
-					} else if (opening > 0) {
-						a0 = 0.1;
+					//} else if (opening > 0) {
+					//	a0 = (opening < 5 ? (1 - 0.05 * opening) : 0.5);
+
+					//} else if (opening > 0) {
+					//	a0 = 0.1;
 
 					// Drawing cards or rolling dice.
 					//} else if (drawCounts > 0 || rollingCounts > 0) {
@@ -2286,10 +2437,10 @@ function squareCounts(x) {
 					sy = dicePosY;//oy + my * (0 + 2 * deckScale) / 18;
 
 					if (focuses.length > 0) {
-						a0 = 0.1;
+						a0 = 0.25;
 
-					} else if (opening > 0) {
-						a0 = 0.1;
+					//} else if (opening > 0) {
+					//	a0 = 0.5;//(opening < 5 ? (1 - 0.05 * opening) : 0.5);
 
 					// Drawing cards or rolling dice.
 					//} else if (drawCounts > 0 || (rollingCounts > 0 && dice.length <= 0)) {
@@ -2298,11 +2449,15 @@ function squareCounts(x) {
 					} else if (dice.length <= 0) {
 						a0 = 0.5;
 					} else {
-						a0 = 0.75;
+						a0 = 1;
 					}
 
 					// Scale animation.
-					if (touchingCardId == i) {
+					if (touchingCardId == touchingClosing) {
+						s = diceScale * (rolling < 5 ? (1.4 - 0.04 * rolling) : 1.2);
+					} else if (touchingCardId == touchingRolling) {
+						s = diceScale * (rolling < 5 ? (1.4 - 0.04 * rolling) : 1.2);
+					} else if (touchingCardId == i) {
 						s = diceScale * (rolling < 5 ? (1.4 - 0.04 * rolling) : 1.2);
 					} else if (dice.length <= 0) {
 						s = diceScale * 0.8;
@@ -2353,16 +2508,18 @@ function squareCounts(x) {
 
 					// Set focuses position.
 					if (focuses.length > 0) {
+						let focusScale = 1;
 
 						// Focusing hand card.
 						if (focusingCardId < handCards.length) {
+							focusScale = handFocusScale;
 							sx = ox + mx * 1 / 2;
 							sy = (shadeSprites[0].pos.y - shadeSprites[0].size.y/2 + focusPosY);
 
 							if (touchingCardId == touchingFocus) {
-								s = focusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);
+								s = handFocusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);
 							} else {
-								s = focusScale;
+								s = handFocusScale;
 							}
 
 							// Rotation animation..
@@ -2370,6 +2527,7 @@ function squareCounts(x) {
 
 						// Focusing playing card.
 						} else if (focusingCardId < handCards.length + playCards.length) {
+							focusScale = playFocusScale;
 							let j = focusingCardId - handCards.length;
 							const margin = 1;
 
@@ -2378,9 +2536,9 @@ function squareCounts(x) {
 							sy = boardSprite.pos.y + playCards[j].y * boardGridSize.y;
 
 							if (touchingCardId == touchingFocus) {
-								s = focusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);
+								s = playFocusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);
 							} else {
-								s = focusScale;
+								s = playFocusScale;
 							}
 
 							// Rotation.
@@ -2391,7 +2549,7 @@ function squareCounts(x) {
 						for (let k = 0; k < buttonMax; k++) {
 							cubeAnimate(frameButtons[k], buttonSprites[k]);
 							cubeDilute(0.2, buttonSprites[k]);
-							let buttonScale = focusScale * 0.5;
+							let buttonScale = focusScale * 0.5;;
 							if (touchingButtonId == k) {
 								buttonScale = focusScale * (rolling < 5 ? (1.2 - 0.02 * rolling) : 1.1);
 							}
@@ -2442,7 +2600,13 @@ function squareCounts(x) {
 			for (let i = 0; i < shadeSpriteMax; i++) {
 				let j = touchingShade - i;
 				let a = 0;
-				if (touchingCardId == j &&
+				if (opening > 0 && i == 0) {
+					if (touchingCardId == j && focuses.length <= 0) {
+						a = (rolling < 5 ? (0.5 * 0.10 * rolling) : 1.0);
+					} else {
+						a = 0.5;
+					}
+				} else if ((touchingCardId == j || (touchingCardId >= 0 && touchingCardId < handCards.length && i == 0)) &&
 					(holdCards.length > 0 || (cardCountsMax > 0 && focuses.length <= 0 && handCards.length > 0))) {
 					a = (rolling < 5 ? (0.3 * 0.04 * rolling) : 0.5);
 				}
