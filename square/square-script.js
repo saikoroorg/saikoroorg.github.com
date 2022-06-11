@@ -4,8 +4,8 @@
 var square = square || {};
 
 /* VERSION/ *****************************/
-square.version = "0.8.69b";
-square.timestamp = "20610a";
+square.version = "0.8.70b";
+square.timestamp = "20612";
 /************************************* /VERSION*/
 
 // Global variables.
@@ -489,8 +489,8 @@ function squareCounts(x) {
 	// Cards.
 	var decks = [], trashes = [], focuses = [];
 	var handCards = [], playCards = [], holdCards = [];
-	const blankCard = { x:0, y:0, angle:0, frame:frameCardStart, flag:0 };
-	const backsidedCard = { x:0, y:0, angle:0, frame:frameBack, flag:1 };
+	const blankCard = { x:0, y:0, z:0, angle:0, frame:frameCardStart, flag:0 };
+	const backsidedCard = { x:0, y:0, z:0, angle:0, frame:frameBack, flag:1 };
 	const rollingMaxOnDraw = 15;
 	var drawCounts = 0;
 	var opening = 0;
@@ -591,6 +591,7 @@ function squareCounts(x) {
 						let chip = banks.pop();
 						chip.x = placements[j].x;
 						chip.y = placements[j].y;
+						chip.z = 0;
 						chip.frame = frameChipStart + (placements[j].z - 1);
 						playChips.push(chip);
 				}
@@ -689,6 +690,7 @@ function squareCounts(x) {
 							console.log("Roll the initial dice:" + i);
 							chip.x = diceLayouts[i].x;
 							chip.y = diceLayouts[i].y;
+							chip.z = 0;
 							chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
 							playChips.push(chip);
 							if (result > 0) {
@@ -1080,6 +1082,7 @@ function squareCounts(x) {
 								chip.flag = false;
 								chip.x = diceLayouts[i][0];
 								chip.y = diceLayouts[i][1];
+								chip.z = 0;
 								chip.frame = frameDiceStart + cubeMod(cubeRandom(diceFrameMax) + playerNumber, diceFrameMax);
 								playChips.push(chip);
 								rollingCounts += 1;
@@ -1496,12 +1499,23 @@ function squareCounts(x) {
 								let hold = holdCards.pop();
 								hold.x = touchingBoardPos.x;
 								hold.y = touchingBoardPos.y;
+								hold.z = 0;
 								for (let i = playCards.length - 1; i >= 0; i--) {
+									// Find the nearest card in the same location.
 									if (playCards[i].x == hold.x && playCards[i].y == hold.y) {
+										hold.z = playCards[i].z + 1;
 										playCards.splice(i + 1, 0, hold);
 										hold = null;
 										break;
+									// Find the card closest to the bottom.
 									} else if (playCards[i].x == hold.x && playCards[i].y == hold.y + 1) {
+										for (let j = i - 1; j >= 0; j--) {
+											// Find the nearest card in the same location.
+											if (playCards[j].x == hold.x && playCards[j].y == hold.y) {
+												hold.z = playCards[j].z + 1;
+												break;
+											}
+										}
 										playCards.splice(i, 0, hold);
 										hold = null;
 										break;
@@ -1559,12 +1573,23 @@ function squareCounts(x) {
 								let hold = holdChips.pop();
 								hold.x = touchingBoardPos.x;
 								hold.y = touchingBoardPos.y;
+								hold.z = 0;
 								for (let i = playChips.length - 1; i >= 0; i--) {
+									// Find the nearest chip in the same location.
 									if (playChips[i].x == hold.x && playChips[i].y == hold.y) {
+										hold.z = playChips[i].z + 1;
 										playChips.splice(i + 1, 0, hold);
 										hold = null;
 										break;
+									// Find the chip closest to the bottom.
 									} else if (playChips[i].x == hold.x && playChips[i].y == hold.y + 1) {
+										for (let j = i - 1; j >= 0; j--) {
+											// Find the nearest chip in the same location.
+											if (playChips[j].x == hold.x && playChips[j].y == hold.y) {
+												hold.z = playChips[j].z + 1;
+												break;
+											}
+										}
 										playChips.splice(i, 0, hold);
 										hold = null;
 										break;
@@ -2263,7 +2288,7 @@ function squareCounts(x) {
 
 					// Position direct setting.
 					sx = boardSprite.pos.x + playCards[j].x * boardGridSize.x;
-					sy = boardSprite.pos.y + playCards[j].y * boardGridSize.y;
+					sy = boardSprite.pos.y + playCards[j].y * boardGridSize.y - playCards[j].z * boardGridSize.y/6;
 
 					// Touching scale animation.
 					if (touchingCardId == i && releasedCardId < 0) {
@@ -2312,7 +2337,7 @@ function squareCounts(x) {
 
 					// Position direct setting.
 					sx = boardSprite.pos.x + playChips[j].x * boardGridSize.x;
-					sy = boardSprite.pos.y + playChips[j].y * boardGridSize.y;
+					sy = boardSprite.pos.y + playChips[j].y * boardGridSize.y - playChips[j].z * boardGridSize.y/6;
 
 					// Rotation.
 					a = playChips[j].angle;
