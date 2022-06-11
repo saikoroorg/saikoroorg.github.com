@@ -809,8 +809,14 @@ function squareCounts(x) {
 				for (let i = handCards.length + playCards.length + playChips.length - 1; i >= handCards.length + playCards.length; i--) {
 					if (cubeCheck(motion, cardMargin, cardSprites[i])) {
 						let j = i - handCards.length - playCards.length;
+						// Find the higher chip in the same location.
+						for (let k = 0; k < playChips.length; k++) {
+							if (playChips[k].x == playChips[j].x && playChips[k].y == playChips[j].y && playChips[k].z > playChips[j].z) {
+								j = k;
+							}
+						}
 						if (playChips[j].frame < frameChipStart || rollingCounts <= 0) {
-							touchingCardId = i;
+							touchingCardId = j + handCards.length + playCards.length;
 							break;
 						}
 					}
@@ -822,7 +828,14 @@ function squareCounts(x) {
 				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0) {
 				for (let i = handCards.length + playCards.length - 1; i >= handCards.length; i--) {
 					if (cubeCheck(motion, cardMargin, cardSprites[i])) {
-						touchingCardId = i;
+						let j = i - handCards.length;
+						// Find the higher card in the same location.
+						for (let k = 0; k < playCards.length; k++) {
+							if (playCards[k].x == playCards[j].x && playCards[k].y == playCards[j].y && playCards[k].z > playCards[j].z) {
+								j = k;
+							}
+						}
+						touchingCardId = j + handCards.length;
 						break;
 					}
 				}
