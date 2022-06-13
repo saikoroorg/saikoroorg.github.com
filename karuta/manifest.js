@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Karuta",
-    "version": "0.8.20603",
+    "version": "0.8.20613",
     "short_name": "Karuta",
     "author": "saikoro.org",
     "scope": "/karuta/",
@@ -13,7 +13,7 @@ const manifest = {
         "type": "image/svg"
     }],
     //*
-    "resource": "../resource.png",
+    "resource": "resource.png",
     "params": {
         "cards": {
             "count": [1, 54],

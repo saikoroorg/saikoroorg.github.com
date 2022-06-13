@@ -38,7 +38,7 @@ var resource = "data:image/svg+xml;base64," + btoa(`
         </g>
     </g>
 
-    <!-- Dice 7 8 9 -->
+    <!-- Dice 7 8 9 o x - -->
     <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000" transform="translate(2,22)">
         <g transform="translate(0,0)">
             <path d="M0,0h16v16h-16Z" stroke="#000" fill="#fff"/>
@@ -58,33 +58,29 @@ var resource = "data:image/svg+xml;base64," + btoa(`
                      M3,7h2v2h-2Z  M7,7h2v2h-2Z  M11,7h2v2h-2Z
                      M3,11h2v2h-2Z M7,11h2v2h-2Z M11,11h2v2h-2Z"/>
         </g>
-    </g>
-
-    <!-- o + - -->
-    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,22)">
         <g transform="translate(60,0)">
-            <!--path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/!-->
-            <path d="M6,6h4v4h-4Z"/>
+            <path d="M6,6h4v4h-4Z" stroke="#000" fill="none"/>
         </g>
         <g transform="translate(80,0)">
+            <path d="M5,5h2v2h-2Z        M9,5h2v2h-2Z
+                               M7,7h2v2h-2Z          
+                     M5,9h2v2h-2Z        M9,9h2v2h-2Z"/>
+        </g>
+        <g transform="translate(100,0)">
+            <path d="M5,7h6v2h-6Z"/>
+        </g>
+    </g>
+
+    <!-- + 20 .. 16 -->
+    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,42)">
+        <g transform="translate(0,0)">
             <!--path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/!-->
             <path d="M6,8h4 M8,6v4"/>
         </g>
-        <g transform="translate(100,0)">
+        <g transform="translate(0,0)">
             <!--path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/!-->
             <path d="M6,8h4"/>
         </g>
-    </g>
-
-    <!-- . -->
-    <g stroke-linecap="butt" stroke-width="2" stroke="none" fill="#000" transform="translate(2,42)">
-        <g transform="translate(0,0)">
-            <path d="M7,7h2v2h-2Z"/>
-        </g>
-    </g>
-
-    <!-- . 20 .. 16 -->
-    <g stroke-linecap="square" stroke-width="2" stroke="#000" fill="none" transform="translate(2,42)">
         <g transform="translate(20,0)">
             <path d="M0,0h16v16h-16Z" stroke="#fff" fill="#fff"/>
             <!--path d="M2.5,4h4v4h-4v4h4M9.5,4h4v8h-4v-8"/-->

@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Saikoro.org",
-    "version": "0.8.20612",
+    "version": "0.8.20613",
     "short_name": "Saikoro",
     "author": "saikoro.org",
     "scope": "/",
@@ -16,7 +16,7 @@ const manifest = {
         "sizes": "192x192",
         "type": "image/png"
     }],
-    //*
+    /*
     "resource": "resource.png",
     "params": {
         "dice": {

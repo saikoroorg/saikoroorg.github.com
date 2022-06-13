@@ -4,8 +4,8 @@
 var square = square || {};
 
 /* VERSION/ *****************************/
-square.version = "0.8.70b";
-square.timestamp = "20612";
+square.version = "0.8.71b";
+square.timestamp = "20613";
 /************************************* /VERSION*/
 
 // Global variables.
@@ -162,7 +162,7 @@ function squareCounts(x) {
 
 	// Constant parameters.
 	const frameNone = 0, frameBack = -1, frameBlank = -2;
-	const frameCardStart = -3, frameButtons = [11, 11];
+	const frameCardStart = -3, frameButtons = [12, 12];
 	const frameDigitStart = -3, frameDigitDirs = -1, frameDigitCounts = 20;
 	var frameChipStart = 10, frameDiceStart = 1;
 
@@ -241,6 +241,8 @@ function squareCounts(x) {
 		diceCounts = 9;
 		rollCounts = 1;
 		diceFrameMax = 6;
+		cardCounts = [10];
+		chipFrameMax = 2;
 		counts = 6;
 		pattern = 1;
 	}
@@ -459,6 +461,9 @@ function squareCounts(x) {
 
 	// Counter number position.
 	const numberPosY = 5;
+
+	// Card/chip max stack count.
+	const stackCountsMax = 5;
 
 	// Create shade sprite.
 	const shadeStarts = [cubeVector(0, 0), cubeVector(0, 0)];
@@ -809,16 +814,19 @@ function squareCounts(x) {
 				for (let i = handCards.length + playCards.length + playChips.length - 1; i >= handCards.length + playCards.length; i--) {
 					if (cubeCheck(motion, cardMargin, cardSprites[i])) {
 						let j = i - handCards.length - playCards.length;
-						// Find the higher chip in the same location.
-						for (let k = 0; k < playChips.length; k++) {
-							if (playChips[k].x == playChips[j].x && playChips[k].y == playChips[j].y && playChips[k].z > playChips[j].z) {
-								j = k;
+						// Ignore stacked chips.
+						//if (playChips[j].z <= 0) {
+							// Find the higher chip in the same location.
+							for (let k = 0; k < playChips.length; k++) {
+								if (playChips[k].x == playChips[j].x && playChips[k].y == playChips[j].y && playChips[k].z > playChips[j].z) {
+									j = k;
+								}
 							}
-						}
-						if (playChips[j].frame < frameChipStart || rollingCounts <= 0) {
-							touchingCardId = j + handCards.length + playCards.length;
-							break;
-						}
+							if (playChips[j].frame < frameChipStart || rollingCounts <= 0) {
+								touchingCardId = j + handCards.length + playCards.length;
+								break;
+							}
+						//}
 					}
 				}
 			}
@@ -829,14 +837,17 @@ function squareCounts(x) {
 				for (let i = handCards.length + playCards.length - 1; i >= handCards.length; i--) {
 					if (cubeCheck(motion, cardMargin, cardSprites[i])) {
 						let j = i - handCards.length;
-						// Find the higher card in the same location.
-						for (let k = 0; k < playCards.length; k++) {
-							if (playCards[k].x == playCards[j].x && playCards[k].y == playCards[j].y && playCards[k].z > playCards[j].z) {
-								j = k;
+						// Ignore stacked cards.
+						//if (playCards[j].z <= 0) {
+							// Find the higher card in the same location.
+							for (let k = 0; k < playCards.length; k++) {
+								if (playCards[k].x == playCards[j].x && playCards[k].y == playCards[j].y && playCards[k].z > playCards[j].z) {
+									j = k;
+								}
 							}
-						}
-						touchingCardId = j + handCards.length;
-						break;
+							touchingCardId = j + handCards.length;
+							break;
+						//}
 					}
 				}
 			}
@@ -1516,14 +1527,22 @@ function squareCounts(x) {
 								for (let i = playCards.length - 1; i >= 0; i--) {
 									// Find the nearest card in the same location.
 									if (playCards[i].x == hold.x && playCards[i].y == hold.y) {
+										if (playCards[i].z + 1 >= stackCountsMax) {
+											// Move the card in the same location to lower.
+											for (let j = i; j >= 0; j--) {
+												if (playCards[j].x == hold.x && playCards[j].y == hold.y) {
+													playCards[j].z = playCards[j].z - 1;
+												}
+											}
+										}
 										hold.z = playCards[i].z + 1;
 										playCards.splice(i + 1, 0, hold);
 										hold = null;
 										break;
 									// Find the card closest to the bottom.
 									} else if (playCards[i].x == hold.x && playCards[i].y == hold.y + 1) {
+										// Find the nearest card in the same location.
 										for (let j = i - 1; j >= 0; j--) {
-											// Find the nearest card in the same location.
 											if (playCards[j].x == hold.x && playCards[j].y == hold.y) {
 												hold.z = playCards[j].z + 1;
 												break;
@@ -1590,6 +1609,14 @@ function squareCounts(x) {
 								for (let i = playChips.length - 1; i >= 0; i--) {
 									// Find the nearest chip in the same location.
 									if (playChips[i].x == hold.x && playChips[i].y == hold.y) {
+										if (playChips[i].z + 1 >= stackCountsMax) {
+											// Move the chip in the same location to lower.
+											for (let j = i; j >= 0; j--) {
+												if (playChips[j].x == hold.x && playChips[j].y == hold.y) {
+													playChips[j].z = playChips[j].z - 1;
+												}
+											}
+										}
 										hold.z = playChips[i].z + 1;
 										playChips.splice(i + 1, 0, hold);
 										hold = null;
@@ -1947,12 +1974,26 @@ function squareCounts(x) {
 
 						if (j < playCards.length) {
 							if (playCards[j].frame != 0) {
-								let card = playCards.splice(j, 1)[0];
-								holdCards.push(card);
-								angle = card.angle;
+								// Move the chip in the same location to higher.
+								for (let k = 0; k < j; k++) {
+									if (playCards[k].x == playCards[j].x && playCards[k].y == playCards[j].y) {
+										if (playCards[k].z < 0) {
+											for (let l = k; l < j; l++) {
+												if (playCards[l].x == playCards[j].x && playCards[l].y == playCards[j].y) {
+													playCards[l].z = playCards[l].z + 1;
+												}
+											}
+										}
+										break;
+									}
+								}
+								let hold = playCards.splice(j, 1)[0];
+								holdCards.push(hold);
+								angle = hold.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
-								touchingBoardPos = cubeVector(card.x, card.y);
+								touchingBoardPos = cubeVector(hold.x, hold.y);
+								hold.x = hold.y = hold.z = 0;
 							}
 						}
 
@@ -1965,12 +2006,26 @@ function squareCounts(x) {
 
 						if (j < playChips.length) {
 							if (playChips[j].frame != 0) {
-								let chip = playChips.splice(j, 1)[0];
-								holdChips.push(chip);
-								angle = chip.angle;
+								// Move the chip in the same location to higher.
+								for (let k = 0; k < j; k++) {
+									if (playChips[k].x == playChips[j].x && playChips[k].y == playChips[j].y) {
+										if (playChips[k].z < 0) {
+											for (let l = k; l < j; l++) {
+												if (playChips[l].x == playChips[j].x && playChips[l].y == playChips[j].y) {
+													playChips[l].z = playChips[l].z + 1;
+												}
+											}
+										}
+										break;
+									}
+								}
+								let hold = playChips.splice(j, 1)[0];
+								holdChips.push(hold);
+								angle = hold.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
-								touchingBoardPos = cubeVector(chip.x, chip.y);
+								touchingBoardPos = cubeVector(hold.x, hold.y);
+								hold.x = hold.y = hold.z = 0;
 							}
 						}
 
@@ -2152,18 +2207,19 @@ function squareCounts(x) {
 					/*if (opening > 0) {
 						n = frameBlank;
 					} else if (opening <= 0 && chipFrameMax > 0) {*/
+					if (chipCountsMax > 0) {
 						if (banks.length > 0) {
 							n = banks[banks.length - 1].frame;
 						} else {
 							n = frameNone;
 						}
-					//}
+					}
 
 				// Update dice.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDice) {
 					if (opening > 0) {
 						//n = frameBlank;
-					} else {
+					} else if (diceCounts > 0) {
 						if (dice.length > 0) {
 							n = dice[dice.length - 1].frame;
 						} else {
@@ -2300,8 +2356,9 @@ function squareCounts(x) {
 					const margin = 1;
 
 					// Position direct setting.
+					let z = (playCards[j].z > 0 ? playCards[j].z : playCards[j].z / 2) * boardGridSize.y / stackCountsMax;
 					sx = boardSprite.pos.x + playCards[j].x * boardGridSize.x;
-					sy = boardSprite.pos.y + playCards[j].y * boardGridSize.y - playCards[j].z * boardGridSize.y/6;
+					sy = boardSprite.pos.y + playCards[j].y * boardGridSize.y - z;
 
 					// Touching scale animation.
 					if (touchingCardId == i && releasedCardId < 0) {
@@ -2324,6 +2381,11 @@ function squareCounts(x) {
 					// Default animation.
 					} else {
 						s = cardScale;
+					}
+
+					// Higher card alpha.
+					if (playCards[j].z < 0) {
+						a0 = a0 * 0.2;
 					}
 
 					// Rotation.
@@ -2349,8 +2411,9 @@ function squareCounts(x) {
 					const margin = 1;
 
 					// Position direct setting.
+					let z = (playChips[j].z > 0 ? playChips[j].z : playChips[j].z / 2) * boardGridSize.y / stackCountsMax;
 					sx = boardSprite.pos.x + playChips[j].x * boardGridSize.x;
-					sy = boardSprite.pos.y + playChips[j].y * boardGridSize.y - playChips[j].z * boardGridSize.y/6;
+					sy = boardSprite.pos.y + playChips[j].y * boardGridSize.y - z;
 
 					// Rotation.
 					a = playChips[j].angle;
@@ -2391,6 +2454,11 @@ function squareCounts(x) {
 					// Default animation.
 					} else {
 						s = chipScale;
+					}
+
+					// Higher chip alpha.
+					if (playChips[j].z < 0) {
+						a0 = a0 * 0.2;
 					}
 
 				// Set deck position.

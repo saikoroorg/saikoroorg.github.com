@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Sai",
-    "version": "0.8.20603",
+    "version": "0.8.20613",
     "short_name": "Sai",
     "author": "saikoro.org",
     "scope": "/sai/",
@@ -13,7 +13,7 @@ const manifest = {
         "type": "image/svg"
     }],
     //*
-    "resource": "../resource.png",
+    "resource": "resource.png",
     "params": {
         "dice": {
             "count": [1, 9],

@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Goban",
-    "version": "0.8.20603",
+    "version": "0.8.20613",
     "short_name": "Goban",
     "author": "saikoro.org",
     "scope": "/goban/",
@@ -13,7 +13,7 @@ const manifest = {
         "type": "image/svg"
     }],
     //*
-    "resource": "../resource.png",
+    "resource": "resource.png",
     "params": {
         "dice": {
             "face": [0, 10]
