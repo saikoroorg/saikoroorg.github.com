@@ -4,8 +4,8 @@
 var square = square || {};
 
 /* VERSION/ *****************************/
-square.version = "0.8.71b";
-square.timestamp = "20613";
+square.version = "0.8.72b";
+square.timestamp = "20615";
 /************************************* /VERSION*/
 
 // Global variables.
@@ -816,12 +816,14 @@ function squareCounts(x) {
 						let j = i - handCards.length - playCards.length;
 						// Ignore stacked chips.
 						//if (playChips[j].z <= 0) {
+
 							// Find the higher chip in the same location.
 							for (let k = 0; k < playChips.length; k++) {
 								if (playChips[k].x == playChips[j].x && playChips[k].y == playChips[j].y && playChips[k].z > playChips[j].z) {
 									j = k;
 								}
 							}
+
 							if (playChips[j].frame < frameChipStart || rollingCounts <= 0) {
 								touchingCardId = j + handCards.length + playCards.length;
 								break;
@@ -839,12 +841,14 @@ function squareCounts(x) {
 						let j = i - handCards.length;
 						// Ignore stacked cards.
 						//if (playCards[j].z <= 0) {
+
 							// Find the higher card in the same location.
 							for (let k = 0; k < playCards.length; k++) {
 								if (playCards[k].x == playCards[j].x && playCards[k].y == playCards[j].y && playCards[k].z > playCards[j].z) {
 									j = k;
 								}
 							}
+
 							touchingCardId = j + handCards.length;
 							break;
 						//}
@@ -1216,13 +1220,17 @@ function squareCounts(x) {
 
 						// Focus hand card on tapping.
 						} else if (focusingCardId != touchingCardId && opening > 10) {
-							console.log("Focus hand card on tapping.");
 
 							if (focusingCardId != touchingCardId) {
-								let card = handCards[j];
-								angle = card.angle = 0; // Reset angle animation.
-								focuses.push(cubeClone(card));
-								focusingCardId = touchingCardId;
+								if (handCards[j].flag) {
+									console.log("Turn over hand card on tapping.");
+									handCards[j].flag = false;
+								} else {
+									console.log("Focus hand card on tapping.");
+									angle = handCards[j].angle = 0; // Reset angle animation.
+									focuses.push(cubeClone(handCards[j]));
+									focusingCardId = touchingCardId;
+								}
 							} else {
 								focuses.pop();
 								focusingCardId = touchingNothing;
@@ -1268,14 +1276,19 @@ function squareCounts(x) {
 
 						// Focus playing card on tapping.
 						if (action.z < 0 && focusingCardId != touchingCardId) {
-							console.log("Focus playing card on tapping.");
 
 							if (focusingCardId != touchingCardId) {
-								let card = playCards.splice(j, 1)[0];
-								focuses.push(cubeClone(card));
-								playCards.push(card); // Move card to bottom.
-								angle = card.angle; // Reset angle animation.
-								focusingCardId = touchingCardId = handCards.length + playCards.length - 1;
+								if (playCards[j].flag) {
+									console.log("Turn over playing card on tapping.");
+									playCards[j].flag = false;
+								} else {
+									console.log("Focus playing card on tapping.");
+									let card = playCards.splice(j, 1)[0];
+									focuses.push(cubeClone(card));
+									playCards.push(card); // Move card to bottom.
+									angle = card.angle; // Reset angle animation.
+									focusingCardId = touchingCardId = handCards.length + playCards.length - 1;
+								}
 							} else {
 								focuses.pop();
 								focusingCardId = touchingNothing;
@@ -1524,43 +1537,54 @@ function squareCounts(x) {
 								hold.x = touchingBoardPos.x;
 								hold.y = touchingBoardPos.y;
 								hold.z = 0;
+
+								// Find the nearest card in the same location.
 								for (let i = playCards.length - 1; i >= 0; i--) {
-									// Find the nearest card in the same location.
 									if (playCards[i].x == hold.x && playCards[i].y == hold.y) {
-										if (playCards[i].z + 1 >= stackCountsMax) {
-											// Move the card in the same location to lower.
-											for (let j = i; j >= 0; j--) {
-												if (playCards[j].x == hold.x && playCards[j].y == hold.y) {
-													playCards[j].z = playCards[j].z - 1;
-												}
-											}
+										if (playCards[i].z + 1 < stackCountsMax) {
+											console.log("Add card to stacked cards:" + i +
+												":" + hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+											hold.z = playCards[i].z + 1;
+											playCards.splice(i + 1, 0, hold);
+											hold = null;
+											break;
+										} else {
+											console.log("Skip max stacked cards.");
+											hold.y = hold.y - 1;
+											i = playCards.length;
+											continue;
 										}
-										hold.z = playCards[i].z + 1;
-										playCards.splice(i + 1, 0, hold);
-										hold = null;
-										break;
-									// Find the card closest to the bottom.
-									} else if (playCards[i].x == hold.x && playCards[i].y == hold.y + 1) {
-										// Find the nearest card in the same location.
-										for (let j = i - 1; j >= 0; j--) {
-											if (playCards[j].x == hold.x && playCards[j].y == hold.y) {
-												hold.z = playCards[j].z + 1;
+									}
+								}
+
+								// Find the card closest to the bottom.
+								if (hold) {
+									if (hold.x >= -boardGridCounts/2 && hold.x <= boardGridCounts/2 &&
+											hold.y >= -boardGridCounts/2 && hold.y <= boardGridCounts/2) {
+										for (let i = 0; i <  playCards.length; i++) {
+											if (playCards[i].y > hold.y || (playCards[i].y == hold.y && playCards[i].x > hold.x)) {
+												console.log("Insert card behind the closest to the bottom:" + i +
+													":" + hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+												playCards.splice(i, 0, hold);
+												hold = null;
 												break;
 											}
 										}
-										playCards.splice(i, 0, hold);
+									// Discard to bank.
+									} else {
+										console.log("Discard to bank:" + hold.x + "," + hold.y + "," + hold.z);
+										banks.push(hold);
 										hold = null;
-										break;
 									}
 								}
-								if (hold) {
-									playCards.push(hold);
-								}
-							}
 
-							// Close hand cards when out of cards.
-							if (handCards.length <= 0) {
-								opening = 0;
+								// Put hold card to playing board.
+								if (hold) {
+									console.log("Put hold chips to playing board:" +
+											hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+									playCards.push(hold);
+									hold = null;
+								}
 							}
 
 							holdingCardId = touchingSomething;
@@ -1571,72 +1595,59 @@ function squareCounts(x) {
 
 							console.log("Put hold chips to playing board.");
 
-							// Discard playing cards to trashes.
-							/*{
-								let j = i - handCards.length;
-								for (let j = 0; j < playCards.length; j++) {
-									if (playCards[j].x == touchingBoardPos.x && playCards[j].y == touchingBoardPos.y) {
-										let card = playCards.splice(j, 1)[0];
-										card.angle = 0;
-										trashes.push(card);
-									}
-								}
-							}*/
-
-							// Discard playing chips to banks/dice.
-							/*{
-								let j = i - handCards.length - playCards.length;
-								for (let j = 0; j < playChips.length; j++) {
-									if (playChips[j].x == touchingBoardPos.x && playChips[j].y == touchingBoardPos.y) {
-										let chip = playChips.splice(j, 1)[0];
-										if (chip.frame >= frameChipStart) {
-											chip.frame = frameChipStart + cubeMod(chip.frame - frameChipStart, chipFrameMax);
-											banks.push(chip);
-										} else {
-											//chip.frame = frameDiceStart + diceFrameMax - 1;
-											dice.push(chip);
-										}
-									}
-								}
-							}*/
-
 							// Put hold chips to playing board.
 							while (holdChips.length > 0) {
 								let hold = holdChips.pop();
 								hold.x = touchingBoardPos.x;
 								hold.y = touchingBoardPos.y;
 								hold.z = 0;
+
+								// Find the nearest chip in the same location.
 								for (let i = playChips.length - 1; i >= 0; i--) {
-									// Find the nearest chip in the same location.
 									if (playChips[i].x == hold.x && playChips[i].y == hold.y) {
-										if (playChips[i].z + 1 >= stackCountsMax) {
-											// Move the chip in the same location to lower.
-											for (let j = i; j >= 0; j--) {
-												if (playChips[j].x == hold.x && playChips[j].y == hold.y) {
-													playChips[j].z = playChips[j].z - 1;
-												}
-											}
+										if (playChips[i].z + 1 < stackCountsMax) {
+											console.log("Add chip to stacked chips:" + i +
+												":" + hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+											hold.z = playChips[i].z + 1;
+											playChips.splice(i + 1, 0, hold);
+											hold = null;
+											break;
+										} else {
+											console.log("Skip max stacked chips.");
+											hold.y = hold.y - 1;
+											i = playChips.length;
+											continue;
 										}
-										hold.z = playChips[i].z + 1;
-										playChips.splice(i + 1, 0, hold);
-										hold = null;
-										break;
-									// Find the chip closest to the bottom.
-									} else if (playChips[i].x == hold.x && playChips[i].y == hold.y + 1) {
-										for (let j = i - 1; j >= 0; j--) {
-											// Find the nearest chip in the same location.
-											if (playChips[j].x == hold.x && playChips[j].y == hold.y) {
-												hold.z = playChips[j].z + 1;
+									}
+								}
+
+								// Find the chip closest to the bottom.
+								if (hold) {
+									if (hold.x >= -boardGridCounts/2 && hold.x <= boardGridCounts/2 &&
+											hold.y >= -boardGridCounts/2 && hold.y <= boardGridCounts/2) {
+										for (let i = 0; i <  playChips.length; i++) {
+											if (playChips[i].y > hold.y || (playChips[i].y == hold.y && playChips[i].x > hold.x)) {
+												console.log("Insert chip behind the closest to the bottom:" + i +
+													":" + hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+												playChips.splice(i, 0, hold);
+												hold = null;
 												break;
 											}
 										}
-										playChips.splice(i, 0, hold);
+									// Discard to bank.
+									} else {
+										console.log("Discard to bank:" + hold.x + "," + hold.y + "," + hold.z);
+										banks.push(hold);
 										hold = null;
-										break;
 									}
 								}
+
+								// Put hold chip to playing board.
 								if (hold) {
+									console.log("Put hold chips to playing board:" +
+											hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
 									playChips.push(hold);
+									hold = null;
 								}
 							}
 
@@ -1974,8 +1985,9 @@ function squareCounts(x) {
 
 						if (j < playCards.length) {
 							if (playCards[j].frame != 0) {
+
 								// Move the chip in the same location to higher.
-								for (let k = 0; k < j; k++) {
+								/*for (let k = 0; k < j; k++) {
 									if (playCards[k].x == playCards[j].x && playCards[k].y == playCards[j].y) {
 										if (playCards[k].z < 0) {
 											for (let l = k; l < j; l++) {
@@ -1986,7 +1998,8 @@ function squareCounts(x) {
 										}
 										break;
 									}
-								}
+								}*/
+
 								let hold = playCards.splice(j, 1)[0];
 								holdCards.push(hold);
 								angle = hold.angle;
@@ -2006,8 +2019,9 @@ function squareCounts(x) {
 
 						if (j < playChips.length) {
 							if (playChips[j].frame != 0) {
+
 								// Move the chip in the same location to higher.
-								for (let k = 0; k < j; k++) {
+								/*for (let k = 0; k < j; k++) {
 									if (playChips[k].x == playChips[j].x && playChips[k].y == playChips[j].y) {
 										if (playChips[k].z < 0) {
 											for (let l = k; l < j; l++) {
@@ -2018,7 +2032,8 @@ function squareCounts(x) {
 										}
 										break;
 									}
-								}
+								}*/
+
 								let hold = playChips.splice(j, 1)[0];
 								holdChips.push(hold);
 								angle = hold.angle;

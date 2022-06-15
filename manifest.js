@@ -1,7 +1,7 @@
 /* Manifest. */
 const manifest = {
     "name": "Saikoro.org",
-    "version": "0.8.20613",
+    "version": "0.8.20615",
     "short_name": "Saikoro",
     "author": "saikoro.org",
     "scope": "/",
@@ -16,12 +16,11 @@ const manifest = {
         "sizes": "192x192",
         "type": "image/png"
     }],
-    /*
-    "resource": "resource.png",
+    //*
     "params": {
         "dice": {
             "count": [1, 9],
-            "face": [6, 10]
+            "face": [6, 9]
         },
         "cards": {
             "count": [0, 0],
@@ -31,7 +30,7 @@ const manifest = {
             "size": 6,
             "type": 1,
             "count": 0,
-            "face": [1, 6]
+            "face": [1, 4]
         },
         "players": [1, 1],
         "seed": 0
