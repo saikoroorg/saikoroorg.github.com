@@ -12,8 +12,8 @@ square.timestamp = "20615";
 var rolling = -1; // Running counter.
 
 // Board grid parameters.
-var counts = 8; // Grid counts.
-var pattern = 0; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
+var counts = 6; // Grid counts.
+var pattern = 1; // Grid pattern. (Even->0:Chess, Odd->1:Goban)
 
 function squarePattern() {
 	pattern = pattern > 0 ? 0 : 1;
@@ -181,55 +181,55 @@ function squareCounts(x) {
 	var seed = 0; // Random seed.
 
 	// Check manifest parameters.
-	if (manifest.params) {
+	if (square.manifest.params) {
 		console.log("Load manifest parameters.");
 
 		//if (chipFrameMax == 0 && diceCounts == 0 && cardCounts[0] == 0) {
-			if (manifest.params.dice) {
-				if (manifest.params.dice.count) {
-					console.log("Load dice count parameters:" + manifest.params.dice.count);
-					rollCounts = manifest.params.dice.count[0];
-					diceCounts = manifest.params.dice.count[1];
+			if (square.manifest.params.dice) {
+				if (square.manifest.params.dice.count) {
+					console.log("Load dice count parameters:" + square.manifest.params.dice.count);
+					rollCounts = square.manifest.params.dice.count[0];
+					diceCounts = square.manifest.params.dice.count[1];
 				}
-				if (manifest.params.dice.face) {
-					console.log("Load dice face parameters:" + manifest.params.dice.face);
-					if (manifest.params.dice.face.length >= 2) {
-						diceFrameMax = manifest.params.dice.face[1];
+				if (square.manifest.params.dice.face) {
+					console.log("Load dice face parameters:" + square.manifest.params.dice.face);
+					if (square.manifest.params.dice.face.length >= 2) {
+						diceFrameMax = square.manifest.params.dice.face[1];
 						frameChipStart = frameDiceStart + diceFrameMax;
-						diceFrameMax = manifest.params.dice.face[0];
-					} else if (manifest.params.dice.face.length == 1) {
-						chipFrameMax = manifest.params.board.face[0];
+						diceFrameMax = square.manifest.params.dice.face[0];
+					} else if (square.manifest.params.dice.face.length == 1) {
+						chipFrameMax = square.manifest.params.board.face[0];
 						frameChipStart = frameDiceStart + diceFrameMax;
 					}
 				}
 				console.log("Dice parameters:" + rollCounts + "d" + diceFrameMax)
 			}
-			if (manifest.params.cards) {
-				if (manifest.params.cards.count) {
-					console.log("Load cards count parameters:" + manifest.params.cards.count)
-					handCounts = manifest.params.cards.count[0];
-					cardCountsMax = manifest.params.cards.count[1];
+			if (square.manifest.params.cards) {
+				if (square.manifest.params.cards.count) {
+					console.log("Load cards count parameters:" + square.manifest.params.cards.count)
+					handCounts = square.manifest.params.cards.count[0];
+					cardCountsMax = square.manifest.params.cards.count[1];
 				}
-				if (manifest.params.cards.faces) {
-					console.log("Load cards faces parameters:" + manifest.params.cards.faces);
-					cardCounts = manifest.params.cards.faces;
+				if (square.manifest.params.cards.faces) {
+					console.log("Load cards faces parameters:" + square.manifest.params.cards.faces);
+					cardCounts = square.manifest.params.cards.faces;
 				}
 				console.log("Card parameters:" + handCounts + "c" + cardCountsMax)
 			}
-			if (manifest.params.board) {
-				counts = manifest.params.board.size;
-				pattern = manifest.params.board.type;
-				if (manifest.params.board.count) {
-					console.log("Load board count parameters:" + manifest.params.board.count)
-					chipCountsMax = manifest.params.board.count;
+			if (square.manifest.params.board) {
+				counts = square.manifest.params.board.size;
+				pattern = square.manifest.params.board.type;
+				if (square.manifest.params.board.count) {
+					console.log("Load board count parameters:" + square.manifest.params.board.count)
+					chipCountsMax = square.manifest.params.board.count;
 				}
-				if (manifest.params.board.face) {
-					console.log("Load board face parameters:" + manifest.params.board.face);
-					if (manifest.params.board.face.length >= 2) {
-						chipFrameMax = manifest.params.board.face[0];
-						frameChipDepth = manifest.params.board.face[1];
-					} else if (manifest.params.board.face.length == 1) {
-						chipFrameMax = manifest.params.board.face[0];
+				if (square.manifest.params.board.face) {
+					console.log("Load board face parameters:" + square.manifest.params.board.face);
+					if (square.manifest.params.board.face.length >= 2) {
+						chipFrameMax = square.manifest.params.board.face[0];
+						frameChipDepth = square.manifest.params.board.face[1];
+					} else if (square.manifest.params.board.face.length == 1) {
+						chipFrameMax = square.manifest.params.board.face[0];
 					}
 					console.log("Board parameters:" + chipCountsMax + "x" + chipFrameMax + "x" + frameChipDepth)
 				}
@@ -327,16 +327,18 @@ function squareCounts(x) {
 	}
 
 	// Check player/random parameters.
-	if (manifest.params) {
+	if (square.manifest.params) {
 		if (playerNumber == 1 && playerCounts == 1 && seed == 0) {
-			if (manifest.params.players.length >= 1) {
-				playerNumber = manifest.params.players[0];
+			if (square.manifest.params.players) {
+				if (square.manifest.params.players.length >= 1) {
+					playerNumber = square.manifest.params.players[0];
+				}
+				if (square.manifest.params.players.length >= 2) {
+					playerCounts = square.manifest.params.players[1];
+				}
 			}
-			if (manifest.params.players.length >= 2) {
-				playerCounts = manifest.params.players[1];
-			}
-			if (manifest.params.seed > 0) {
-				seed = manifest.params.seed;
+			if (square.manifest.params.seed > 0) {
+				seed = square.manifest.params.seed;
 			}
 		}
 	}
@@ -370,8 +372,8 @@ function squareCounts(x) {
 
 	// Initialize resource sets.
 	var resource0 = resource1 = resource, resourceCounts = 6;
-	if (manifest.resource) {
-		resource1 = manifest.resource;
+	if (square.manifest.resource) {
+		resource1 = square.manifest.resource;
 	}
 
 	//Example b1: Mini Reversi.

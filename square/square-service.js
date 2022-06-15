@@ -1,18 +1,71 @@
 /* SQUARE User App Service Worker. */
 
+// Namespace.
+var square = square || {};
+
+square.manifest = {
+    "name": "Square",
+    "version": "0.8.20615",
+    "short_name": "Square",
+    "author": "saikoro.org",
+    "scope": "/",
+    "background_color": "#000",
+    "theme_color": "#000",
+    "icons": [{
+        "src": "./icon.svg",
+        "sizes": "300x300",
+        "type": "image/svg"
+    },{
+        "src": "./icon.png",
+        "sizes": "192x192",
+        "type": "image/png"
+    }],
+    "params": {
+        "dice": {
+            "count": [1, 9],
+            "face": [6, 9]
+        },
+        "cards": {
+            "count": [0, 10],
+            "faces": [54]
+        },
+        "board": {
+            "size": 6,
+            "type": 1,
+            "count": 0,
+            "face": [1, 4]
+        },
+        "players": [1, 1],
+        "seed": 0
+    },
+    "contents": ["./"],
+    "start_url": "./" + (window.location.search ? window.location.search + "&" : "?") + "app=1",
+    "display": "standalone",
+    "service": "./square/square-service.js"
+};
+
+// Merge manifest.
+if (manifest) {
+    Object.assign(square.manifest, manifest);
+}
+console.log("Manifest:" + JSON.stringify(square.manifest));
+
+// Manifest json filename.
+const manifestjson = "manifest.json";
+
 // Script for client to register service worker.
 if (!self || !self.registration) {
 
     // Set manifest parameters.
-    document.querySelector("#title").innerText = document.querySelector("title").innerText = manifest.name;
-    document.querySelector("#author").innerText = manifest.author + manifest.scope.slice(0, -1);
-    document.querySelector("#version").innerText = "#" + manifest.version.substr(-4);
-    document.querySelector("#icon").src = manifest.icons[0].src;
+    document.querySelector("#title").innerText = document.querySelector("title").innerText = square.manifest.name;
+    document.querySelector("#author").innerText = square.manifest.author + square.manifest.scope.slice(0, -1);
+    document.querySelector("#version").innerText = "#" + square.manifest.version.substr(-4);
+    document.querySelector("#icon").src = square.manifest.icons[0].src;
 
     let head = document.querySelector("head");
     let link = document.createElement("link");
     link.setAttribute("rel", "manifest");
-    link.setAttribute("href", "manifest.json");
+    link.setAttribute("href", manifestjson);
     head.appendChild(link);
 
     //const str = JSON.stringify(manifest);
@@ -20,7 +73,7 @@ if (!self || !self.registration) {
     //const url = URL.createObjectURL(blob);
     //document.querySelector('#manifest').setAttribute('href', url);
 
-    navigator.serviceWorker.register(manifest.service, {"scope": manifest.scope});
+    navigator.serviceWorker.register(square.manifest.service, {"scope": square.manifest.scope});
 
 // Script for service worker.
 } else {
@@ -34,7 +87,7 @@ if (!self || !self.registration) {
 
             // Contents to cache.
             // (need to set relative path "./" or absolute path "/")
-            return cache.addAll(manifest.contents).then(() => self.skipWaiting());
+            return cache.addAll(square.manifest.contents).then(() => self.skipWaiting());
         }));
     });
 
@@ -56,9 +109,9 @@ if (!self || !self.registration) {
 
         // Returns manifest.
         let reqCloned = evt.request.clone();
-        if (reqCloned.url.match("manifest.json" + "$")) {
+        if (reqCloned.url.match(manifestjson + "$")) {
 
-            let res = new Response(JSON.stringify(manifest),
+            let res = new Response(JSON.stringify(square.manifest),
                 {"status": 200, "statusText": "OK",
                  "headers": {"Content-Type": "application/json"}});
             evt.respondWith(res);
