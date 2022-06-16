@@ -5,7 +5,7 @@ var square = square || {};
 
 /* VERSION/ *****************************/
 square.version = "0.8.72b";
-square.timestamp = "20615";
+square.timestamp = "20616";
 /************************************* /VERSION*/
 
 // Global variables.
@@ -183,58 +183,49 @@ function squareCounts(x) {
 	// Check manifest parameters.
 	if (square.manifest.params) {
 		console.log("Load manifest parameters.");
-
-		//if (chipFrameMax == 0 && diceCounts == 0 && cardCounts[0] == 0) {
-			if (square.manifest.params.dice) {
-				if (square.manifest.params.dice.count) {
-					console.log("Load dice count parameters:" + square.manifest.params.dice.count);
-					rollCounts = square.manifest.params.dice.count[0];
-					diceCounts = square.manifest.params.dice.count[1];
-				}
-				if (square.manifest.params.dice.face) {
-					console.log("Load dice face parameters:" + square.manifest.params.dice.face);
-					if (square.manifest.params.dice.face.length >= 2) {
-						diceFrameMax = square.manifest.params.dice.face[1];
-						frameChipStart = frameDiceStart + diceFrameMax;
-						diceFrameMax = square.manifest.params.dice.face[0];
-					} else if (square.manifest.params.dice.face.length == 1) {
-						chipFrameMax = square.manifest.params.board.face[0];
-						frameChipStart = frameDiceStart + diceFrameMax;
-					}
-				}
-				console.log("Dice parameters:" + rollCounts + "d" + diceFrameMax)
+		if (square.manifest.params.dice) {
+			if (square.manifest.params.dice.count) {
+				diceCounts = square.manifest.params.dice.count;
 			}
-			if (square.manifest.params.cards) {
-				if (square.manifest.params.cards.count) {
-					console.log("Load cards count parameters:" + square.manifest.params.cards.count)
-					handCounts = square.manifest.params.cards.count[0];
-					cardCountsMax = square.manifest.params.cards.count[1];
-				}
-				if (square.manifest.params.cards.faces) {
-					console.log("Load cards faces parameters:" + square.manifest.params.cards.faces);
-					cardCounts = square.manifest.params.cards.faces;
-				}
-				console.log("Card parameters:" + handCounts + "c" + cardCountsMax)
+			if (square.manifest.params.dice.roll) {
+				rollCounts = square.manifest.params.dice.roll;
 			}
-			if (square.manifest.params.board) {
+			if (square.manifest.params.dice.face) {
+				diceFrameMax = square.manifest.params.dice.face;
+				frameChipStart = frameDiceStart + diceFrameMax;
+			}
+			console.log("Dice parameters:" + rollCounts + "d" + diceFrameMax);
+		}
+		if (square.manifest.params.cards) {
+			if (square.manifest.params.cards.count) {
+				cardCountsMax = square.manifest.params.cards.count;
+			}
+			if (square.manifest.params.cards.draw) {
+				handCounts = square.manifest.params.cards.draw;
+			}
+			if (square.manifest.params.cards.faces) {
+				cardCounts = square.manifest.params.cards.faces;
+			}
+			console.log("Card parameters:" + handCounts + "c" + cardCountsMax);
+		}
+		if (square.manifest.params.board) {
+			if (square.manifest.params.board.size) {
 				counts = square.manifest.params.board.size;
-				pattern = square.manifest.params.board.type;
-				if (square.manifest.params.board.count) {
-					console.log("Load board count parameters:" + square.manifest.params.board.count)
-					chipCountsMax = square.manifest.params.board.count;
-				}
-				if (square.manifest.params.board.face) {
-					console.log("Load board face parameters:" + square.manifest.params.board.face);
-					if (square.manifest.params.board.face.length >= 2) {
-						chipFrameMax = square.manifest.params.board.face[0];
-						frameChipDepth = square.manifest.params.board.face[1];
-					} else if (square.manifest.params.board.face.length == 1) {
-						chipFrameMax = square.manifest.params.board.face[0];
-					}
-					console.log("Board parameters:" + chipCountsMax + "x" + chipFrameMax + "x" + frameChipDepth)
-				}
 			}
-		//}
+			if (square.manifest.params.board.type) {
+				pattern = square.manifest.params.board.type;
+			}
+			if (square.manifest.params.board.count) {
+				chipCountsMax = square.manifest.params.board.count;
+			}
+			if (square.manifest.params.board.face) {
+				chipFrameMax = square.manifest.params.board.face;
+			}
+			if (square.manifest.params.board.flip) {
+				frameChipDepth = square.manifest.params.board.flip;
+			}
+			console.log("Board parameters:" + chipCountsMax + "x" + chipFrameMax + "x" + frameChipDepth);
+		}
 
 	// Set default parameters.
 	} else {
@@ -470,7 +461,7 @@ function squareCounts(x) {
 	// Create shade sprite.
 	const shadeStarts = [cubeVector(0, 0), cubeVector(0, 0)];
 	const shadeSizes = [cubeVector(screenSizeX, 40), cubeVector(screenSizeX, 40)];
-	const shadeColors = [cubeVector(204, 204, 204), cubeVector(204, 204, 204)];
+	const shadeColors = [cubeVector(187, 187, 187), cubeVector(187, 187, 187)];
 	var shadeCanvases = [
 		cubeCanvas(shadeSizes[0].x, shadeSizes[0].y, 1),
 		cubeCanvas(shadeSizes[1].x, shadeSizes[1].y, 1)];
@@ -520,7 +511,9 @@ function squareCounts(x) {
 		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
 		let boardCanvas = cubeCanvas(boardSize + boardGridPattern * 2, boardSize + boardGridPattern * 2, 1);
-		let boardGridColor = [cubeVector(238,238,238), cubeVector(204,204,204), cubeVector(136,136,136)]; // #fff=rgb(255,255,255) #eee=rgb(238,238,238) #ccc=rgb(204,204,204) #aaa=rgb(170,170,170) #888=rgb(136,136,136) #555=rgb(85,85,85) #333=rgb(51,51,51) #111=rgb(17,17,17) #000=rgb(0,0,0)
+		let boardGridColor = [cubeVector(238,238,238), cubeVector(187,187,187), cubeVector(136,136,136)];
+		// #fff=rgb(255,255,255) #eee=rgb(238,238,238) #ccc=rgb(204,204,204) #bbb=(187,187,187) #aaa=rgb(170,170,170)
+		// #888=rgb(136,136,136) #555=rgb(85,85,85) #333=rgb(51,51,51) #111=rgb(17,17,17) #000=rgb(0,0,0)
 		boardGridSize = cubeVector(boardSize / boardGridCounts, boardSize / boardGridCounts);
 		if (boardGridPattern > 0) {
 			cubeCanvasRect(cubeVector(0, 0), cubeVector(boardSize+2, boardSize+2), boardGridColor[1], 0, boardCanvas);

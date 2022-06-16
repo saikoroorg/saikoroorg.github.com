@@ -1,4 +1,4 @@
-/* Manifest. */
+// App settings.
 const manifest = {
     "name": "Karuta",
     "short_name": "Karuta",
@@ -6,7 +6,8 @@ const manifest = {
     "resource": "resource.png",
     "params": {
         "cards": {
-            "count": [1, 54],
+            "count": 54,
+            "draw": 5,
             "faces": [54]
         }
     },

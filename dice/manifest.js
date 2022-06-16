@@ -1,4 +1,4 @@
-// Web app manifest for progressive web app.
+// App settings.
 const manifest = {
     "name": "Dice",
     "short_name": "Dice",
@@ -6,8 +6,9 @@ const manifest = {
     "resource": "resource.svg",
     "params": {
         "dice": {
-            "count": [1, 16],
-            "face": [10, 21]
+            "count": 10,
+            "roll": 1,
+            "face": 10
         },
         "board": {
             "size": 10,

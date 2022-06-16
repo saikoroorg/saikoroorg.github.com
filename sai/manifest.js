@@ -1,4 +1,4 @@
-/* Manifest. */
+// App settings.
 const manifest = {
     "name": "Sai",
     "short_name": "Sai",
@@ -6,8 +6,9 @@ const manifest = {
     "resource": "resource.png",
     "params": {
         "dice": {
-            "count": [1, 9],
-            "face": [6, 10]
+            "count": 9,
+            "roll": 1,
+            "face": 6
         }
     },
     "service": "../square/square-service.js"

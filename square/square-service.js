@@ -5,7 +5,7 @@ var square = square || {};
 
 square.manifest = {
     "name": "Square",
-    "version": "0.8.20615",
+    "version": "0.8.20616",
     "short_name": "Square",
     "author": "saikoro.org",
     "scope": "/",
@@ -48,7 +48,7 @@ square.manifest = {
 if (manifest) {
     Object.assign(square.manifest, manifest);
 }
-console.log("Manifest:" + JSON.stringify(square.manifest));
+//console.log("Manifest:" + JSON.stringify(square.manifest));
 
 // Manifest json filename.
 const manifestjson = "manifest.json";
