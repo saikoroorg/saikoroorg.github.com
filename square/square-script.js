@@ -174,6 +174,7 @@ function squareCounts(x) {
 
 	// Board(Chips) parameters.
 	var chipCountsMax = 0, chipFrameMax = 0, frameChipDepth = 0;
+	var placements = []; // Placement pieces.
 
 	// Player and random parameter.
 	var playerNumber = 1; // Player number.
@@ -212,7 +213,7 @@ function squareCounts(x) {
 			if (square.manifest.params.board.size) {
 				counts = square.manifest.params.board.size;
 			}
-			if (square.manifest.params.board.type) {
+			if (square.manifest.params.board.type >= 0) {
 				pattern = square.manifest.params.board.type;
 			}
 			if (square.manifest.params.board.count) {
@@ -224,11 +225,15 @@ function squareCounts(x) {
 			if (square.manifest.params.board.flip) {
 				frameChipDepth = square.manifest.params.board.flip;
 			}
-			console.log("Board parameters:" + chipCountsMax + "x" + chipFrameMax + "x" + frameChipDepth);
+			if (square.manifest.params.board.place) {
+				placements = square.manifest.params.board.place;
+			}
+			console.log("Board parameters:" + counts + "," + pattern + ":" + chipCountsMax + "x" + chipFrameMax + "x" + frameChipDepth);
 		}
 
 	// Set default parameters.
 	} else {
+		console.log("Set default parameters.");
 		diceCounts = 9;
 		rollCounts = 1;
 		diceFrameMax = 6;
@@ -336,6 +341,7 @@ function squareCounts(x) {
 
 	// Set goban grids.
 	if (pattern == 0 && cubeMod(counts, 2)) {
+		console.log("Set goban grids.");
 		counts -= 1;
 		pattern = 1;
 	}
@@ -350,7 +356,7 @@ function squareCounts(x) {
 
 	// Chip count max.
 	if (chipFrameMax > 0 && chipCountsMax < 0) {
-		console.log("Update chip count:" + chipFrameMax + " " + chipCountsMax + "->" + counts)
+		console.log("Update chip count:" + chipFrameMax + " " + chipCountsMax + "->" + counts);
 		chipCountsMax = counts * counts;
 	}
 
@@ -381,14 +387,13 @@ function squareCounts(x) {
 	// b2x13
 
 	// Initialize placement pieces.
-	var placements = []; // Placement pieces.
 	var piecesParams = cubeParamData("b");
-	var piecesType = cubeDiv(counts, 2) + 1 - 0.5 * (cubeMod(counts, 2) ? pattern : !pattern);
 	for (let i = 0; i < piecesParams.length / 3; i++) {
-		let x = piecesParams[i * 3 + 1] - piecesType;
-		let y = piecesParams[i * 3 + 2] - piecesType;
-		let z = piecesParams[i * 3] >= 10 ? piecesParams[i * 3] - 9 : piecesParams[i * 3];
-		placements.push(cubeVector(x, y, z));
+		let frame = piecesParams[i * 3] >= 10 ? piecesParams[i * 3] - 9 : piecesParams[i * 3];
+		let x = piecesParams[i * 3 + 1];
+		let y = piecesParams[i * 3 + 2];
+		placements.push([frame, x, y]);
+		//console.log("Placements " + i + ":" + frame + "," + x + "," + y);
 	}
 
 	var original = 0; // Original design icon frame.
@@ -511,7 +516,7 @@ function squareCounts(x) {
 		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
 		let boardCanvas = cubeCanvas(boardSize + boardGridPattern * 2, boardSize + boardGridPattern * 2, 1);
-		let boardGridColor = [cubeVector(238,238,238), cubeVector(187,187,187), cubeVector(136,136,136)];
+		let boardGridColor = [cubeVector(238,238,238), cubeVector(187,187,187), cubeVector(85,85,85)];
 		// #fff=rgb(255,255,255) #eee=rgb(238,238,238) #ccc=rgb(204,204,204) #bbb=(187,187,187) #aaa=rgb(170,170,170)
 		// #888=rgb(136,136,136) #555=rgb(85,85,85) #333=rgb(51,51,51) #111=rgb(17,17,17) #000=rgb(0,0,0)
 		boardGridSize = cubeVector(boardSize / boardGridCounts, boardSize / boardGridCounts);
@@ -587,13 +592,15 @@ function squareCounts(x) {
 				//console.log("j=" + j);
 			}
 			if (placements.length > 0) {
+				var piecesType = cubeDiv(counts, 2) + 1 - 0.5 * (cubeMod(counts, 2) ? pattern : !pattern);
 				for (let j = 0; j < placements.length; j++) {
 						let chip = banks.pop();
-						chip.x = placements[j].x;
-						chip.y = placements[j].y;
+						chip.frame = frameChipStart + (placements[j][0] - 1);
+						chip.x = placements[j][1] - piecesType;
+						chip.y = placements[j][2] - piecesType;
 						chip.z = 0;
-						chip.frame = frameChipStart + (placements[j].z - 1);
 						playChips.push(chip);
+						//console.log("Placements " + j + ":" + placements[j][0] + "," + placements[j][1] + "," + placements[j][2] + " -> " + chip.frame + "," + chip.x + "," + chip.y);
 				}
 			}
 
