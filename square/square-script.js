@@ -4,8 +4,8 @@
 var square = square || {};
 
 /* VERSION/ *****************************/
-square.version = "0.8.72b";
-square.timestamp = "20616";
+square.version = "0.8.73b";
+square.timestamp = "20618";
 /************************************* /VERSION*/
 
 // Global variables.
@@ -516,7 +516,7 @@ function squareCounts(x) {
 		let boardGridCounts = counts, boardGridPattern = pattern; // Grid pattern. (0:Chess, 1:Goban)
 		let boardGridType = cubeMod(boardGridCounts, 2) ? boardGridPattern : !boardGridPattern; // 0:-1,0,1 1:-0.5,0.5
 		let boardCanvas = cubeCanvas(boardSize + boardGridPattern * 2, boardSize + boardGridPattern * 2, 1);
-		let boardGridColor = [cubeVector(238,238,238), cubeVector(187,187,187), cubeVector(85,85,85)];
+		let boardGridColor = [cubeVector(238,238,238), cubeVector(204,204,204), cubeVector(136,136,136)];
 		// #fff=rgb(255,255,255) #eee=rgb(238,238,238) #ccc=rgb(204,204,204) #bbb=(187,187,187) #aaa=rgb(170,170,170)
 		// #888=rgb(136,136,136) #555=rgb(85,85,85) #333=rgb(51,51,51) #111=rgb(17,17,17) #000=rgb(0,0,0)
 		boardGridSize = cubeVector(boardSize / boardGridCounts, boardSize / boardGridCounts);
