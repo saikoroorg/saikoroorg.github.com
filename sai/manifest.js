@@ -8,7 +8,7 @@ const manifest = {
 		"dice": {
 			"count": 9,
 			"roll": 1,
-			"face": 20
+			"face": 10
 		}
 	},
 	"service": "../square/square-service.js"
