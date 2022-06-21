@@ -19,7 +19,7 @@ const manifest = {
             "type": 1,
             "count": 0,
             "face": 1,
-            "flip": 4
+            "flip": 2
         },
         "players": [1, 1],
         "seed": 0

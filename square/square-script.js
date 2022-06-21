@@ -4,8 +4,8 @@
 var square = square || {};
 
 /* VERSION/ *****************************/
-square.version = "0.8.73b";
-square.timestamp = "20618";
+square.version = "0.8.74b";
+square.timestamp = "20621";
 /************************************* /VERSION*/
 
 // Global variables.
@@ -161,7 +161,7 @@ function squareCounts(x) {
 	}
 
 	// Constant parameters.
-	const frameNone = 0, frameBack = -1, frameBlank = -2;
+	const frameNone = 0, frameBack = -2, frameBlank = -1;
 	const frameCardStart = -3, frameButtons = [12, 12];
 	const frameDigitStart = -3, frameDigitDirs = -1, frameDigitCounts = 20;
 	var frameChipStart = 10, frameDiceStart = 1;
@@ -170,11 +170,12 @@ function squareCounts(x) {
 	var rollCounts = 0, diceCounts = 0, diceFrameMax = 0;
 
 	// Card parameters.
-	var cardCountsMax = 0, handCounts = 0, cardCounts = [0], cardFrameMax = 0;
+	var cardCountsMax = 0, handCounts = 0, cardCounts = [0], deckCounts = 0;
+	var placementCards = []; // Placement cards.
 
-	// Board(Chips) parameters.
+	// Board and pieces parameters.
 	var chipCountsMax = 0, chipFrameMax = 0, frameChipDepth = 0;
-	var placements = []; // Placement pieces.
+	var placementPieces = []; // Placement pieces.
 
 	// Player and random parameter.
 	var playerNumber = 1; // Player number.
@@ -207,6 +208,9 @@ function squareCounts(x) {
 			if (square.manifest.params.cards.faces) {
 				cardCounts = square.manifest.params.cards.faces;
 			}
+			if (square.manifest.params.cards.place) {
+				placementCards = square.manifest.params.cards.place;
+			}
 			console.log("Card parameters:" + handCounts + "c" + cardCountsMax);
 		}
 		if (square.manifest.params.board) {
@@ -226,7 +230,7 @@ function squareCounts(x) {
 				frameChipDepth = square.manifest.params.board.flip;
 			}
 			if (square.manifest.params.board.place) {
-				placements = square.manifest.params.board.place;
+				placementPieces = square.manifest.params.board.place;
 			}
 			console.log("Board parameters:" + counts + "," + pattern + ":" + chipCountsMax + "x" + chipFrameMax + "x" + frameChipDepth);
 		}
@@ -346,20 +350,6 @@ function squareCounts(x) {
 		pattern = 1;
 	}
 
-	// Card count max.
-	if (cardCounts.length > 0 && cardCountsMax < 0) {
-		cardCountsMax = 0;
-		for (let i = 0; i < cardCounts.length; i++) {
-			cardCountsMax += cardCounts[i];
-		}
-	}
-
-	// Chip count max.
-	if (chipFrameMax > 0 && chipCountsMax < 0) {
-		console.log("Update chip count:" + chipFrameMax + " " + chipCountsMax + "->" + counts);
-		chipCountsMax = counts * counts;
-	}
-
 	// Initialize random seed.
 	if (seed) {
 		seed = cubeDate() * 1000000 + cubeMod(seed, 1000000);
@@ -386,14 +376,41 @@ function squareCounts(x) {
 	//Example b6: 13-Ro Goban.
 	// b2x13
 
+	// Initialize placement cards.
+	var cardsParams = cubeParamData("c");
+	for (let i = 0; i < cardsParams.length / 3; i++) {
+		let w = cardsParams[i * 3] >= 10 ? cardsParams[i * 3] - 9 : cardsParams[i * 3];
+		let x = cardsParams[i * 3 + 1];
+		let y = cardsParams[i * 3 + 2];
+		placementCards.push([w, x, y]);
+		console.log("Placement Cards " + i + ":" + w + "," + x + "," + y);
+	}
+
 	// Initialize placement pieces.
 	var piecesParams = cubeParamData("b");
 	for (let i = 0; i < piecesParams.length / 3; i++) {
-		let frame = piecesParams[i * 3] >= 10 ? piecesParams[i * 3] - 9 : piecesParams[i * 3];
+		let w = piecesParams[i * 3] >= 10 ? piecesParams[i * 3] - 9 : piecesParams[i * 3];
 		let x = piecesParams[i * 3 + 1];
 		let y = piecesParams[i * 3 + 2];
-		placements.push([frame, x, y]);
-		//console.log("Placements " + i + ":" + frame + "," + x + "," + y);
+		placementPieces.push([w, x, y]);
+		//console.log("Placement Pieces " + i + ":" + w + "," + x + "," + y);
+	}
+
+	// Card count max.
+	if (cardCounts.length > 0 && cardCountsMax < 0) {
+		cardCountsMax = 0;
+		for (let i = 0; i < cardCounts.length; i++) {
+			cardCountsMax += cardCounts[i];
+		}
+	}
+	if (placementCards.length > 0) {
+		cardCountsMax = cardCountsMax + placementCards.length;
+	}
+
+	// Chip count max.
+	if (chipFrameMax > 0 && chipCountsMax < 0) {
+		console.log("Update chip count:" + chipFrameMax + " " + chipCountsMax + "->" + counts);
+		chipCountsMax = counts * counts;
 	}
 
 	var original = 0; // Original design icon frame.
@@ -421,6 +438,7 @@ function squareCounts(x) {
 	const cardSpriteScale = 1, cardSpriteWidth = 40;
 	var cardSprites = [];
 	for (var i = 0; i < cardCountsMax + chipCountsMax + diceCounts + cardExtraMax; i++) {
+		console.log("Create card sprite " + i + "/" + cardCountsMax);
 		if (buffer) {
 			cardSprites[i] = await cubeCanvasSprite(buffer);
 			//cubeResize(cardSpriteWidth, cardSpriteWidth, 1, cardSprites[i]);
@@ -492,21 +510,21 @@ function squareCounts(x) {
 	// Cards.
 	var decks = [], trashes = [], focuses = [];
 	var handCards = [], playCards = [], holdCards = [];
-	const blankCard = { x:0, y:0, z:0, angle:0, frame:frameCardStart, flag:0 };
-	const backsidedCard = { x:0, y:0, z:0, angle:0, frame:frameBack, flag:1 };
+	const blankCard = { x:0, y:0, z:0, angle:0, frame:frameCardStart, back:frameBack, flag:0, extra:0 };
+	const backsidedCard = { x:0, y:0, z:0, angle:0, frame:frameBack, back:frameBack, flag:1, extra:0 };
 	const rollingMaxOnDraw = 15;
 	var drawCounts = 0;
 	var opening = 0;
 
 	// Dice.
 	var dice = [];
-	const backsidedDice = { x:0, y:0, angle:0, frame:frameDiceStart, flag:0 };
+	const backsidedDice = { x:0, y:0, angle:0, frame:frameDiceStart, back:frameBack, flag:0, extra:0 };
 	const rollingMaxOnRoll = 30, rollingMaxOnReroll = 60;
 	var rollingCounts = 0, rollingMax = 0;
 
 	// Chips.
 	var banks = [], playChips = [], holdChips = [];
-	const backsidedChip = { x:0, y:0, angle:0, frame:frameChipStart, flag:0 };
+	const backsidedChip = { x:0, y:0, angle:0, frame:frameChipStart, flag:0, extra:0 };
 
 	// Main loop.
 	var result = 1;
@@ -556,22 +574,104 @@ function squareCounts(x) {
 		// Reset and shuffle decks.
 		if (rolling < 0) {
 
+			// Create new chips.
+			console.log("Create new chips:" + chipCountsMax);
+			banks = [], playChips = [], holdChips = [];
+			for (let j = 0; j < chipCountsMax; j++) {
+				banks[j] = cubeClone(backsidedChip);
+				banks[j].frame = frameChipStart;
+				//console.log("j=" + j);
+			}
+
+			// Initial piece placements.
+			if (placementPieces.length > 0) {
+				var boardOffset = cubeDiv(counts, 2) + 1 - 0.5 * (cubeMod(counts, 2) ? pattern : !pattern);
+				for (let j = 0; j < placementPieces.length; j++) {
+						let chip = banks.pop();
+						chip.frame = frameChipStart + (placementPieces[j][0] - 1);
+						chip.x = placementPieces[j][1] - boardOffset;
+						chip.y = placementPieces[j][2] - boardOffset;
+						chip.z = 0;
+						playChips.push(chip);
+						//console.log("PlacementPieces " + j + ":" + placementPieces[j][0] + "," + placementPieces[j][1] + "," + placementPieces[j][2] + " -> " + chip.frame + "," + chip.x + "," + chip.y);
+				}
+			}
+
 			// Create new decks.
-			console.log("Create new decks:" + cardCounts.length);
+			console.log("Create new decks: " + cardCounts.length);
 			decks = [], trashes = [], focuses = [];
 			handCards = [], playCards = [], holdCards = [];
 			drawCounts = 0;
-			cardFrameMax = 0;
+			deckCounts = 0;
 			for (let i = 0; i < cardCounts.length; i++) {
-				let cardCount = cardCounts[i] < cardCountsMax - cardFrameMax ?
-					cardCounts[i] : cardCountsMax - cardFrameMax
+				let cardCount = cardCounts[i] < cardCountsMax - deckCounts ?
+					cardCounts[i] : cardCountsMax - deckCounts
 				for (let j = 0; j < cardCount; j++) {
-					decks[cardFrameMax + j] = cubeClone(backsidedCard);
-					decks[cardFrameMax + j].frame = frameCardStart - j;
-					decks[cardFrameMax + j].flag = true;
+					decks[deckCounts + j] = cubeClone(backsidedCard);
+					decks[deckCounts + j].frame = frameCardStart - j;
+					decks[deckCounts + j].flag = true;
 					//console.log("i=" + i + " j=" + j);
 				}
-				cardFrameMax += cardCount;
+				deckCounts += cardCount;
+			}
+
+			// Initial card placements.
+			console.log("Initial card placements: " + placementCards.length);
+			if (placementCards.length > 0) {
+				var boardOffset = cubeDiv(counts, 2) + 1 - 0.5 * (cubeMod(counts, 2) ? pattern : !pattern);
+				for (let j = 0; j < placementCards.length; j++) {
+					let card = cubeClone(backsidedCard);
+					card.frame = frameCardStart - (placementCards[j][0] - 1);
+					card.back = placementCards[j][1] > 0 ? (frameCardStart - (placementCards[j][1] - 1)) : frameBack;
+					card.angle = placementCards[j][4] >= 0 ? (placementCards[j][4] * 90) : -1;
+					console.log("Initial card placements " +  + j + ": " +
+						placementCards[j][0] + "," + placementCards[j][1] + " : " + placementCards[j][2] + "," + placementCards[j][3]);
+					for (let k = 0; k < decks.length; k++) {
+						if (decks[k].frame == card.frame && decks[k].back == card.back) {
+							console.log("Draw card from deck " + k);
+							card = decks.splice(k, 1)[0];
+							cardCountsMax -= 1;
+							break;
+						}
+					}
+					if (placementCards[j][2] > 0 && placementCards[j][3] > 0) {
+						card.x = placementCards[j][2] - boardOffset;
+						card.y = placementCards[j][3] - boardOffset;
+						card.z = 0;
+						card.flag = false;
+						//card.extra = true;
+						playCards.push(card);
+						console.log("Place cards " + j + ": " +
+							placementCards[j][0] + "," + placementCards[j][1] + " : " + placementCards[j][2] + "," + placementCards[j][3] +
+							" -> " + card.frame + "/" + card.back + " : " + card.x + "," + card.y + " x " + card.angle);
+					} else {
+						card.angle = placementCards[j][4] >= 0 ? (placementCards[j][4] * 90) : -1;
+						card.flag = false;
+						//card.extra = true;
+						banks.push(card);
+						//trashes.push(card);
+						console.log("Place cards to trash " + j + ":" +
+							placementCards[j][0] + "," + placementCards[j][1] + " : " + placementCards[j][2] + "," + placementCards[j][3] +
+							" -> " + card.frame + "/" + card.back + " : " + card.x + "," + card.y + " x " + card.angle);
+					}
+				}
+				/*for (let j = 0; j < placementCards.length; j++) {
+					let card = null;
+					for (let k = 0; k < decks.length; k++) {
+						if (decks[k].frame == frameCardStart - placementCards[j][0]) {
+							card = decks.splice(k, 1)[0];
+							break;
+						}
+					}
+					if (card) {
+						card.x = placementCards[j][1] - boardOffset;
+						card.y = placementCards[j][2] - boardOffset;
+						card.z = 0;
+						card.flag = false;
+						playCards.push(card);
+						console.log("PlacementCards " + j + ":" + placementCards[j][0] + "," + placementCards[j][1] + "," + placementCards[j][2] + " -> " + card.frame + "," + card.x + "," + card.y);
+					}
+				}*/
 			}
 
 			// Create new dice.
@@ -582,27 +682,6 @@ function squareCounts(x) {
 				dice[i].frame = frameDiceStart + (diceFrameMax - 1);
 			}
 			rollingCounts = 0;
-
-			// Create new chips.
-			console.log("Create new chips:" + chipCountsMax);
-			banks = [], playChips = [], holdChips = [];
-			for (let j = 0; j < chipCountsMax; j++) {
-				banks[j] = cubeClone(backsidedChip);
-				banks[j].frame = frameChipStart;
-				//console.log("j=" + j);
-			}
-			if (placements.length > 0) {
-				var piecesType = cubeDiv(counts, 2) + 1 - 0.5 * (cubeMod(counts, 2) ? pattern : !pattern);
-				for (let j = 0; j < placements.length; j++) {
-						let chip = banks.pop();
-						chip.frame = frameChipStart + (placements[j][0] - 1);
-						chip.x = placements[j][1] - piecesType;
-						chip.y = placements[j][2] - piecesType;
-						chip.z = 0;
-						playChips.push(chip);
-						//console.log("Placements " + j + ":" + placements[j][0] + "," + placements[j][1] + "," + placements[j][2] + " -> " + chip.frame + "," + chip.x + "," + chip.y);
-				}
-			}
 
 			// Shuffle decks by Fisher-Yates argorythm.
 			for (let i = decks.length - 1; i > 0; i--) {
@@ -619,7 +698,9 @@ function squareCounts(x) {
 
 				// Discard hand cards.
 				while (handCounts < handCards.length && handCards.length > 0) {
-					trashes.push(handCards.shift());
+					let hand = handCards.shift();
+					hand.angle = hand.angle < 0 ? hand.angle : 0;
+					trashes.push(hand);
 					drawCounts = 0;
 				}
 				// Draw initial card from decks.
@@ -630,7 +711,6 @@ function squareCounts(x) {
 
 							// Draw and open cards from deck.
 							if (k == playerNumber) {
-								card.angle = 0;
 								card.flag = false;
 								handCards.push(card);
 								if (result > 0) {
@@ -779,7 +859,7 @@ function squareCounts(x) {
 
 			// Check touching banks.
 			if (touchingCardId == touchingNothing && 
-				((chipCountsMax > 0 && banks.length > 0)/* || (cardCountsMax > 0 && opening > 0)*/) &&
+				(((chipCountsMax > 0 || cardCountsMax > deckCounts) && banks.length > 0)/* || (cardCountsMax > 0 && opening > 0)*/) &&
 				drawCounts <= 0 && rollingCounts <= 0 && /*opening <= 0 &&*/
 				focuses.length <= 0 && holdCards.length <= 0 && holdChips.length <= 0 &&
 				cubeCheck(motion, null, cardSprites[handCards.length + playCards.length + playChips.length + cardExtraBank])) {
@@ -936,7 +1016,6 @@ function squareCounts(x) {
 
 									// Draw and open cards from deck.
 									if (k == playerNumber) {
-										card.angle = 0;
 										card.flag = false;
 										handCards.push(card);
 										handCounts += 1;
@@ -987,12 +1066,12 @@ function squareCounts(x) {
 					if (action && action.z < 0 && trashes.length > 0) {
 
 						if (focusingCardId != touchingCardId) {
-							if (trashes[trashes.length-1].flag) {
+							if (trashes[trashes.length-1].flag || trashes[trashes.length-1].angle < 0) {
 								console.log("Turn over trash card on tapping.");
-								trashes[trashes.length-1].flag = false;
+								trashes[trashes.length-1].flag = !trashes[trashes.length-1].flag;
 							} else {
 								console.log("Focus trash card on tapping.");
-								angle = trashes[trashes.length - 1].angle = 0; // Reset angle animation.
+								angle = trashes[trashes.length - 1].angle = trashes[trashes.length - 1].angle < 0 ? trashes[trashes.length - 1].angle : 0; // Reset angle animation.
 								focuses.push(cubeClone(trashes[trashes.length - 1]));
 								focusingCardId = touchingCardId = touchingCardId;
 							}
@@ -1051,12 +1130,18 @@ function squareCounts(x) {
 
 							opening = 0;
 						} else*/ if (banks.length > 0) {
-							console.log("Change the bank chip on tapping.");
+							if (banks.length > chipCountsMax) {
+								console.log("Change the bank card on tapping.");
+									banks[banks.length - 1].flag = !banks[banks.length - 1].flag;
 
-							if (chipFrameMax > 1) {
-								banks[banks.length-1].frame = frameChipStart + cubeMod(banks[banks.length-1].frame - frameChipStart + 1, chipFrameMax);
 							} else {
-								banks[banks.length-1].frame = frameChipStart + cubeMod(banks[banks.length-1].frame - frameChipStart + 1, chipFrameMax * frameChipDepth);
+								console.log("Change the bank chip on tapping.");
+
+								if (chipFrameMax > 1) {
+									banks[banks.length - 1].frame = frameChipStart + cubeMod(banks[banks.length - 1].frame - frameChipStart + 1, chipFrameMax);
+								} else {
+									banks[banks.length - 1].frame = frameChipStart + cubeMod(banks[banks.length - 1].frame - frameChipStart + 1, chipFrameMax * frameChipDepth);
+								}
 							}
 						}
 
@@ -1178,7 +1263,7 @@ function squareCounts(x) {
 
 						// Rotate the released card to left.
 						} else if (touchingButtonId == 0) {
-							angle = cubeMod(angle - 90, 360);
+							angle = cubeMod(angle + 270, 360);
 
 							holdingCardId = touchingSomething;
 							touchingCardId = touchingSomething;
@@ -1242,12 +1327,12 @@ function squareCounts(x) {
 						} else if (focusingCardId != touchingCardId && opening > 10) {
 
 							if (focusingCardId != touchingCardId) {
-								if (handCards[j].flag) {
+								if (handCards[j].flag || handCards[j].angle < 0) {
 									console.log("Turn over hand card on tapping.");
-									handCards[j].flag = false;
+									handCards[j].flag = !handCards[j].flag;
 								} else {
 									console.log("Focus hand card on tapping.");
-									angle = handCards[j].angle = 0; // Reset angle animation.
+									angle = handCards[j].angle = handCards[j].angle < 0 ? handCards[j].angle : 0; // Reset angle animation.
 									focuses.push(cubeClone(handCards[j]));
 									focusingCardId = touchingCardId;
 								}
@@ -1298,9 +1383,9 @@ function squareCounts(x) {
 						if (action.z < 0 && focusingCardId != touchingCardId) {
 
 							if (focusingCardId != touchingCardId) {
-								if (playCards[j].flag) {
+								if (playCards[j].flag || playCards[j].angle < 0) {
 									console.log("Turn over playing card on tapping.");
-									playCards[j].flag = false;
+									playCards[j].flag = !playCards[j].flag;
 								} else {
 									console.log("Focus playing card on tapping.");
 									angle = playCards[j].angle; // Reset angle animation.
@@ -1443,7 +1528,7 @@ function squareCounts(x) {
 							let k = touchingShadeR;
 							while (holdCards.length > 0) {
 								let card = holdCards.pop();
-								card.angle = 0;
+								card.angle = card.angle < 0 ? card.angle : 0;
 								handCards.splice(k, 0, card);
 							}
 							handCounts = handCards.length;
@@ -1527,7 +1612,7 @@ function squareCounts(x) {
 								for (let j = 0; j < playCards.length; j++) {
 									if (playCards[j].x == touchingBoardPos.x && playCards[j].y == touchingBoardPos.y) {
 										let card = playCards.splice(j, 1)[0];
-										card.angle = 0;
+										card.angle = card.angle < 0 ? card.angle :0;
 										trashes.push(card);
 									}
 								}
@@ -1562,7 +1647,7 @@ function squareCounts(x) {
 									if (playCards[i].x == hold.x && playCards[i].y == hold.y) {
 										if (playCards[i].z + 1 < stackCountsMax) {
 											console.log("Add card to stacked cards:" + i +
-												":" + hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+												":" + hold.x + "," + hold.y + "," + hold.z + "," + hold.angle + ":" + boardGridCounts);
 											hold.z = playCards[i].z + 1;
 											playCards.splice(i + 1, 0, hold);
 											hold = null;
@@ -1583,16 +1668,25 @@ function squareCounts(x) {
 										for (let i = 0; i <  playCards.length; i++) {
 											if (playCards[i].y > hold.y || (playCards[i].y == hold.y && playCards[i].x > hold.x)) {
 												console.log("Insert card behind the closest to the bottom:" + i +
-													":" + hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+													":" + hold.x + "," + hold.y + "," + hold.z + "," + hold.angle + ":" + boardGridCounts);
 												playCards.splice(i, 0, hold);
 												hold = null;
 												break;
 											}
 										}
 
+									// Discard to bank.
+									} else if (hold.angle < 0) {
+										console.log("Discard to bank:" + hold.x + "," + hold.y + "," + hold.z);
+										hold.angle = hold.angle < 0 ? hold.angle : 0;
+										banks.push(hold);
+										hold = null;
+
 									// Discard to trash.
 									} else {
-										console.log("Discard to trash:" + hold.x + "," + hold.y + "," + hold.z);
+										console.log("Discard to trash:" +
+											hold.x + "," + hold.y + "," + hold.z + "," + hold.angle);
+										hold.angle = hold.angle < 0 ? hold.angle : 0;
 										trashes.push(hold);
 										hold = null;
 									}
@@ -1600,8 +1694,8 @@ function squareCounts(x) {
 
 								// Put hold card to playing board.
 								if (hold) {
-									console.log("Put hold chips to playing board:" +
-											hold.x + "," + hold.y + "," + hold.z + ":" + boardGridCounts);
+									console.log("Put hold cards to playing board:" +
+											hold.x + "," + hold.y + "," + hold.z + "," + hold.angle + ":" + boardGridCounts);
 									playCards.push(hold);
 									hold = null;
 								}
@@ -1657,6 +1751,7 @@ function squareCounts(x) {
 									// Discard to bank.
 									} else {
 										console.log("Discard to bank:" + hold.x + "," + hold.y + "," + hold.z);
+										hold.angle = hold.angle < 0 ? hold.angle : 0;
 										banks.push(hold);
 										hold = null;
 									}
@@ -1840,11 +1935,13 @@ function squareCounts(x) {
 			// Update focusing card angle animation.
 			if (focuses.length > 0 && focusingCardId >= 0) {
 				if (focuses[focuses.length - 1].angle != angle) {
-					let d = cubeMod(angle - focuses[focuses.length - 1].angle, 360);
+					let d = angle - focuses[focuses.length - 1].angle;
+					d = cubeMod(d > 180 ? d - 360 : d < -180 ? d + 360 : d, 360);
+					//console.log("Angle animation " + d + " : " + focuses[focuses.length - 1].angle + "->" + angle);
 					if (-5 < d && d < 5) {
 						focuses[focuses.length - 1].angle = angle;
 					} else {
-						focuses[focuses.length - 1].angle += cubeDiv(d > 180 ? d - 360 : d < -180 ? d + 360 : d, 2);
+						focuses[focuses.length - 1].angle = cubeMod(focuses[focuses.length - 1].angle + cubeDiv(d, 2) + 360, 360);
 					}
 				}
 
@@ -1870,11 +1967,12 @@ function squareCounts(x) {
 				// Update holding card angle animation.
 				for (let i = 0; i < holdCards.length; i++) {
 					if (holdCards[i].angle != angle) {
-						let d = cubeMod(angle - holdCards[i].angle, 360);
+						let d = angle - holdCards[i].angle;
+						d = cubeMod(d > 180 ? d - 360 : d < -180 ? d + 360 : d, 360);
 						if (-5 < d && d < 5) {
 							holdCards[i].angle = angle;
 						} else {
-							holdCards[i].angle += cubeDiv(d > 180 ? d - 360 : d < -180 ? d + 360 : d, 2);
+							holdCards[i].angle = cubeMod(holdCards[i].angle + cubeDiv(d, 2) + 360, 360);
 						}
 					}
 				}
@@ -1886,8 +1984,16 @@ function squareCounts(x) {
 					// Discard to trashes.
 					while (holdCards.length > 0) {
 						let hold = holdCards.pop();
-						hold.angle = 0;
-						trashes.push(hold);
+						//hold.angle = 0;
+						if (hold.angle < 0) {
+							console.log("Discard holding cards to banks.");
+							hold.angle = hold.angle < 0 ? hold.angle : 0;
+							banks.push(hold);
+						} else {
+							console.log("Discard holding cards to trashes.");
+							hold.angle = hold.angle < 0 ? hold.angle : 0;
+							trashes.push(hold);
+						}
 					}
 
 					// Close hand cards when out of cards.
@@ -1911,6 +2017,7 @@ function squareCounts(x) {
 						let hold = holdChips.pop();
 						if (hold.frame >= frameChipStart) {
 							hold.frame = frameChipStart + cubeMod(hold.frame - frameChipStart, chipFrameMax);
+							hold.angle = hold.angle < 0 ? hold.angle : 0;
 							banks.push(hold);
 						} else {
 							//hold.frame = frameDiceStart + diceFrameMax - 1;
@@ -2006,8 +2113,8 @@ function squareCounts(x) {
 								/*if (opening <= 0) {
 									card.flag = true;
 								}*/
+								angle = card.angle = card.angle < 0 ? card.angle : 0; // Reset angle animation.
 								holdCards.push(card);
-								angle = 0;
 								holdingCardId = touchingShade;
 								touchingCardId = touchingShade;
 							}
@@ -2038,8 +2145,8 @@ function squareCounts(x) {
 								}*/
 
 								let hold = playCards.splice(j, 1)[0];
-								holdCards.push(hold);
 								angle = hold.angle;
+								holdCards.push(hold);
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
 								touchingBoardPos = cubeVector(hold.x, hold.y);
@@ -2094,7 +2201,7 @@ function squareCounts(x) {
 								//card.frame = card.frame > 0 ? -card.frame : card.frame;
 								//card.flag = true;
 								holdCards.push(card);
-								angle = 0;
+								angle = card.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
 							}
@@ -2108,8 +2215,9 @@ function squareCounts(x) {
 						if (trashes.length > 0) {
 							let j = trashes.length - 1;
 							if (trashes[j].frame != 0) {
-								holdCards.push(trashes.splice(j, 1)[0]);
-								angle = 0;
+								let card = trashes.splice(j, 1)[0];
+								holdCards.push(card);
+								angle = card.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
 							}
@@ -2123,12 +2231,18 @@ function squareCounts(x) {
 						if (banks.length > 0/* && opening <= 0*/) {
 							let j = banks.length - 1;
 							if (banks[j].frame != 0) {
-								let chip = banks.pop();
-								if (banks.length > 0) {
-									banks[banks.length - 1].frame = chip.frame;
+								let hold = banks.pop();
+								if (hold.angle < 0) {
+									console.log("Hold bank card:" + hold.x + "," + hold.y + "," + hold.z);
+									holdCards.push(hold);
+								} else {
+									console.log("Hold bank chip:" + hold.x + "," + hold.y + "," + hold.z);
+									/*if (banks.length > 0) {
+										banks[banks.length - 1].frame = hold.frame;
+									}*/
+									holdChips.push(hold);
 								}
-								holdChips.push(chip);
-								angle = 0;
+								angle = hold.angle;
 								holdingCardId = touchingSomething;
 								touchingCardId = touchingSomething;
 							}
@@ -2203,9 +2317,9 @@ function squareCounts(x) {
 					if (opening <= 0) {
 						n = frameBlank;
 					} else if (result <= 0 && rolling < rollingMaxOnDraw - 5 && j >= handCards.length - drawCounts) { // Drawing.
-						n = frameBack;
+						n = handCards[j].back;
 					} else if (handCards[j].flag) {
-						n = frameBack;
+						n = handCards[j].back;
 					} else {
 						n = handCards[j].frame;
 					}
@@ -2214,7 +2328,7 @@ function squareCounts(x) {
 				} else if (i < handCards.length + playCards.length) {
 					let j = i - handCards.length;
 					if (playCards[j].flag) {
-						n = frameBack;
+						n = playCards[j].back;
 					} else {
 						n = playCards[j].frame;
 					}
@@ -2225,14 +2339,14 @@ function squareCounts(x) {
 					if (result <= 0 && rolling < rollingMax - 5 && j >= playChips.length - rollingCounts) { // Rolling.
 						n = frameDiceStart + cubeRandom(diceFrameMax);
 					} else if (playChips[j].flag) {
-						n = frameBack;
+						n = playChips[j].back;
 					} else {
 						n = playChips[j].frame;
 					}
 
 				// Update decks.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraDeck) {
-					if (cardFrameMax > 0) {
+					if (deckCounts > 0) {
 						if (decks.length > 0) {
 							n = frameBack;
 						} else {
@@ -2242,10 +2356,10 @@ function squareCounts(x) {
 
 				// Update trashes.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraTrash) {
-					if (cardFrameMax > 0) {
+					if (deckCounts > 0 /*|| cardCountsMax > deckCounts*/) {
 						if (trashes.length > 0) {
 							if (trashes[trashes.length - 1].flag) {
-								n = frameBack;
+								n = trashes[trashes.length - 1].back;
 							} else {
 								n = trashes[trashes.length - 1].frame;
 							}
@@ -2259,11 +2373,13 @@ function squareCounts(x) {
 					/*if (opening > 0) {
 						n = frameBlank;
 					} else if (opening <= 0 && chipFrameMax > 0) {*/
-					if (chipCountsMax > 0) {
+					if (chipCountsMax > 0 || cardCountsMax > deckCounts) {
 						if (banks.length > 0) {
-							n = banks[banks.length - 1].frame;
-						} else {
-							n = frameNone;
+							if (banks[banks.length - 1].flag) {
+								n = banks[banks.length - 1].back;
+							} else {
+								n = banks[banks.length - 1].frame;
+							}
 						}
 					}
 
@@ -2287,13 +2403,13 @@ function squareCounts(x) {
 						} else if (opening <= 0 && touchingCardId == touchingShade) {
 							n = frameBlank;
 						} else if (holdCards[holdCards.length - 1].flag) {
-							n = frameBack;
+							n = holdCards[holdCards.length - 1].back;
 						} else {
 							n = holdCards[holdCards.length - 1].frame;
 						}
 					} else if (holdChips.length > 0 && motion) {
 						if (holdChips[holdChips.length - 1].flag) {
-							n = frameBack;
+							n = holdChips[holdChips.length - 1].back;
 						} else {
 							n = holdChips[holdChips.length - 1].frame;
 						}
@@ -2305,14 +2421,14 @@ function squareCounts(x) {
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraFocus) {
 					if (focuses.length > 0) {
 						if (focuses[focuses.length - 1].flag) {
-							n = frameBack;
+							n = focuses[focuses.length - 1].back;
 						} else {
 							n = focuses[focuses.length - 1].frame;
 						}
 					} else if (holdCards.length > 0 && motion) {
 						//n = frameBlank;
 						if (holdCards[holdCards.length - 1].flag) {
-							n = frameBack;
+							n = holdCards[holdCards.length - 1].back;
 						} else {
 							n = holdCards[holdCards.length - 1].frame;
 						}
@@ -2441,7 +2557,9 @@ function squareCounts(x) {
 					}
 
 					// Rotation.
-					a = playCards[j].angle;
+					if (playCards[j].angle > 0) {
+						a = playCards[j].angle;
+					}
 
 					// Buttons on focusing.
 					/*if (focusingCardId == i) {
@@ -2468,7 +2586,9 @@ function squareCounts(x) {
 					sy = boardSprite.pos.y + playChips[j].y * boardGridSize.y - z;
 
 					// Rotation.
-					a = playChips[j].angle;
+					if (playChips[j].angle > 0) {
+						a = playChips[j].angle;
+					}
 
 					// Alpha,Angle animation.
 					if (j >= playChips.length - rollingCounts) {
@@ -2538,7 +2658,7 @@ function squareCounts(x) {
 					}
 
 					// Number.
-					let m = cardFrameMax <= 0 ? frameNone :
+					let m = cardCountsMax <= 0 ? frameNone :
 						decks.length > frameDigitCounts ? frameNone :
 						decks.length > 0 ? frameDigitStart + frameDigitDirs * decks.length : frameNone;
 					cubeAnimate(m, counterSprites[cardExtraDeck]);
@@ -2547,7 +2667,7 @@ function squareCounts(x) {
 					cubeMove(sx, sy - deckScale * 20 - numberPosY, counterSprites[cardExtraDeck]);
 
 					// Number.
-					m = cardFrameMax <= 0 ? frameNone :
+					m = cardCountsMax <= 0 ? frameNone :
 						handCards.length > frameDigitCounts ? frameNone :
 						handCards.length > 0 ? frameDigitStart + frameDigitDirs * handCards.length : frameNone;
 					cubeAnimate(m, counterSprites[cardExtraBank]);
@@ -2591,7 +2711,7 @@ function squareCounts(x) {
 					}
 
 					// Number.
-					let m = cardFrameMax <= 0 ? frameNone :
+					let m = cardCountsMax <= 0 ? frameNone :
 						trashes.length > frameDigitCounts ? frameNone :
 						trashes.length > 0 ? frameDigitStart + frameDigitDirs * trashes.length : frameNone;
 					cubeAnimate(m, counterSprites[cardExtraTrash]);
@@ -2684,7 +2804,9 @@ function squareCounts(x) {
 						s = holdScale * 1.2;
 
 						// Rotation.
-						a = holdCards[holdCards.length - 1].angle;
+						if (holdCards[holdCards.length - 1].angle > 0) {
+							a = holdCards[holdCards.length - 1].angle;
+						}
 
 					// Set holding chip position.
 					} else if (holdChips.length > 0 && motion) {
@@ -2700,7 +2822,9 @@ function squareCounts(x) {
 						s = holdScale * 1.2;
 
 						// Rotation.
-						a = holdChips[holdChips.length - 1].angle;
+						if (holdChips[holdChips.length - 1].angle > 0) {
+							a = holdChips[holdChips.length - 1].angle;
+						}
 					} else {
 						a0 = 0;
 					}
@@ -2726,7 +2850,9 @@ function squareCounts(x) {
 							}
 
 							// Rotation animation..
-							a = focuses[focuses.length - 1].angle;
+							if (focuses[focuses.length - 1].angle > 0) {
+								a = focuses[focuses.length - 1].angle;
+							}
 
 						// Focusing playing card.
 						} else if (focusingCardId < handCards.length + playCards.length) {
@@ -2744,7 +2870,9 @@ function squareCounts(x) {
 							}
 
 							// Rotation.
-							a = focuses[focuses.length - 1].angle;
+							if (focuses[focuses.length - 1].angle > 0) {
+								a = focuses[focuses.length - 1].angle;
+							}
 
 						// Focusing trash card.
 						} else {
@@ -2760,7 +2888,9 @@ function squareCounts(x) {
 							}
 
 							// Rotation animation..
-							a = focuses[focuses.length - 1].angle;
+							if (focuses[focuses.length - 1].angle > 0) {
+								a = focuses[focuses.length - 1].angle;
+							}
 						}
 
 						// Buttons on focusing.
@@ -2786,7 +2916,9 @@ function squareCounts(x) {
 						s = holdScale * 1.0;
 
 						// Rotation.
-						a = holdCards[holdCards.length - 1].angle;
+						if (holdCards[holdCards.length - 1].angle > 0) {
+							a = holdCards[holdCards.length - 1].angle;
+						}
 
 					// Set holding chip shade position.
 					} else if (holdChips.length > 0 && touchingBoardPos) {
@@ -2799,7 +2931,9 @@ function squareCounts(x) {
 						s = holdScale * 1.0;
 
 						// Rotation.
-						a = holdChips[holdChips.length - 1].angle;
+						if (holdChips[holdChips.length - 1].angle > 0) {
+							a = holdChips[holdChips.length - 1].angle;
+						}
 
 					} else {
 
