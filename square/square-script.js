@@ -162,7 +162,7 @@ function squareCounts(x) {
 
 	// Constant parameters.
 	const frameNone = 0, frameBack = -2, frameBlank = -1;
-	const frameCardStart = -3, frameButtons = [12, 12];
+	const frameCardStart = -3, frameButtons = [12, 12], frameCursor = -1;
 	const frameDigitStart = -3, frameDigitDirs = -1, frameDigitCounts = 20;
 	var frameChipStart = 10, frameDiceStart = 1;
 
@@ -432,9 +432,12 @@ function squareCounts(x) {
 		buttonSprites[i] = await cubeSprite(resource0, 40, 40);
 	}
 
+	// Create cursor sprites.
+	var cursorSprite = await cubeSprite(resource0, 40, 40);
+
 	// Create card sprites.
 	const cardExtraDeck = 0, cardExtraTrash = 1, cardExtraBank = 2, counterMax = 3;
-	const cardExtraDice = 3, cardExtraHold = 4, cardExtraFocus = 5, cardExtraMax = 6;
+	const cardExtraDice = 3, cardExtraFocus = 4, cardExtraMax = 5;//, cardExtraHold = 4;
 	const cardSpriteScale = 1, cardSpriteWidth = 40;
 	var cardSprites = [];
 	for (var i = 0; i < cardCountsMax + chipCountsMax + diceCounts + cardExtraMax; i++) {
@@ -2396,7 +2399,7 @@ function squareCounts(x) {
 					}
 
 				// Update holding card/chip.
-				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraHold) {
+				/*} else if (i == handCards.length + playCards.length + playChips.length + cardExtraHold) {
 					if (holdCards.length > 0 && motion) {
 						if (touchingBoardPos) {
 							n = frameBlank;
@@ -2415,7 +2418,7 @@ function squareCounts(x) {
 						}
 					} else {
 						n = frameBlank;
-					}
+					}*/
 
 				// Update focusing card.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraFocus) {
@@ -2788,7 +2791,7 @@ function squareCounts(x) {
 					}
 
 				// Set holding card/chip position.
-				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraHold) {
+				/*} else if (i == handCards.length + playCards.length + playChips.length + cardExtraHold) {
 
 					// Set holding card position.
 					if (holdCards.length > 0 && motion) {
@@ -2827,7 +2830,7 @@ function squareCounts(x) {
 						}
 					} else {
 						a0 = 0;
-					}
+					}*/
 
 				// Set focusing hand/playing/trash card position.
 				} else if (i == handCards.length + playCards.length + playChips.length + cardExtraFocus) {
@@ -2906,14 +2909,19 @@ function squareCounts(x) {
 						}
 
 					// Set holding card shade position.
-					} else if (holdCards.length > 0 && touchingBoardPos) {
-
-						// Position direct setting.
-						sx = boardSprite.pos.x + touchingBoardPos.x * boardGridSize.x;
-						sy = boardSprite.pos.y + touchingBoardPos.y * boardGridSize.y;
-						s = holdScale;
-						a0 = 0.4;
-						s = holdScale * 1.0;
+					} else if (holdCards.length > 0) {
+						if (touchingBoardPos) {
+							// Position direct setting.
+							sx = boardSprite.pos.x + touchingBoardPos.x * boardGridSize.x;
+							sy = boardSprite.pos.y + touchingBoardPos.y * boardGridSize.y;
+							s = holdScale;
+							a0 = 0.4;
+							s = holdScale * 1.0;
+						} else {
+							let localPos = cubeScreenLocalPos(motion);
+							sx = localPos.x;
+							sy = localPos.y;
+						}
 
 						// Rotation.
 						if (holdCards[holdCards.length - 1].angle > 0) {
@@ -2921,14 +2929,19 @@ function squareCounts(x) {
 						}
 
 					// Set holding chip shade position.
-					} else if (holdChips.length > 0 && touchingBoardPos) {
-
-						// Position direct setting.
-						sx = boardSprite.pos.x + touchingBoardPos.x * boardGridSize.x;
-						sy = boardSprite.pos.y + touchingBoardPos.y * boardGridSize.y;
-						s = holdScale;
-						a0 = 0.4;
-						s = holdScale * 1.0;
+					} else if (holdChips.length > 0) {
+						if (touchingBoardPos) {
+							// Position direct setting.
+							sx = boardSprite.pos.x + touchingBoardPos.x * boardGridSize.x;
+							sy = boardSprite.pos.y + touchingBoardPos.y * boardGridSize.y;
+							s = holdScale;
+							a0 = 0.4;
+							s = holdScale * 1.0;
+						} else {
+							let localPos = cubeScreenLocalPos(motion);
+							sx = localPos.x;
+							sy = localPos.y;
+						}
 
 						// Rotation.
 						if (holdChips[holdChips.length - 1].angle > 0) {
@@ -2946,6 +2959,19 @@ function squareCounts(x) {
 				cubeExpand(s * cardSpriteScale, cardSprites[i]);
 				cubeRotate(a, cardSprites[i]);
 				cubeMove(sx, sy, cardSprites[i]);
+			}
+
+			// Update cursor animation.
+			if (motion &&
+				(holdCards.length > 0 || holdChips.length > 0) &&
+				touchingBoardPos) {
+				cubeAnimate(frameCursor, cursorSprite);
+				cubeExpand(1, cursorSprite);
+				cubeDilute(0.75, cursorSprite);
+				let localPos = cubeScreenLocalPos(motion);
+				cubeMove(localPos.x, localPos.y, cursorSprite);
+			} else {
+				cubeAnimate(0, cursorSprite);
 			}
 
 			// Update shade animation.
@@ -2986,8 +3012,9 @@ function squareCounts(x) {
 			for (let i = 0; i < handCards.length + playCards.length + playChips.length; i++) {
 				cubeDraw(cardSprites[i]);
 			}
-			cubeDraw(cardSprites[handCards.length + playCards.length + playChips.length + cardExtraHold]);
+			//cubeDraw(cardSprites[handCards.length + playCards.length + playChips.length + cardExtraHold]);
 			cubeDraw(cardSprites[handCards.length + playCards.length + playChips.length + cardExtraFocus]);
+			cubeDraw(cursorSprite);
 
 			await cubeWait(10);
 		}
