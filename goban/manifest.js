@@ -41,7 +41,7 @@ const manifest = {
 		"players": [1, 2]
 		//*/
 
-		/*/* //goban
+		/*/*/ //goban
 		"dice": {
 			"face": 10
 		},
@@ -85,7 +85,7 @@ const manifest = {
 		},
 		"players": [1, 1]
 
-		/*/ //chess
+		/* //chess
 		"cards": {
 			"count": 0,
 			"place": [
