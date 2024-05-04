@@ -65,10 +65,26 @@ async function picoTitle(text=null) {
 	await pico.app.setTitle(text);
 }
 
-// Switch script or share.
-async function picoSwitch(target=null, refer=null) {
-	await pico.app.switchScript(target, refer);
+// Switch app script.
+async function picoSwitchApp(target=null, returl=null) {
+	return await pico.app.switchApp(target, returl);
 }
+
+// Return app script.
+async function picoReturnApp() {
+	return await pico.app.returnApp();
+}
+
+// Share app url.
+async function picoShareApp() {
+	await pico.app.shareApp();
+}
+
+// Share screen image.
+async function picoShareScreen(c=0, bg=1) {
+	await pico.app.shareScreen(c, bg);
+}
+
 
 // Lock screen with wakelock.
 function picoLockScreen(enable=true) {
@@ -78,11 +94,6 @@ function picoLockScreen(enable=true) {
 // Enable wide screen and return true if landscape mode.
 function picoWideScreen(enable=true) {
 	return pico.app.wideScreen(enable);
-}
-
-// Share screen image.
-async function picoShareScreen(bgcolors=null, watermark=null) {
-	await pico.app.shareScreen(bgcolors, watermark);
 }
 
 // App mode.
@@ -105,20 +116,23 @@ var pico = pico || {};
 
 // App class.
 pico.App = class {
+	static count = 0; // Object count.
 	static script = "app.js"; // Default script.
 
 	// constructor.
 	constructor() {
-		this.refurl = null; // Referenced url.
+		pico.App.count++;
+		this.lock = "picoAppLock" + pico.App.count + Date.now(); // Lock object identifier.
+		this.returl = null; // Return url.
 		this.script = pico.App.script; // App script.
-		this.refscript = null; // Referenced script.
-		this.title = ""; // App title.
-		this.reftitle = ""; // Referenced title.
+		this.retscript = null; // Return script.
+		this.title = ""; // Page title.
+		this.apptitle = ""; // App title.
 		this.ver = 0; // Protocol version.
 		this.author = "*"; // App author.
 		this.timestamp = ""; // Timestamp (App version).
 		this.wakeLock = null; // Wake lock object.
-		this.lock = "picoAppLock" + Date.now(); // Lock object identifier.
+		this.image = new pico.Image(""); // App offscreen image.
 
 		// Load app information.
 		let e = document.getElementById("author");
@@ -148,7 +162,7 @@ pico.App = class {
 		}
 
 		// Load app script.
-		let script = picoStrings("s");
+		let script = picoString("s");
 		if (script) {
 			this.script = script;
 		}
@@ -169,18 +183,18 @@ pico.App = class {
 		await navigator.locks.request(this.lock, async (lock) => {
 
 			// Back to previous page.
-			if (this.refurl) {
+			if (this.returl) {
 				picoResetParams();
 				if (this.ver > 0) {
-					picoSetStrings(this.ver, "v");
+					picoSetString(this.ver, "v");
 				}
-				await picoReload(this.refurl);
+				await picoReload(this.returl);
 
 			// Reload this page.
 			} else {
 				picoResetParams();
 				if (this.ver > 0) {
-					picoSetStrings(this.ver, "v");
+					picoSetString(this.ver, "v");
 				}
 				await picoReload();
 			}
@@ -217,16 +231,16 @@ pico.App = class {
 	// On load event.
 	async onLoad() {
 		try {
-			let refscript = picoStrings("r");
-			if (refscript) {
-				this.refscript = refscript;
+			let retscript = picoString("r");
+			if (retscript) {
+				this.retscript = retscript;
 			}
-			let title = picoStrings("t");
+			let title = picoString("t");
 			if (title) {
-				this.reftitle = title;
-				await picoTitle(this.reftitle);
+				this.apptitle = title;
+				await picoTitle(this.apptitle);
 			}
-			this.refurl = picoStrings("u");
+			this.returl = picoString("u");
 			this.ver = picoNumbers("v")[0];
 			if (typeof appLoad === "function") {
 				await navigator.locks.request(this.lock, async (lock) => {
@@ -256,7 +270,7 @@ pico.App = class {
 			let e2 = document.getElementById(id + "Icon");
 			if (e2 && (text || icon)) {
 				e2.style.display = "flex";
-				e2.src = icon ? icon : await picoTextData(text, [0,0,0], 0,0,4*text.length,6, 0);
+				e2.src = icon ? icon : await this.image.textData(text);
 				if (e1) {
 					e1.style.display = "none";
 				}
@@ -286,8 +300,8 @@ pico.App = class {
 			}
 		}
 		this.title = text;
-		if (this.reftitle) {
-			await picoLabel("title", this.reftitle);
+		if (this.apptitle) {
+			await picoLabel("title", this.apptitle);
 			await picoLabel("subtitle", this.title);
 		} else {
 			await picoLabel("title", this.title);
@@ -295,67 +309,82 @@ pico.App = class {
 		}
 	}
 
-	// Switch script or share.
-	async switchScript(target=null, refer=null) {
+	// Switch app script.
+	async switchApp(target=null, returl=null) {
 		if (picoDevMode()) {
-			picoSetStrings(-1, "v");
+			picoSetString(-1, "v");
 		} else if (this.ver > 0) {
-			picoSetStrings(this.ver, "v");
+			picoSetString(this.ver, "v");
 		}
 
 		// Change and reload script.
 		if (target && target.match(/js$/)) {
-			if (this.refurl && !picoStrings("u")) {
-				picoSetStrings(this.refurl, "u");
+			if (this.returl && !picoString("u")) {
+				picoSetString(this.returl, "u");
 			}
-			if (this.title && !picoStrings("t")) {
-				picoSetStrings(this.title, "t");
+			if (this.title && !picoString("t")) {
+				picoSetString(this.title, "t");
 			}
-			picoSetStrings(target, "s");
-			if (this.script && !picoStrings("r")) {
-				picoSetStrings(this.script, "r");
+			picoSetString(target, "s");
+			if (this.script && !picoString("r")) {
+				picoSetString(this.script, "r");
 			}
 			await picoReload();
+			return true;
 
 		// Jump to next page.
 		} else if (target) {
-			if (refer && !picoStrings("u")) {
-				picoSetStrings(refer, "u");
-			} else if (this.refurl && !picoStrings("u")) {
-				picoSetStrings(this.refurl, "u");
-			}
-			if (this.title && !picoStrings("t")) {
-				picoSetStrings(this.title, "t");
-			}
-			picoSetStrings("", "s");
-			picoSetStrings("", "r");
 			await picoReload(target);
+			return true;
+		}
+		return false;
+	}
+
+	// Return app script.
+	async returnApp() {
+		if (picoDevMode()) {
+			picoSetString(-1, "v");
+		} else if (this.ver > 0) {
+			picoSetString(this.ver, "v");
+		}
 
 		// Back to previous script.
-		} else if (this.refscript) {
-			if (this.refurl && !picoStrings("u")) {
-				picoSetStrings(this.refurl, "u");
+		if (this.retscript) {
+			if (this.returl && !picoString("u")) {
+				picoSetString(this.returl, "u");
 			}
-			picoSetStrings("", "t");
-			picoSetStrings(this.refscript, "s");
-			picoSetStrings("", "r");
+			picoSetString("", "t");
+			picoSetString(this.retscript, "s");
+			picoSetString("", "r");
 			await picoReload();
+			return true;
 
 		// Back to previous page.
-		} else if (this.refurl) {
-			picoSetStrings("", "u");
-			picoSetStrings("", "t");
-			picoSetStrings("", "s");
-			picoSetStrings("", "r");
-			await picoReload(this.refurl);
-
-		// Share.
-		} else {
-			if (this.script && this.script != pico.App.script) {
-				picoSetStrings(this.script, "s");
-			}
-			await picoShare();
+		} else if (this.returl) {
+			picoSetString("", "u");
+			picoSetString("", "t");
+			picoSetString("", "s");
+			picoSetString("", "r");
+			await picoReload(this.returl);
+			return true;
 		}
+		return false;
+	}
+
+	// Share app url.
+	async shareApp() {
+		if (this.script && this.script != pico.App.script) {
+			picoSetString(this.script, "s");
+		}
+		await picoShare();
+	}
+
+	// Share screen image.
+	async shareScreen(c=0, bg=1) {
+		let watermark = this.author + "#" + this.timestamp;
+		let file = await picoScreenFile(watermark, c, bg);
+		let files = [file];
+		await picoShare(null, files);
 	}
 
 	// Lock screen with wakelock.
@@ -390,20 +419,8 @@ pico.App = class {
 		}
 
 		// True if landscape mode.
-		return window.matchMedia("(min-aspect-ratio: 1.0)").matches;
-	}
-
-	// Share screen image.
-	async shareScreen(bgcolors=null, watermark=null) {
-		if (bgcolors == null) {
-			bgcolors = [223,223,223, 255,255,255];
-		}
-		if (watermark == null) {
-			watermark = this.author + "#" + this.timestamp;
-		}
-		let file = await picoScreenFile(bgcolors, watermark);
-		let files = [file];
-		await picoShare(null, files);
+		return window.matchMedia("(max-height: 479px)").matches &&
+			window.matchMedia("(min-aspect-ratio: 1.4)").matches;
 	}
 }
 

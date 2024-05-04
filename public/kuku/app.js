@@ -95,7 +95,7 @@ async function appLoad() {
 	// Load query levels.
 	let keys = picoKeys();
 	for (let k = 0; k < keys.length; k++) {
-		let value = picoStrings(k);
+		let value = picoString(k);
 		if (value) {
 			let numbers = picoNumbers(keys[k]);
 			let date = picoDate();
@@ -364,7 +364,8 @@ async function appResult() {
 		}
 
 		// Enable share button.
-		picoLabel("action", "^");
+		let data = await picoSpriteData(picoStringCode6("099941932942952923943963944915945975916976917927937947957967977"), -1);
+		picoLabel("action", null, data);
 
 		// Reset playing count.
 		playing = 1;
