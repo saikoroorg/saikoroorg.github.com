@@ -2,7 +2,7 @@
 	<g stroke-width="2" stroke="none" fill="#7f7f7f">
 		<path d="M1,7h18v6h-18Z M3,3h14v14h-14Z M7,1h6v18h-6Z" fill="#7f7f7f"/>
 		<path d="M3,7h14v6h-14Z M5,5h10v10h-10Z M7,3h6v14h-6Z" fill="#fff"/>
-		<path d="M7,9h6v2h-6Z M9,7h2v6h-2Z" fill="#7f7f7f"/>
+		<path d="M7,9h6v2h-6Z" fill="#7f7f7f"/>
 	</g>
 </svg>
 <!-- qlmanage -t -s 192 -o ./ icon.svg -or- inkscape -z -o icon.png -w 192 -h 192 icon.svg -->
@@ -11,6 +11,6 @@
 	<g stroke-width="2" stroke="none" fill="#7f7f7f" transform="translate(6,6)">
 		<path d="M1,7h18v6h-18Z M3,3h14v14h-14Z M7,1h6v18h-6Z" fill="#7f7f7f"/>
 		<path d="M3,7h14v6h-14Z M5,5h10v10h-10Z M7,3h6v14h-6Z" fill="#fff"/>
-		<path d="M7,9h6v2h-6Z M9,7h2v6h-2Z" fill="#7f7f7f"/>
+		<path d="M7,9h6v2h-6Z" fill="#7f7f7f"/>
 	</g>
 </svg!-->
