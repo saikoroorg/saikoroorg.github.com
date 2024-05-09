@@ -56,11 +56,6 @@ a {
 	opacity: 0.1;
 }
 .logo {
-	height: 60px; margin: 0px 16px;
-	display: none;
-	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: flex-start; -webkit-justify-content: flex-start;
-	align-items: center; -webkit-align-items: center;
 	color: #3f3f3f;
 }
 .logo #title {
@@ -70,12 +65,6 @@ a {
 .logo #subtitle {
 	display: none;
 	font-size: 24px;
-}
-.menu {
-	display: flex; display: -webkit-flex;
-	flex-direction: row; -webkit-flex-direction: row;
-	justify-content: space-between; -webkit-justify-content: space-between;
-	align-items: flex-end; -webkit-align-items: flex-end;
 }
 .item {
 	width: 40px; height: 40px; margin: 0px;
@@ -125,11 +114,25 @@ a {
 		justify-content: space-between; -webkit-justify-content: space-between;
 		align-items: center; -webkit-align-items: center;
 	}
+	.info {
+		width: 60px;
+		display: flex; display: -webkit-flex;
+		flex-direction: column; -webkit-flex-direction: column;
+		justify-content: space-between; -webkit-justify-content: space-between;
+		align-items: center; -webkit-align-items: center;
+	}
+	.logo {
+		display: none;
+	}
 	.menu {
 		display: flex; display: -webkit-flex;
 		flex-direction: column; -webkit-flex-direction: column;
 		justify-content: space-between; -webkit-justify-content: space-between;
-		align-items: flex-end; -webkit-align-items: flex-end;
+		align-items: center; -webkit-align-items: center;
+	}
+	.center {
+		position: absolute;
+		top: 20px;
 	}
 	@media (min-aspect-ratio: 1) {
 		#screen {
@@ -157,15 +160,25 @@ a {
 	#contents {
 		width: 95%; height: 80%;
 	}
+	.info {
+		height: 60px; margin: 0px 16px;
+		display: flex; display: -webkit-flex;
+		flex-direction: row; -webkit-flex-direction: row;
+		justify-content: space-between; -webkit-justify-content: space-between;
+		align-items: center; -webkit-align-items: center;
+	}
+	.menu {
+		display: flex; display: -webkit-flex;
+		flex-direction: row; -webkit-flex-direction: row;
+		justify-content: space-between; -webkit-justify-content: space-between;
+		align-items: center; -webkit-align-items: center;
+	}
 	@media (max-width: 319px) {
 	}
 	@media (min-width: 320px) {
 		.center {
 			position: absolute;
 			left: 50%; transform: translate(-50%, 0);
-		}
-		.logo {
-			display: flex; display: -webkit-flex;
 		}
 	}
 	@media (min-aspect-ratio: 1) {
@@ -192,7 +205,7 @@ a {
 		width: 100%;
 	}
 	#widescreen {
-		height: 80%;
+		width: 140%;
 	}
 }
 @media (prefers-color-scheme: dark) {

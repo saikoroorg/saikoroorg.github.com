@@ -379,6 +379,7 @@ pico.App = class {
 
 		// Back to previous page.
 		} else if (this.returl) {
+			picoSetString(this.ver, "v");
 			picoSetString("", "u");
 			picoSetString("", "t");
 			picoSetString("", "s");

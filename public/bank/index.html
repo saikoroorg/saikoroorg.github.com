@@ -11,16 +11,19 @@
 <body>
 <div id="container">
 	<h1 id="header">
-		<div class="logo">
-			<a id="title" href="javascript:pico.app.onReset();">
-				<span id="titleText"></span>
-				<img id="titleIcon" src="" />
-			</a>
-			<a id="subtitle" href="javascript:top.location.reload();">
-				<span id="subtitleText"></span>
-				<img id="subtitleIcon" src="" />
-			</a>
+		<div class="info">
+			<div class="logo">
+				<a id="title" href="javascript:pico.app.onReset();">
+					<span id="titleText"></span>
+					<img id="titleIcon" src="" />
+				</a>
+				<a id="subtitle" href="javascript:top.location.reload();">
+					<span id="subtitleText"></span>
+					<img id="subtitleIcon" src="" />
+				</a>
+			</div>
 		</div>
+		<div class="info"></div>
 		<div class="menu center">
 			<a class="item light secret" id="action" href="javascript:pico.app.onAction();">
 				<span id="actionText"></span>
@@ -61,13 +64,13 @@ async function picoLabel(id, text=null, icon=null) {
 }
 
 // Change title.
-async function picoTitle(text=null) {
-	await pico.app.setTitle(text);
+async function picoTitle(text=null, nolabel=false, noheader=false) {
+	await pico.app.setTitle(text, nolabel, noheader);
 }
 
 // Switch app script.
-async function picoSwitchApp(target=null, returl=null) {
-	return await pico.app.switchApp(target, returl);
+async function picoSwitchApp(target=null, returl=null, title=null) {
+	return await pico.app.switchApp(target, returl, title);
 }
 
 // Return app script.
@@ -185,9 +188,7 @@ pico.App = class {
 			// Back to previous page.
 			if (this.returl) {
 				picoResetParams();
-				if (this.ver > 0) {
-					picoSetString(this.ver, "v");
-				}
+				picoSetString(this.ver, "v");
 				await picoReload(this.returl);
 
 			// Reload this page.
@@ -241,7 +242,8 @@ pico.App = class {
 				await picoTitle(this.apptitle);
 			}
 			this.returl = picoString("u");
-			this.ver = picoNumbers("v")[0];
+			let ver = picoNumbers("v");
+			this.ver = ver.length > 0 ? ver[0] : "0";
 			if (typeof appLoad === "function") {
 				await navigator.locks.request(this.lock, async (lock) => {
 					await appLoad();
@@ -288,29 +290,38 @@ pico.App = class {
 	}
 
 	// Change title.
-	async setTitle(text=null) {
-		let e = document.getElementsByTagName("title");
-		if (e && e[0]) {
+	async setTitle(text=null, nolabel=false, noheader=false) {
+		for (let e of document.getElementsByTagName("title")) {
 			if (text) {
-				e[0].style.display = "flex";
-				e[0].innerText = text;
+				e.style.display = "flex";
+				e.innerText = text;
 			} else {
-				e[0].style.display = "none";
-				e[0].innerText = "";
+				e.style.display = "none";
+				e.innerText = "";
 			}
 		}
-		this.title = text;
-		if (this.apptitle) {
-			await picoLabel("title", this.apptitle);
-			await picoLabel("subtitle", this.title);
+		let e = document.getElementById("header")
+		if (e) {
+			e.style.display = (text && !noheader) ? "flex" : "none";
+		}
+		if (!nolabel) {
+			this.title = text;
+			if (this.apptitle) {
+				await picoLabel("title", this.apptitle);
+				await picoLabel("subtitle", this.title);
+			} else {
+				await picoLabel("title", this.title);
+				await picoLabel("subtitle");
+			}
 		} else {
-			await picoLabel("title", this.title);
+			this.title = null;
+			await picoLabel("title");
 			await picoLabel("subtitle");
 		}
 	}
 
 	// Switch app script.
-	async switchApp(target=null, returl=null) {
+	async switchApp(target=null, returl=null, title=null) {
 		if (picoDevMode()) {
 			picoSetString(-1, "v");
 		} else if (this.ver > 0) {
@@ -319,11 +330,11 @@ pico.App = class {
 
 		// Change and reload script.
 		if (target && target.match(/js$/)) {
-			if (this.returl && !picoString("u")) {
-				picoSetString(this.returl, "u");
+			if (returl && !picoString("u")) {
+				picoSetString(returl, "u");
 			}
-			if (this.title && !picoString("t")) {
-				picoSetString(this.title, "t");
+			if (title && !picoString("t")) {
+				picoSetString(title, "t");
 			}
 			picoSetString(target, "s");
 			if (this.script && !picoString("r")) {
@@ -334,6 +345,12 @@ pico.App = class {
 
 		// Jump to next page.
 		} else if (target) {
+			if (returl && !picoString("u")) {
+				picoSetString(returl, "u");
+			}
+			if (title && !picoString("t")) {
+				picoSetString(title, "t");
+			}
 			await picoReload(target);
 			return true;
 		}
