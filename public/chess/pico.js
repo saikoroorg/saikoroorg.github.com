@@ -3,7 +3,7 @@
 // Namespace.
 var pico = pico || {};
 pico.name = "pico";
-pico.version = "0.9.40507"; // Updatable by package.json.
+pico.version = "0.9.40510"; // Updatable by package.json.
 
 /* PICO Image module */
 
@@ -1177,14 +1177,14 @@ pico.Param = class {
 		return new Promise(async (resolve) => {
 			let text = this._serialize();
 			if (text != null) {
-				let separator = url && url.indexOf("?") < 0 ? "?" : "";
-				let query = text ? separator + text : "";
 				if (url) {
+					let separator = url && url.indexOf("?") < 0 ? "?" : "&";
+					let query = text ? separator + text : "";
 					//console.log("Jump: " + query);
 					window.location.href = url + query;
 				} else {
-					//console.log("Reload: " + query);
-					window.location.search = query;
+					//console.log("Reload: " + text);
+					window.location.search = text;
 				}
 			}
 			return resolve();
@@ -1373,16 +1373,22 @@ pico.Param = class {
 		return results;
 	}
 
+	// Percent encode/decode table.
+	static percents = {"%":"%25","&":"%26","?":"%3F",/*"/":"%2F",*/};
+
 	// Deserialize context to parameters.
 	_deserialize(context) {
 		this.context = [];
 		if (context.includes('&')) {
 			context.split('&').forEach((q) => {
 				if (q.includes('=')) {
-					let keyvalue = q.split('=');
-					if (keyvalue[0] != null && keyvalue[1] != null) {
-						this.context[keyvalue[0]] = keyvalue[1];
+					let key = q.substr(0, q.indexOf('='));
+					let value = q.substr(q.indexOf('=') + 1);
+					// Percent decode.
+					for (let p in pico.Param.percents) {
+						value = value.replaceAll(pico.Param.percents[p], p);
 					}
+					this.context[key] = value;
 				} else if (q.includes('+')) {
 					let qs = q.split('+');
 					for (var i = 0; i < qs.length; i++) {
@@ -1393,10 +1399,13 @@ pico.Param = class {
 				}
 			});
 		} else if (context.includes('=')) {
-			let keyvalue = context.split('=');
-			if (keyvalue[0] != null && keyvalue[1] != null) {
-				this.context[keyvalue[0]] = keyvalue[1];
+			let key = context.substr(0, context.indexOf('='));
+			let value = context.substr(context.indexOf('=') + 1);
+			// Percent decode.
+			for (let p in pico.Param.percents) {
+				value = value.replaceAll(pico.Param.percents[p], p);
 			}
+			this.context[key] = value;
 		} else if (context.includes('+')) {
 			this.context = context.split('+');
 		} else {
@@ -1410,7 +1419,12 @@ pico.Param = class {
 		for (let key in this.context) {
 			if (key != null && this.context[key] != null && this.context[key] != "") {
 				if (isNaN(key)) {
-					params.push(key + "=" + this.context[key]);
+					let value = "" + this.context[key];
+					// Percent encode.
+					for (let p in pico.Param.percents) {
+						value = value.replaceAll(p, pico.Param.percents[p]);
+					}
+					params.push(key + "=" + value);
 				} else if (param0.length > 0) {
 					param0 = param0 + "+" + this.context[key];
 				} else {
