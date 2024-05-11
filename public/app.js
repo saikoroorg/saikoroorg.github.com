@@ -20,7 +20,7 @@ var items = [ // Menu items.
 	["chess", "chess/icon.svg", "chess/"],
 	["shogi", "shogi/icon.svg", "shogi/"],
 ];
-var returl = "../?w=1"; // Return url.
+var refer = "../?w=1"; // Return url.
 
 var images = []; // Menu images.
 var state = ""; // Playing state.
@@ -152,7 +152,7 @@ async function appMain() {
 			if (picoAction(x,y, itemwidth/2,itemwidth/2)) {
 				if (items[i][2]) {
 					picoResetParams();
-					picoSwitchApp(items[i][2], returl);
+					picoSwitchApp(items[i][2], refer);
 				}
 			}
 			picoRect(itemcolor, x*s,(y+itemoffset)*s, itemwidth,itemwidth, 0,s*m);
@@ -161,11 +161,11 @@ async function appMain() {
 				picoChar(items[i][0], 2, x*s,(y+textoffset)*s, 0,itemscale*s);
 			} else {
 				if (items[i][0].length <= 5) {
-					picoChar(items[i][0], 0, x*s,(y+itemoffset)*s, 0,itemscale*s);
+					picoChar(items[i][0], 0, x*s,(y+itemoffset)*s, 0,itemscale*s*m);
 				} else if (items[i][0].length <= 8) {
-					picoText(items[i][0], 0, x*s,(y+itemoffset)*s,4*4,6*2, 0,itemscale*s);
+					picoText(items[i][0], 0, x*s,(y+itemoffset)*s,4*4,6*2, 0,itemscale*s*m);
 				} else {
-					picoText(items[i][0], 0, x*s,(y+itemoffset)*s,4*4,6*3, 0,itemscale*s);
+					picoText(items[i][0], 0, x*s,(y+itemoffset)*s,4*4,6*3, 0,itemscale*s*m);
 				}
 			}
 		}
