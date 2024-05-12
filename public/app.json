@@ -17,13 +17,5 @@
 	}],
 	"display": "standalone",
 	"start_url": "./?v=1",
-	"contents": [
-		"./", "./pico.css", "./pico.js", "./app.js", "./index.js",
-		"dice/", "dice/pico.css", "dice/pico.js", "dice/app.js",
-		"clock/", "clock/pico.css", "clock/pico.js", "clock/app.js",
-		"bank/", "bank/pico.css", "bank/pico.js", "bank/app.js",
-		"kuku/", "kuku/pico.css", "kuku/pico.js", "kuku/app.js",
-		"chess/", "chess/pico.css", "chess/pico.js", "chess/app.js",
-		"shogi/", "shogi/pico.css", "shogi/pico.js", "shogi/app.js"
-	]
+	"contents": ["./", "./pico.css", "./pico.js", "./app.js", "./index.js"]
 }
