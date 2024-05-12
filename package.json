@@ -1,0 +1,32 @@
+{
+	"name": "saikoro.org",
+	"version": "0.9.40512",
+	"description": "saikoro.org",
+	"scripts": {
+		"@Usage:@": [
+			"@                                                                                                @",
+			"@ npm run build                                                                                  @",
+			"@                                                                                                @",
+			"@   1. Build pico.js from pico directory.                                                        @",
+			"@   2. Copy pico.js/css, index.html/js from pico to public directory.                            @",
+			"@   3. Build app.js from each pico/$app directories.                                             @",
+			"@   4. Copy pico.js/css, index.html/js from each pico/$app to each public/$app directories.      @",
+			"@                                                                                                @",
+			"@ npm run deploy                                                                                 @",
+			"@                                                                                                @",
+			"@   Deploy public directory to saikororg on firebase.                                            @",
+			"@                                                                                                @"],
+		"usage": "sed -n \"s#.*\\\"@\\(.*\\)@\\\".*#\\1#p\" package.json",
+
+		"build:lib": "pushd pico; npm run build --main=public --out=../; popd",
+		"build:app": "pushd pico; for app in dice clock bank kuku chess shogi; do npm run build --main=app/$app --out=../public; done; popd",
+		"build": "npm run build:lib; npm run build:app",
+
+		"deploy": "firebase --project saikoroorg deploy",
+
+		"install": "",
+		"update": ""
+	},
+	"license": "unlicensed",
+	"private": true
+}
