@@ -12,15 +12,21 @@ const dots = [ // Dotted design pixels.
 	[0,7,7, 0,0,0,0,6,6, 9,3,3, 9,1,1, 9,1,3, 9,3,1, 9,3,5, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
 ];
 
-var items = [ // Menu items.
-	["dice", "dice/icon.svg", "dice/"],
-	["clock", "clock/icon.svg", "clock/"],
-	["bank", "bank/icon.svg", "bank/"],
-	["kuku", "kuku/icon.svg", "kuku/"],
-	["chess", "chess/icon.svg", "chess/"],
-	["shogi", "shogi/icon.svg", "shogi/"],
+var items = picoString("v") && picoString("v") != "0" ? [ // Items for app mode.
+	["dice", "dice/icon.svg", "dice/app.js"],
+	["clock", "clock/icon.svg", "clock/app.js"],
+	["bank", "bank/icon.svg", "bank/app.js"],
+	["kuku", "kuku/icon.svg", "kuku/app.js"],
+	["chess", "chess/icon.svg", "chess/app.js"],
+	["shogi", "shogi/icon.svg", "shogi/app.js"],
+] : [ // Items for web mode.
+	["dice", "dice/icon.svg", "dice/", "../?v=0"],
+	["clock", "clock/icon.svg", "clock/", "../?v=0"],
+	["bank", "bank/icon.svg", "bank/", "../?v=0"],
+	["kuku", "kuku/icon.svg", "kuku/", "../?v=0"],
+	["chess", "chess/icon.svg", "chess/", "../?v=0"],
+	["shogi", "shogi/icon.svg", "shogi/", "../?v=0"],
 ];
-var refer = "../?w=1"; // Return url.
 
 var images = []; // Menu images.
 var state = ""; // Playing state.
@@ -60,6 +66,15 @@ async function appLoad() {
 		picoLabel("select", null, image); // Lazy loading.
 	});
 
+	// Skip demo on app mode or continuous start.
+	if (picoString("v") != null) {
+		state = "menu";
+		playing = 5;
+	} else {
+		state = "demo";
+		playing = 0;
+	}
+
 	// Load images.
 	for (let i = 0; i < items.length; i++) {
 		if (items[i][1]) {
@@ -68,15 +83,6 @@ async function appLoad() {
 				picoFlush();
 			});
 		}
-	}
-
-	// Skip demo on app mode or continuous start.
-	if (picoString("v") || picoString("w")) {
-		state = "menu";
-		playing = 5;
-	} else {
-		state = "demo";
-		playing = 0;
 	}
 
 	appResize(); // Initialize positions.
@@ -152,7 +158,7 @@ async function appMain() {
 			if (picoAction(x,y, itemwidth/2,itemwidth/2)) {
 				if (items[i][2]) {
 					picoResetParams();
-					picoSwitchApp(items[i][2], refer);
+					picoSwitchApp(items[i][2], items[i][3]);
 				}
 			}
 			picoRect(itemcolor, x*s,(y+itemoffset)*s, itemwidth,itemwidth, 0,s*m);
