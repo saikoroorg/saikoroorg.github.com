@@ -53,10 +53,14 @@ var choices = [0, 0, 0]; // Choices of answer.
 var choose = -1; // Answer you chose.
 var angle = 0; // Angle of number.
 var scale = 6; // Scale of number.
-const square = 54; // Width of base square.
+const square = 42; // Width of base square.
 var startTime = 0; // Start time of the problem.
 var resultTime = 0; // Result time of the problem.
 const clearTime = 60 * 1000; // Clear time of the problem.
+const grid = 48; // Answer sprite grid.
+const numberoffset = -60; // Draw number offset.
+const seedoffset = -50; // Draw seed offset.
+const probremoffset = -35; // Draw probrem offset.
 
 // Select button.
 async function appSelect(x) {
@@ -135,7 +139,7 @@ async function appTitle() {
 
 	// Draw probrem title.
 	let probrem = appProbremText(levels[level][0], levels[level][1], levels[level][2]);
-	picoChar(probrem, -1, 0,0, 0,8);
+	picoChar(probrem, -1, 0,0, 0,6);
 	if (seed) {
 		picoChar(seed, 0, 0,-75, 0,1);
 	}
@@ -189,7 +193,7 @@ async function appProbrem() {
 			}
 
 			// Add/Sub probrem (under 99).
-			scale = 6;
+			scale = 4;
 
 			// Generate wrong answer.
 			correct = answer > 2 ? picoRandom(3) : answer > 1 ? picoRandom(2) : 0;
@@ -210,11 +214,11 @@ async function appProbrem() {
 
 			// Mul probrem (under 99).
 			if (levels[level][1] * levels[level][2] <= 99) {
-				scale = 6;
+				scale = 4;
 
 			// Mul probrem (over 100).
 			} else {
-				scale = 4;
+				scale = 3;
 			}
 
 			// Generate wrong answer.
@@ -236,11 +240,11 @@ async function appProbrem() {
 
 			// Mul probrem (under 999).
 			if (levels[level][1] * levels[level][2] <= 999) {
-				scale = 4;
+				scale = 3;
 
 			// Mul probrem (over 1000).
 			} else {
-				scale = 3;
+				scale = 2.5;
 			}
 
 			// Generate wrong answer.
@@ -268,15 +272,15 @@ async function appProbrem() {
 	}
 
 	// Draw number.
-	picoChar("" + number + "/" + maxnumber, 0, 0,-85, 0,2);
+	picoChar("" + number + "/" + maxnumber, 0, 0,numberoffset, 0,2);
 
 	// Draw probrem.
 	let probrem = appProbremText(operator, probrem1, probrem2);
-	picoChar(probrem, -1, 0,-50, 0,scale);
+	picoChar(probrem, -1, 0,probremoffset, 0,scale);
 
 	// Draw answer.
 	for (let i = 0; i < 3; i++) {
-		let x = (i-1)*60, y = 35;
+		let x = (i-1)*grid, y = 35;
 		let s = picoMotion(x, y, square/2, square/2) ? 0.8 : 1;
 
 		// Choose answer.
@@ -311,22 +315,22 @@ async function appAnswer() {
 	}
 
 	// Draw number.
-	picoChar("" + number + "/" + maxnumber, 0, 0,-85, 0,2);
+	picoChar("" + number + "/" + maxnumber, 0, 0,numberoffset, 0,2);
 
 	// Draw probrem.
 	let probrem = appProbremText(operator, probrem1, probrem2);
-	picoChar(probrem, -1, 0,-50, 0,scale);
+	picoChar(probrem, -1, 0,probremoffset, 0,scale);
 
 	// Draw choose answer.
 	if (choose != correct) {
 		let i = choose;
-		let x = (i-1)*60, y = 35;
+		let x = (i-1)*grid, y = 35;
 		picoChar("*", -1, x,y, 0,scale);
 	}
 
 	// Draw correct answer.
 	let i = correct;
-	let x = (i-1)*60, y = 35;
+	let x = (i-1)*grid, y = 35;
 	let s = picoMotion(x, y, square/2, square/2) ? 0.8 : 1;
 	if (picoAction(x, y, square/2, square/2)) {
 
@@ -373,12 +377,12 @@ async function appResult() {
 
 	// Draw probrem title.
 	let probrem = appProbremText(levels[level][0], levels[level][1], levels[level][2]);
-	picoChar(probrem, -1, 0,-85, 0,2);
-	picoChar(seed, 0, 0,-75, 0,1);
+	picoChar(probrem, -1, 0,numberoffset, 0,2);
+	picoChar(seed, 0, 0,seedoffset, 0,1);
 
 	// Draw result.
 	let result = appResultText(resultTime);
-	picoChar(result, -1, 0,0, 0,8);
+	picoChar(result, -1, 0,0, 0,6);
 
 	// Wait result.
 	if (playing <= 72) {
