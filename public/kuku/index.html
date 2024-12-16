@@ -87,7 +87,6 @@ async function picoShareScreen(c=0, bg=1) {
 	await pico.app.shareScreen(c, bg);
 }
 
-
 // Lock screen with wakelock.
 function picoLockScreen(enable=true) {
 	pico.app.lockScreen(enable);
@@ -98,17 +97,14 @@ function picoWideScreen() {
 	return pico.app.wideScreen();
 }
 
+// Set clipboard text and return current clipboard text.
+async function picoClipboard(text=null) {
+	return await pico.app.clipboard(text);
+}
+
 // App mode.
 function picoAppMode() {
 	return pico.app.version > 0;
-}
-
-// Dev mode.
-function picoDevMode(enable=false) {
-	if (enable) {
-		pico.app.version = -1;
-	}
-	return pico.app.version < 0;
 }
 
 //************************************************************/
@@ -120,19 +116,35 @@ var pico = pico || {};
 pico.App = class {
 	static count = 0; // Object count.
 	static script = "app.js"; // Default script.
+	static pixels = [ // App loading pixels.
+		[0,6,6, 9,1,1, 9,5,1, 9,2,2, 9,4,2, 9,3,3, 9,2,4, 9,4,4, 9,1,5, 9,5,5],
+		[0,6,6, 9,3,3],
+		[0,6,6, 9,5,1, 9,1,5],
+		[0,6,6, 9,5,1, 9,3,3, 9,1,5],
+		[0,6,6, 9,1,1, 9,5,1, 9,1,5, 9,5,5],
+		[0,6,6, 9,1,1, 9,5,1, 9,3,3, 9,1,5, 9,5,5],
+		[0,6,6, 9,1,1, 9,5,1, 9,1,3, 9,5,3, 9,1,5, 9,5,5],
+	];
+	static timeout = 1200; // Loading maximum time.
 
 	// constructor.
 	constructor() {
 		pico.App.count++;
 		this.lock = "picoAppLock" + pico.App.count + Date.now(); // Lock object identifier.
-		this.refer = null; // Refer script/url.
-		this.script = pico.App.script; // App script.
-		this.title = ""; // App title.
-		this.version = 0; // App version.
-		this.author = "*"; // App author.
-		this.timestamp = ""; // Timestamp.
 		this.wakeLock = null; // Wake lock object.
 		this.image = new pico.Image(""); // App offscreen image.
+		this.loading = 1; // App loading count.
+		this.state = null; // App state.
+		this.angle = 0; // App loading icon angle.
+		this.frame = 0; // App loading icon frame.
+
+		this.refer = picoString("r"); // Refer script/url.
+		this.script = picoString("s") ? picoString("s") : pico.App.script; // App script.
+		this.title = picoString("t"); // App title.
+		this.version = picoNumber("v"); // App version.
+
+		this.author = "*"; // App author.
+		this.timestamp = ""; // Timestamp.
 
 		// Load app information.
 		let e = document.getElementById("author");
@@ -162,20 +174,66 @@ pico.App = class {
 		}
 
 		// Load app script.
-		let script = picoString("s");
-		if (script) {
-			this.script = script;
-		}
-		e = document.createElement('script');
-		e.src = this.script;
-		document.body.appendChild(e);
+		this.state = "LOADING";
+		this.loadScripts(this.script.split(/,/)).then(async () => {
+			window.addEventListener("resize", async () => {
+				console.log("Window resized.");
+				await this.onResize()
+			}); // Resize.
+			this.state = "LOADED"; // End loading.
+			this.onLoaded(); // Loaded.
+		}).catch(() => {
+			console.log("Load failed.");
+			this.state = "ERROR"; // App not found.
+		});
 
-		window.addEventListener("resize", async () => {
-			await this.onResize()
-		}); // Resize.
-		window.addEventListener("load", async () => {
-			await this.onLoad();
-		}); // Load.
+		// On loading.
+		this.onLoading();
+	}
+
+	// Load scripts.
+	async loadScripts(scripts, index=0) {
+		return new Promise(async (resolve, reject) => {
+			console.log("Load scripts: " + (index+1) + "/" + scripts.length);
+			this.loadScript(scripts[index]).then(async () => {
+				if (index + 1 < scripts.length) {
+					await this.loadScripts(scripts, index + 1);
+				}
+				console.log("Loaded all scripts.");
+				resolve();
+			}).catch(() => {
+				reject();
+			});
+		}); // end of new Promise.
+	}
+
+	// Load script.
+	async loadScript(script, timeout=10000) {
+		return new Promise(async (resolve, reject) => {
+			console.log("Load script: " + script);
+			let loader = document.createElement('script');
+			loader.addEventListener("load", async () => {
+				navigator.locks.request(this.lock, async (lock) => {
+					if (timeout > 0) {
+						console.log("Loaded: " + script);
+						timeout = 0;
+						resolve();
+					}
+				}); // end of lock.
+			}); // Loaded.
+			setTimeout(() => {
+				navigator.locks.request(this.lock, async (lock) => {
+					if (timeout > 0) {
+						console.log("Load timed out: " + script);
+						loader.src = null; // Load cancel.
+						timeout = 0;
+						reject();
+					}
+				}); // end of lock.
+			}, timeout);
+			loader.src = script; // Set url after onload event handler to avoid onload hook timing bug.
+			document.body.appendChild(loader);
+		}); // end of new Promise.
 	}
 
 	// On reset button.
@@ -216,22 +274,79 @@ pico.App = class {
 		}
 	}
 
-	// On load event.
-	async onLoad() {
+	// On loading event.
+	async onLoading() {
 		try {
-			let title = picoString("t");
-			if (title) {
-				this.title = title;
-				await picoTitle(this.title);
-			}
-			this.refer = picoString("r");
-			this.version = picoString("v") ? picoString("v") : "0";
-			if (typeof appLoad === "function") {
+			// Load loop.
+			for (this.loading = 1; this.loading < pico.App.timeout; this.loading++) {
 				await navigator.locks.request(this.lock, async (lock) => {
-					await appLoad();
+					const speed = 20, oneroll = 360/speed * 3, oneloop = 360/speed * 6;
+					let waiting = this.loading < oneloop-oneroll || picoMod(this.loading-1, oneloop) == 0;
+					console.log("load " + this.loading + " " + oneroll + "/" + oneloop + " -> " + waiting);
+					if (this.state != "LOADING" && this.state != "LOADED" && waiting) {
+						this.loading = pico.App.timeout;
+						return;
+					}
+					picoClear();
+					let rolling = picoMod(this.loading-1, oneloop) >= oneloop-oneroll;
+					if (rolling) {
+						this.angle = picoMod(this.angle + speed, 360);
+						this.frame = picoRandom(pico.App.pixels.length - 1) + 1;
+					}
+					if (this.loading >= oneloop-oneroll) {
+						picoSprite(pico.App.pixels[this.frame], 3, 0,0, this.angle,picoMotion()?1.6:2);
+						if (!rolling && this.loading >= oneloop) {
+							picoChar(this.state, -1, 0,16, 0,1);
+						}
+					}
+					await picoFlip(10);
 				}); // end of lock.
 			}
+			// Error loop.
+			if (this.state != "START") {
+				picoFlush(); // Flush to skip first read.
+				for (;;) {
+					await picoRead();
+					await navigator.locks.request(this.lock, async (lock) => {
+						picoClear();
+						if (picoAction()) {
+							await this.resetApp();
+							return;
+						} else {
+							picoSprite(pico.App.pixels[0], -1, 0,0, 0,picoMotion()?1.6:2);
+							picoChar(this.state, -1, 0,16, 0,1);
+						}
+						await picoFlip(10);
+					}); // end of lock.
+				}
+			}
 			picoFlush(); // Flush to skip first read.
+			console.log("Start app.");
+		} catch (error) {
+			console.error(error.name, error.message);
+		}
+	}
+	
+	// On loaded event.
+	async onLoaded() {
+		try {
+			// Load app.
+			if (typeof appLoad === "function") {
+				console.log("Loaded app.");
+				await appLoad();
+			}
+			// Start app.
+			await navigator.locks.request(this.lock, async (lock) => {
+				if (typeof appMain === "function") {
+					console.log("Starting app.");
+					this.state = "START"; // End loading.
+				} else {
+					console.log("App not found.");
+					this.state = "ERROR"; // App not found.
+					return;
+				}
+			}); // end of lock.
+			// Main loop.
 			for (;;) {
 				await picoRead();
 				await navigator.locks.request(this.lock, async (lock) => {
@@ -302,9 +417,7 @@ pico.App = class {
 
 	// Switch app script.
 	async switchApp(target=null, refer=null, title=null) {
-		if (picoDevMode()) {
-			picoSetString(-1, "v");
-		} else if (this.version > 0) {
+		if (this.version > 0) {
 			picoSetString(this.version, "v");
 		}
 
@@ -337,9 +450,7 @@ pico.App = class {
 	// Return app script.
 	async returnApp() {
 		if (this.refer) {
-			if (picoDevMode()) {
-				picoSetString(-1, "v");
-			} else if (this.version > 0) {
+			if (this.version > 0) {
 				picoSetString(this.version, "v");
 			}
 			picoSetString("", "r");
@@ -365,9 +476,7 @@ pico.App = class {
 	// Reload top page.
 	async resetApp() {
 		picoResetParams();
-		if (picoDevMode()) {
-			picoSetString(-1, "v");
-		} else if (this.version > 0) {
+		if (this.version > 0) {
 			picoSetString(this.version, "v");
 		}
 		await picoReload();
@@ -417,6 +526,25 @@ pico.App = class {
 	// Check wide screen and return true if landscape mode.
 	wideScreen() {
 		return window.matchMedia("(min-aspect-ratio: 1.0)").matches;
+	}
+
+	// Set clipboard text and return current clipboard text.
+	async clipboard(text) {
+		try {
+			if (text != null) {
+				// Not work on safari.
+				const blob = new Blob([text], {type: "text/plain"});
+				const data = new ClipboardItem({[blob.type]: blob});
+				console.log("Clipboard item: " + data.types);
+				await navigator.clipboard.write([data]);
+				// Not work on safari.
+				// https://bugs.webkit.org/show_bug.cgi?id=222262
+				//await navigator.clipboard.writeText(text);
+			}
+			return await navigator.clipboard.readText();
+		} catch (error) {
+			console.error(error.name, error.message);
+		}
 	}
 }
 

@@ -1,15 +1,15 @@
 const title = "Saikoro.org"; // Title.
 const dots = [ // Dotted design pixels.
-	[0,7,7, 3,3,3, 3,1,1, 3,1,3, 3,3,1, 3,3,5, 3,1,5, 3,5,1, 3,5,3, 3,5,5],
-	[0,7,7, 0,0,0,0,6,6, 9,3,3],
-	[0,7,7, 0,0,0,0,6,6, 9,1,5, 9,5,1],
-	[0,7,7, 0,0,0,0,6,6, 9,3,3, 9,1,5, 9,5,1],
-	[0,7,7, 0,0,0,0,6,6, 9,1,1, 9,1,5, 9,5,1, 9,5,5],
-	[0,7,7, 0,0,0,0,6,6, 9,3,3, 9,1,1, 9,1,5, 9,5,1, 9,5,5],
-	[0,7,7, 0,0,0,0,6,6, 9,1,1, 9,1,3, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
-	[0,7,7, 0,0,0,0,6,6, 9,3,3, 9,1,1, 9,1,3, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
-	[0,7,7, 0,0,0,0,6,6, 9,1,1, 9,1,3, 9,3,1, 9,3,5, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
-	[0,7,7, 0,0,0,0,6,6, 9,3,3, 9,1,1, 9,1,3, 9,3,1, 9,3,5, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
+	[0,6,6, 3,3,3, 3,1,1, 3,1,3, 3,3,1, 3,3,5, 3,1,5, 3,5,1, 3,5,3, 3,5,5],
+	[0,6,6, 0,0,0,0,6,6, 9,3,3],
+	[0,6,6, 0,0,0,0,6,6, 9,1,5, 9,5,1],
+	[0,6,6, 0,0,0,0,6,6, 9,3,3, 9,1,5, 9,5,1],
+	[0,6,6, 0,0,0,0,6,6, 9,1,1, 9,1,5, 9,5,1, 9,5,5],
+	[0,6,6, 0,0,0,0,6,6, 9,3,3, 9,1,1, 9,1,5, 9,5,1, 9,5,5],
+	[0,6,6, 0,0,0,0,6,6, 9,1,1, 9,1,3, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
+	[0,6,6, 0,0,0,0,6,6, 9,3,3, 9,1,1, 9,1,3, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
+	[0,6,6, 0,0,0,0,6,6, 9,1,1, 9,1,3, 9,3,1, 9,3,5, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
+	[0,6,6, 0,0,0,0,6,6, 9,3,3, 9,1,1, 9,1,3, 9,3,1, 9,3,5, 9,1,5, 9,5,1, 9,5,3, 9,5,5],
 ];
 
 var items = picoString("v") && picoString("v") != "0" ? [ // Items for app mode.
@@ -40,8 +40,9 @@ async function appUpdate() {
 	if (state == "demo") {
 		index = 0; // Reset icon.
 	}
+	// No await for async loading.
 	picoSpriteData(dots[index], -1).then((image) => {
-		picoLabel("select", null, image); // Lazy loading.
+		picoLabel("select", null, image);
 	});
 	picoFlush();
 }
@@ -60,7 +61,7 @@ async function appSelect() {
 
 // Load.
 async function appLoad() {
-	picoTitle(title);
+	picoTitle(title); // Initialize header.
 
 	// Skip demo on app mode or continuous start.
 	if (picoString("v") != null) {
@@ -76,15 +77,18 @@ async function appLoad() {
 	// Load images.
 	for (let i = 0; i < items.length; i++) {
 		if (items[i][1]) {
+			// Wait for loading.
+			//await picoLoad(items[i][1], 500).then((image) => {
+			// No await for async loading.
 			picoLoad(items[i][1]).then((image) => {
-				images[i] = image; // Lazy loading.
+				images[i] = image;
 				picoFlush();
 			});
 		}
 	}
 
-	appResize(); // Initialize positions.
-	appUpdate(); // Initialize buttons.
+	await appResize(); // Initialize positions.
+	await appUpdate(); // Initialize buttons.
 }
 
 var landscape = false; // landscape mode.
@@ -113,6 +117,7 @@ async function appMain() {
 			//playing = -1; // Reroll.
 			//picoFlush(); // Update animation without input.
 			state = "menu";
+			playing = -1;
 			appUpdate(); // Show menu.
 			return;
 		} else if (picoMotion()) {
@@ -135,14 +140,14 @@ async function appMain() {
 
 	// Logo.
 	/*if (state == "demo") {
-		const logocolor = 5, logoscale = 2.5, logooffset = 38;
+		const logocolor = 9, logoscale = 2.5, logooffset = 38;
 		picoChar(title, logocolor, 0,logooffset, 0,logoscale);
 	}*/
 
 	// Menu.
 	if (state == "menu") {
 		// Scale animation at start.
-		let s = playing < 5 ? (0.8 + 0.04 * playing) : 1;
+		let s = playing < 5 ? (0.9 + 0.02 * playing) : 1;
 		// 300(Image size) * 0.4(Image scale) / 4(Pixel ratio) = 30(Pixel size)
 		const itemcolor = 2, itemscale = 1.5, imagescale = 0.4;
 		const itemwidth = 30, itemvgrid = 44, itemhgrid = 44;

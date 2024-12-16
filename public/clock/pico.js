@@ -3,7 +3,7 @@
 // Namespace.
 var pico = pico || {};
 pico.name = "pico"; // Update by package.json.
-pico.version = "0.9.40515"; // Update by package.json.
+pico.version = "0.10.41215"; // Update by package.json.
 
 /* PICO Image module */
 
@@ -58,9 +58,9 @@ async function picoResize(width=0, height=0) {
 }
 
 // Set image color pallete.
-async function picoColor(colors=null) {
+async function picoColor(colors=null, offset=0) {
 	try {
-		await pico.image.color(colors);
+		await pico.image.color(colors, offset);
 	} catch (error) {
 		console.error(error);
 	}
@@ -175,9 +175,9 @@ async function picoScreenImage() {
 }
 
 // Load image file.
-async function picoLoad(url) {
+async function picoLoad(url, timeout=10000) {
 	try {
-		return await pico.image.loadImage(url);
+		return await pico.image.loadImage(url, timeout);
 	} catch (error) {
 		console.error(error);
 	}
@@ -223,7 +223,7 @@ pico.Image = class {
 	static ratio = 4; // Pixel ratio.
 	static parent = "picoImage"; // Parent element id.
 
-	// Default image color. (5 gray scale colors: ffffff dfdfdf bfbfbf 7f7f7f 3f3f3f 000000)
+	// Image color. (6 gray scale system colors: -6:ffffff -5:dfdfdf -4:bfbfbf -3:7f7f7f -2:3f3f3f -1:000000)
 	static colors = [255,255,255, 223,223,223, 191,191,191, 127,127,127, 63,63,63, 0,0,0];
 
 	// Default char leading.
@@ -313,10 +313,12 @@ pico.Image = class {
 	}
 
 	// Set image color pallete.
-	color(colors=null) {
+	color(colors=null, offset=0) {
 		return navigator.locks.request(this.lock, async (lock) => {
 			if (colors && colors.length > 0) {
-				this.colors = colors.concat();
+				this.offset = offset;
+				this.colors.length = offset*3;
+				this.colors = this.colors.concat(colors);
 			} else {
 				this.colors = pico.Image.colors.concat();
 			}
@@ -353,8 +355,8 @@ pico.Image = class {
 	drawRect(c=-1, x=0, y=0, width=1, height=1, angle=0, scale=1) {
 		return navigator.locks.request(this.lock, async (lock) => {
 			await this._ready();
-			await this._reset(x, y, angle, scale);
-			await this._draw(c, -(width-1)/2, -(height-1)/2, width-1, height-1);
+			this._reset(x, y, angle, scale);
+			this._draw(c, -(width-1)/2, -(height-1)/2, width-1, height-1);
 		}); // end of lock.
 	}
 
@@ -362,14 +364,14 @@ pico.Image = class {
 	drawChar(char, c=-1, x=0, y=0, angle=0, scale=1) {
 		return navigator.locks.request(this.lock, async (lock) => {
 			await this._ready();
-			await this._reset(x, y, angle, scale);
+			this._reset(x, y, angle, scale);
 			let length = char.length;
 			if (length >= 2) {
-				await this._move(-(length-1)/2 * this.leading, 0);
+				this._move(-(length-1)/2 * this.leading, 0);
 			}
 			for (let i = 0; i < length; i++) {
-				await this._char(char.charCodeAt(i), c);
-				await this._move(this.leading, 0);
+				this._char(char.charCodeAt(i), c);
+				this._move(this.leading, 0);
 			}
 		}); // end of lock.
 	}
@@ -378,7 +380,7 @@ pico.Image = class {
 	drawText(text, c=-1, x=0, y=0, width=0, height=0, angle=0, scale=1) {
 		return navigator.locks.request(this.lock, async (lock) => {
 			await this._ready();
-			await this._text(text, c, x, y, width, height, angle, scale);
+			this._text(text, c, x, y, width, height, angle, scale);
 		}); // end of lock.
 	}
 
@@ -401,7 +403,7 @@ pico.Image = class {
 			}
 			this._resize(width * scale, height * scale);
 			await this._ready();
-			await this._text(text, c, 0, 0, width, height, 0, scale);
+			this._text(text, c, 0, 0, width, height, 0, scale);
 			return this._data();
 		}); // end of offscreenlock.
 	}
@@ -413,9 +415,9 @@ pico.Image = class {
 		}
 		let flipped = [];
 		let i = 0, w = 1, h = 1;
-		if (cells[0] == 0 && cells[1] > 0 && cells[2] > 0) {
-			w = cells[1];
-			h = cells[2];
+		if (cells[0] == 0 && cells[1] >= 0 && cells[2] >= 0) {
+			w = cells[1] + 1;
+			h = cells[2] + 1;
 			flipped[0] = cells[0];
 			flipped[1] = cells[1];
 			flipped[2] = cells[2];
@@ -455,8 +457,8 @@ pico.Image = class {
 	drawSprite(cells=[-1,0,0], bgcolor=-1, x=0, y=0, angle=0, scale=1) {
 		return navigator.locks.request(this.lock, async (lock) => {
 			await this._ready();
-			await this._reset(x, y, angle, scale);
-			await this._sprite(cells, -1, bgcolor);
+			this._reset(x, y, angle, scale);
+			this._sprite(cells, -1, bgcolor);
 		}); // end of lock.
 	}
 
@@ -471,8 +473,8 @@ pico.Image = class {
 			let size = this._spriteSize(cells);
 			this._resize(size * scale, size * scale);
 			await this._ready();
-			await this._reset(0, 0, 0, scale);
-			await this._sprite(cells, -1, bgcolor);
+			this._reset(0, 0, 0, scale);
+			this._sprite(cells, -1, bgcolor);
 			return this._data();
 		}); // end of lock.
 	}
@@ -487,9 +489,9 @@ pico.Image = class {
 				this.offscreen._copy(this);
 			}); // end of lock.
 			await this.offscreen._ready();
-			await this.offscreen._reset(0, 0, 0, 1);
+			this.offscreen._reset(0, 0, 0, 1);
 			if (bgcolor >= 0) {
-				await this.offscreen._draw(bgcolor,
+				this.offscreen._draw(bgcolor,
 					-this.offscreen.canvas[0].width/2, -this.offscreen.canvas[0].height/2,
 					this.offscreen.canvas[0].width, this.offscreen.canvas[0].height);
 			}
@@ -499,13 +501,13 @@ pico.Image = class {
 				let h = this.offscreen.vleading;
 				let x = this.offscreen.canvas[0].width/pico.Image.ratio/2 - (w * (watermark.length + 1) / 2);
 				let y = this.offscreen.canvas[0].height/pico.Image.ratio/2 - h;
-				await this.offscreen._move(x, y);
+				this.offscreen._move(x, y);
 				if (watermark.length >= 2) {
-					await this.offscreen._move(-(watermark.length-1)/2 * w, 0);
+					this.offscreen._move(-(watermark.length-1)/2 * w, 0);
 				}
 				for (let i = 0; i < watermark.length; i++) {
-					await this.offscreen._char(watermark.charCodeAt(i), fgcolor);
-					await this.offscreen._move(w, 0);
+					this.offscreen._char(watermark.charCodeAt(i), fgcolor);
+					this.offscreen._move(w, 0);
 				}
 			}
 			return pico.image.offscreen._file(name);
@@ -521,34 +523,66 @@ pico.Image = class {
 	}
 
 	// Load image file and get image.
-	loadImage(url) {
+	loadImage(url, timeout=10000) {
 		return new Promise(async (resolve) => {
 			let image = new pico.Image("");
-			resolve(image._load(url));
-		}); // end of new Promise.
+			let loader = new Image();
+			//loader.crossOrigin = "anonymous";
+			loader.addEventListener("load", async () => {
+				navigator.locks.request(image.lock, async (imagelock) => {
+					if (timeout > 0) {
+						for (let i = 0; i < 2; i++) {
+							image.canvas[i].width = loader.width;// * pico.Image.ratio;
+							image.canvas[i].height = loader.height;// * pico.Image.ratio;
+						}
+					  image.context.drawImage(loader, 0,0);/*
+					  	0, 0, loader.width, loader.height,
+					  	0, 0, image.canvas[0].width, image.canvas[0].height);*/
+					  //loader.style.display = "none";
+					  //document.body.appendChild(loader);
+						////console.log("Loaded: " + url);
+						timeout = 0;
+						resolve(image);
+					}
+				}); // end of lock.
+			}); // Loaded.
+			setTimeout(() => {
+				navigator.locks.request(image.lock, async (imagelock) => {
+					if (timeout > 0) {
+						////console.log("Load timed out: " + url);
+						loader.src = null; // Load cancel.
+						timeout = 0;
+						resolve();
+					}
+				}); // end of lock.
+			}, timeout);
+			loader.src = url; // Set url after onload event handler to avoid onload hook timing bug.
+		});
 	}
 
 	// Draw other image to this image.
 	drawImage(image, x=0, y=0, angle=0, scale=1, width=0, height=0, frame=0, yframe=-1) {
 		return navigator.locks.request(this.lock, async (lock) => {
 			await this._ready();
-			await this._reset(x, y, angle, scale);
-			if (width > 0 && yframe < 0) {
-				let nx = image.canvas[0].width / width;
-				if (frame < 0) {
-					let sx = image.canvas[0].width - (Math.floor((-frame - 1) % nx) + 1) * width;
-					let sy = image.canvas[0].height - (Math.floor((-frame - 1) / nx) + 1) * height;
-					await this._image(image, sx, sy, width, height);
+			this._reset(x, y, angle, scale);
+			await navigator.locks.request(image.lock, async (imagelock) => {
+				if (width > 0 && yframe < 0) {
+					let nx = image.canvas[0].width / width;
+					if (frame < 0) {
+						let sx = image.canvas[0].width - (Math.floor((-frame - 1) % nx) + 1) * width;
+						let sy = image.canvas[0].height - (Math.floor((-frame - 1) / nx) + 1) * height;
+						await this._image(image, sx, sy, width, height);
+					} else {
+						let sx = Math.floor(frame % nx) * width;
+						let sy = Math.floor(frame / nx) * height;
+						await this._image(image, sx, sy, width, height);
+					}
 				} else {
-					let sx = Math.floor(frame % nx) * width;
-					let sy = Math.floor(frame / nx) * height;
+					let sx = frame * width;
+					let sy = yframe * height;
 					await this._image(image, sx, sy, width, height);
 				}
-			} else {
-				let sx = frame * width;
-				let sy = yframe * height;
-				await this._image(image, sx, sy, width, height);
-			}
+			}); // end of lock.
 		}); // end of lock.
 	}
 
@@ -561,7 +595,8 @@ pico.Image = class {
 		this.canvas = []; // Double buffered canvas elements.
 		this.primary = 0; // Primary canvas index.
 		this.context = null; // Canvas 2d context.
-		this.colors = Object.assign([], pico.Image.colors); // Master image color. 
+		this.colors = Object.assign([], pico.Image.colors); // Master image color.
+		this.offset = 0; // Color index offset.
 		this.leading = pico.Image.leading; // Char leading.
 		this.vleading = pico.Image.vleading; // Line leading (vertical).
 		this.sprites = Object.assign([], pico.Image.csprites); // Char sprites.
@@ -578,7 +613,7 @@ pico.Image = class {
 
 	// Resize canvas.
 	_resize(width=0, height=0) {
-		//console.log("Resize.");
+		////console.log("Resize.");
 		for (let i = 0; i < 2; i++) {
 			this.canvas[i].width = (width ? width : pico.Image.width) * pico.Image.ratio;
 			this.canvas[i].height = (width ? height : pico.Image.height) * pico.Image.ratio;
@@ -591,7 +626,7 @@ pico.Image = class {
 
 			// Create canvas.
 			if (this.context == null) {
-				//console.log("Create canvas.");
+				////console.log("Create canvas.");
 				for (let i = 0; i < 2; i++) {
 					this.canvas[i] = document.createElement("canvas");
 					this.canvas[i].width = (width ? width : pico.Image.width) * pico.Image.ratio;
@@ -617,7 +652,7 @@ pico.Image = class {
 	// Flip image.
 	_flip() {
 		return this._ready().then(() => {
-			//console.log("Flip.");
+			////console.log("Flip.");
 			return new Promise((resolve) => {
 				for (let i = 0; i < 2; i++) {
 					this.canvas[i].style.display = i == this.primary ? "flex" : "none";
@@ -632,7 +667,7 @@ pico.Image = class {
 	// Clear image.
 	_clear() {
 		return this._ready().then(() => {
-			//console.log("Clear.");
+			////console.log("Clear.");
 			return new Promise((resolve) => {
 
 				// Clear image.
@@ -654,6 +689,7 @@ pico.Image = class {
 			original.canvas[0].width/pico.Image.ratio,
 			original.canvas[0].height/pico.Image.ratio);
 		this.colors = Object.assign([], original.colors);
+		this.offset = original.offset;
 		this.leading = original.leading;
 		this.vleading = original.vleading;
 		this.sprites = Object.assign({}, original.sprites);
@@ -665,7 +701,7 @@ pico.Image = class {
 	// Ready to draw.
 	_ready() {
 		if (this.context == null) {
-			//console.log("No context.");
+			////console.log("No context.");
 			return Promise.reject();
 		}
 		return Promise.resolve();
@@ -673,82 +709,64 @@ pico.Image = class {
 
 	// Reset image transform (scale, rotate, move).
 	_reset(x=0, y=0, angle=0, scale=1, vscale=0) {
-		////console.log("Reset transform matrix.");
-		return new Promise(async (resolve) => {
-			this.context.setTransform(1, 0, 0, 1, 0, 0);
-			await this._move(x, y);
-			await this._rotate(angle);
-			await this._scale(scale, vscale);
-			resolve();
-		}); // end of new Promise.
+		//////console.log("Reset transform matrix.");
+		this.context.setTransform(1, 0, 0, 1, 0, 0);
+		this._move(x, y);
+		this._rotate(angle);
+		this._scale(scale, vscale);
 	}
 
 	// Scale image.
 	_scale(scale=1, vscale=0) {
-		////console.log("Scale: " + scale + "," + vscale);
-		return new Promise((resolve) => {
-			if (scale != 1) {
-				this.context.translate(this.canvas[0].width / 2, this.canvas[0].height / 2);
-				this.context.scale(scale, vscale > 0 ? vscale : scale);
-				this.context.translate(-this.canvas[0].width / 2, -this.canvas[0].height / 2);
-			}
-			resolve();
-		}); // end of new Promise.
+		//////console.log("Scale: " + scale + "," + vscale);
+		if (scale != 1) {
+			this.context.translate(this.canvas[0].width / 2, this.canvas[0].height / 2);
+			this.context.scale(scale, vscale > 0 ? vscale : scale);
+			this.context.translate(-this.canvas[0].width / 2, -this.canvas[0].height / 2);
+		}
 	}
 
 	// Rotate image.
 	_rotate(angle=0) {
-		////console.log("Rotate: " + angle);
-		return new Promise((resolve) => {
-			if (angle) {
-				this.context.translate(this.canvas[0].width / 2, this.canvas[0].height / 2);
-				this.context.rotate(angle * Math.PI / 180);
-				this.context.translate(-this.canvas[0].width / 2, -this.canvas[0].height / 2);
-			}
-			resolve();
-		}); // end of new Promise.
+		//////console.log("Rotate: " + angle);
+		if (angle) {
+			this.context.translate(this.canvas[0].width / 2, this.canvas[0].height / 2);
+			this.context.rotate(angle * Math.PI / 180);
+			this.context.translate(-this.canvas[0].width / 2, -this.canvas[0].height / 2);
+		}
 	}
 
 	// Move image.
 	_move(x, y) {
-		////console.log("Move: " + x + "," + y);
-		return new Promise((resolve) => {
-			if (x || y) {
-				this.context.translate(pico.Image.ratio * x, pico.Image.ratio * y);
-			}
-			resolve();
-		}); // end of new Promise.
+		//////console.log("Move: " + x + "," + y);
+		if (x || y) {
+			this.context.translate(pico.Image.ratio * x, pico.Image.ratio * y);
+		}
 	}
 
 	// Draw pixel to image.
 	_draw(c=-1, x=0, y=0, dx=0, dy=0) {
-		//console.log("Draw: " + c + "," + x + "+" + dx + "," + y + "+" + dy);
+		////console.log("Draw: " + c + "," + x + "+" + dx + "," + y + "+" + dy);
 		const u = pico.Image.ratio, cx = (this.canvas[0].width - u) / 2, cy = (this.canvas[0].height - u) / 2;
-		////console.log("Center: " + cx + "," + cy + " / " + u);
-		return new Promise((resolve) => {
-			let k = c >= 0 && c < this.colors.length/3 ? c : this.colors.length/3 - 1;
-			let r = this.colors[k*3], g = this.colors[k*3+1], b = this.colors[k*3+2];
-			////console.log("Color: " + r + "," + g + "," + b);
-			this.context.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
-			this.context.fillRect(cx + u * x, cy + u * y, u * (dx + 1), u * (dy + 1));
-			resolve();
-		}); // end of new Promise.
+		//////console.log("Center: " + cx + "," + cy + " / " + u);
+		let m = this.colors.length/3;
+		let k = c >= m ? m-1 : c >= 0 ? c : Math.floor((c+m) % (m));
+		let r = this.colors[k*3], g = this.colors[k*3+1], b = this.colors[k*3+2];
+		//////console.log("Color: " + r + "," + g + "," + b);
+		this.context.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+		this.context.fillRect(cx + u * x, cy + u * y, u * (dx + 1), u * (dy + 1));
 	}
 
 	// Draw char as string or number to image.
 	_char(char, c=-1) {
 		let sprite = [];
 		let charStr = String.fromCharCode(char);
-		if (this.aliases[charStr]) {
-			charStr = this.aliases[charStr];
-		}
 		if (this.sprites[charStr]) {
 			sprite = this.sprites[charStr];
+		} else if (this.aliases[charStr]) {
+			sprite = this.sprites[this.aliases[charStr]];
 		}
-		return new Promise(async (resolve) => {
-			await this._sprite(sprite, c, -1);
-			resolve();
-		}); // end of new Promise.
+		return this._sprite(sprite, c, -1);
 	}
 
 	// Draw multiple lines of text.
@@ -757,105 +775,78 @@ pico.Image = class {
 		const ux = this.leading, uy = this.vleading;
 		let mx = width > 0 ? width / ux - 1 : this.canvas[0].width / (ux * u * scale) - 1;
 		let my = height > 0 ? height / uy - 1 : this.canvas[0].height / (uy * u * scale) - 1;
-		////console.log("Textarea: " + mx + "," + my + " / " + ux + "," + uy);
-		return new Promise(async (resolve) => {
-			await this._reset(x, y, angle, scale);
-			await this._move((-ux * mx) / 2 , (-uy * my) / 2);
-			for (let i = 0, ix = 0, iy = 0; i < text.length && iy <= my; i++) {
-				let char = text.charCodeAt(i);
-				////console.log("Char="+char + " ix="+ix + "/"+mx + " iy="+iy + "/"+my);
-				if (char == "\r".charCodeAt(0) || char == "\n".charCodeAt(0)) {
-					await this._move(-ux * ix, uy);
-					ix = 0;
-					iy++;
-				} else if (ix > mx) {
-					await this._move(-ux * ix, uy);
-					ix = 0;
-					iy++;
-					i--;
-				} else {
-					await this._char(char, c);
-					await this._move(ux, 0);
-					ix++;
-				}
+		//////console.log("Textarea: " + mx + "," + my + " / " + ux + "," + uy);
+		this._reset(x, y, angle, scale);
+		this._move((-ux * mx) / 2 , (-uy * my) / 2);
+		for (let i = 0, ix = 0, iy = 0; i < text.length && iy <= my; i++) {
+			let char = text.charCodeAt(i);
+			//////console.log("Char="+char + " ix="+ix + "/"+mx + " iy="+iy + "/"+my);
+			if (char == "\r".charCodeAt(0) || char == "\n".charCodeAt(0)) {
+				this._move(-ux * ix, uy);
+				ix = 0;
+				iy++;
+			} else if (ix > mx) {
+				this._move(-ux * ix, uy);
+				ix = 0;
+				iy++;
+				i--;
+			} else {
+				this._char(char, c);
+				this._move(ux, 0);
+				ix++;
 			}
-			resolve();
-		}); // end of new Promise.
+		}
 	}
 
 	// Draw sprite to image.
 	_sprite(cells=[-1,0,0], fgcolor=-1, bgcolor=-1) {
-		//console.log("Sprite: " + cells.join(","));
-		return new Promise(async (resolve) => {
-			let i = 0, x0 = 0, y0 = 0;
-			if (cells[0] == 0 && cells[1] > 0 && cells[2] > 0) {
-				x0 = -(cells[1] - 1) / 2;
-				y0 = -(cells[2] - 1) / 2;
+		////console.log("Sprite: " + cells.join(","));
+		let i = 0, x0 = 0, y0 = 0;
+		if (cells[0] == 0 && cells[1] >= 0 && cells[2] >= 0) {
+			x0 = -cells[1] / 2;
+			y0 = -cells[2] / 2;
+			i += 3;
+		}
+		if (bgcolor >= 0 && x0 < 0 && y0 < 0) {
+			this._draw(bgcolor, x0, y0, x0*-2, y0*-2);
+		}
+		for (; i < cells.length; i += 3) {
+			let c = fgcolor >= 0 ? fgcolor : cells[i];
+			if (cells[i+3] == 0) {
+				////console.log("SpriteDraw: " + c + "," + cells[i+1]+ "+" + cells[i+4] + "," + cells[i+2] + "+" + cells[i+5]);
+				this._draw(c, cells[i+1] + x0, cells[i+2] + y0, cells[i+4], cells[i+5]);
 				i += 3;
+			} else {
+				////console.log("SpriteDraw: " + c + "," + cells[i+1] + "," + cells[i+2]);
+				this._draw(c, cells[i+1] + x0, cells[i+2] + y0);
 			}
-			if (bgcolor >= 0 && x0 < 0 && y0 < 0) {
-				await this._draw(bgcolor, x0, y0, x0*-2, y0*-2);
-			}
-			for (; i < cells.length; i += 3) {
-				let c = fgcolor >= 0 ? fgcolor : cells[i];
-				if (cells[i+3] == 0) {
-					//console.log("SpriteDraw: " + c + "," + cells[i+1]+ "+" + cells[i+4] + "," + cells[i+2] + "+" + cells[i+5]);
-					await this._draw(c, cells[i+1] + x0, cells[i+2] + y0, cells[i+4], cells[i+5]);
-					i += 3;
-				} else {
-					//console.log("SpriteDraw: " + c + "," + cells[i+1] + "," + cells[i+2]);
-					await this._draw(c, cells[i+1] + x0, cells[i+2] + y0);
-				}
-			}
-			resolve();
-		}); // end of new Promise.
+		}
 	}
 
 	// Get sprite size.
 	_spriteSize(cells=[-1,0,0]) {
-		if (cells[0] == 0 && cells[1] > 0 && cells[2] > 0) {
-			return (cells[1] > cells[2] ? cells[1] : cells[2]);
+		if (cells[0] == 0 && cells[1] >= 0 && cells[2] >= 0) {
+			return (cells[1] > cells[2] ? cells[1] + 1 : cells[2] + 1);
 		}
 		return 0;
-	}
-
-	// Load image from data url.
-	_load(url) {
-		return new Promise(async (resolve) => {
-			let image = new Image();
-			//image.crossOrigin = "anonymous";
-			image.onload = () => {
-				for (let i = 0; i < 2; i++) {
-					this.canvas[i].width = image.width;// * pico.Image.ratio;
-					this.canvas[i].height = image.height;// * pico.Image.ratio;
-				}
-			  this.context.drawImage(image, 0,0);/*
-			  	0, 0, image.width, image.height,
-			  	0, 0, this.canvas[0].width, this.canvas[0].height);*/
-			  //image.style.display = "none";
-			  //document.body.appendChild(image);
-				resolve(this);
-			};
-			image.src = url; // To avoid onload hook timing bug.
-		});
 	}
 
 	// Draw other image to this image.
 	_image(image, sx=0, sy=0, width=0, height=0) {
 		const u = 0;//pico.Image.ratio * 4;
 		const cx = (this.canvas[0].width - u) / 2, cy = (this.canvas[0].height - u) / 2;
-		////console.log("Center: " + cx + "," + cy);
+		//////console.log("Center: " + cx + "," + cy);
 		return new Promise((resolve) => {
 			if (width > 0) {
 				height = (height > 0 ? height : width);
 				let cx = (this.canvas[0].width - width) / 2;
 				let cy = (this.canvas[0].height - height) / 2;
-				//console.log("DrawImage: " + cx + "," + cy + " " + sx + "," + sy + " " + width + "," + height);
+				////console.log("DrawImage: " + cx + "," + cy + " " + sx + "," + sy + " " + width + "," + height);
 				this.context.drawImage(image.canvas[image.primary], sx, sy, width, height, cx, cy, width, height);
 			} else {
 				let cx = (this.canvas[0].width - image.canvas[0].width) / 2;
 				let cy = (this.canvas[0].height - image.canvas[0].height) / 2;
-				//console.log("DrawImage: " + cx + "," + cy + " " + image.canvas[0].width + "," + image.canvas[0].height);
+				////console.log("DrawImage: " + cx + "," + cy + " " + image.canvas[0].width + "," + image.canvas[0].height);
 				this.context.drawImage(image.canvas[image.primary], cx, cy);
 			}
 			resolve();
@@ -889,7 +880,7 @@ pico.Image = class {
 		try {
 			const blob = new Blob([buffers.buffer], {type: "image/png"});
 			const file = new File([blob], name ? name : "image.png", {type: blob.type});
-			//console.log("Image data file: " + file.size);
+			////console.log("Image data file: " + file.size);
 			return file;
 		} catch (error) {
 			console.error(error);
@@ -957,14 +948,9 @@ function picoTextFile(text, name=null, type=null) {
 	}
 }
 
-// Get all params by one string.
-function picoParams() {
-	return pico.param.params();
-}
-
 // Reset all params.
-function picoResetParams() {
-	pico.param.resetParams();
+function picoReset() {
+	pico.param.reset();
 }
 
 // Get all param keys.
@@ -973,13 +959,13 @@ function picoKeys() {
 }
 
 // Get param as string.
-function picoString(key=0) {
-	return pico.param.string(key);
+function picoParam(key=0) {
+	return pico.param.param(key);
 }
 
 // Set param as string.
-function picoSetString(str, key=0) {
-	return pico.param.setString(str, key);
+function picoSetParam(str, key=0) {
+	pico.param.setParam(str, key);
 }
 
 // Get param as numbers.
@@ -987,39 +973,101 @@ function picoNumbers(key=0) {
 	return pico.param.numbers(key);
 }
 
+// Get param as one number.
+function picoNumber(key=0) {
+	let n = pico.param.numbers(key);
+	return n.length > 0 ? n[0] : 0;
+}
+
 // Set param as numbers.
 function picoSetNumbers(numbers, key=0, separator=".") {
-	return pico.param.setNumbers(numbers, key, separator);
+	pico.param.setNumbers(numbers, key, separator);
 }
 
-// Get param as 6bit code.
+// Get code by string.
+function picoTextCode(str, bitlength=6) {
+	return pico.param.textCode(str, bitlength);
+}
+
+// Get string by code.
+function picoCodeText(code, bitlength=6) {
+	return pico.param.codeText(code, bitlength);
+}
+
+// Get code as one number by char.
+function picoCharCode(char, bitlength=6) {
+	return pico.param.textCode(char, bitlength)[0];
+}
+
+// Get char by code as one number.
+function picoCodeChar(number, bitlength=6) {
+	return pico.param.codeText([number], bitlength)[0];
+}
+
+
+//obsolete: Get all params by one string.
+function picoParams() {
+	return pico.param._serialize();
+}
+//obsolete: Reset all params.
+function picoResetParams() {
+	picoReset();
+}
+//obsolete: Get param as string.
+function picoString(key=0) {
+	return picoParam(key);
+}
+//obsolete: Set param as string.
+function picoSetString(str, key=0) {
+	picoSetParam(str, key);
+}
+//obsolete: Get param as 6bit code.
 function picoCode6(key=0) {
-	return pico.param.code6(key);
+	return picoTextCode(picoParam(key));
 }
-
-// Set param as 6bit code.
+//obsolete: Set param as 6bit code.
 function picoSetCode6(code6, key=0) {
-	return pico.param.setCode6(code6, key);
+	picoSetParam(picoCodeText(code6), key);
 }
-
-// Get param as 8bit compatible 6bit code.
+//obsolete: Get param as 8bit compatible 6bit code.
 function picoCode8(key=0) {
-	return pico.param.code8(key);
+	return picoTextCode(picoParam(key), 8);
 }
-
-// Set param as 8bit compatible 6bit code.
+//obsolete: Set param as 8bit compatible 6bit code.
 function picoSetCode8(code8, key=0) {
-	return pico.param.setCode8(code8, key);
+	picoSetParam(picoCodeText(code8, 8), key);
 }
-
-// Get 6bit code by string.
+//obsolete: Get 6bit code by string.
 function picoStringCode6(str) {
-	return pico.param._stringCode(str);
+	return picoTextCode(str);
 }
-
-// Get 8bit code by string.
+//obsolete: Get 8bit compatible 6bit code by string.
 function picoStringCode8(str) {
-	return pico.param._expandCode(pico.param._stringCode(str));
+	return picoTextCode(str, 8);
+}
+//obsolete: Get string by 6bit code.
+function picoCode6String(code6) {
+	return picoCodeText(code6);
+}
+//obsolete: Get string by 8bit compatible 6bit code.
+function picoCode8String(code8) {
+	return picoCodeText(code8, 8);
+}
+//obsolete: Get 6bit code (1 number) by char.
+function picoCharCode6(char) {
+	return picoCharCode(char);
+}
+//obsolete: Get 8bit compatible 6bit code (1 number) by char.
+function picoCharCode8(char) {
+	return picoCharCode(char, 8);
+}
+//obsolete: Get char by 6bit code (1 number).
+function picoCode6Char(code6) {
+	return picoCodeChar(code6);
+}
+//obsolete: Get char by 8bit compatible 6bit code (1 number).
+function picoCode8Char(code8) {
+	return picoCodeChar(code8, 8);
 }
 
 //************************************************************/
@@ -1071,7 +1119,7 @@ pico.Param = class {
 		try {
 			const blob = new Blob([text], {type: type ? type : "text/plain"});
 			const file = new File([blob], name ? name : "text.txt", {type: type});
-			//console.log("Text file: " + file.size);
+			////console.log("Text file: " + file.size);
 			return file;
 		} catch (error) {
 			console.error(error);
@@ -1079,13 +1127,8 @@ pico.Param = class {
 		}
 	}
 
-	// Get all params by one string.
-	params() {
-		return this._serialize();
-	}
-
 	// Reset all params.
-	resetParams() {
+	reset() {
 		this._reset();
 	}
 
@@ -1095,12 +1138,12 @@ pico.Param = class {
 	}
 
 	// Get param as string.
-	string(key=0) {
+	param(key=0) {
 		return this._string(key);
 	}
 
 	// Set param as string.
-	setString(str, key=0) {
+	setParam(str, key=0) {
 		this._setString(str, key);
 	}
 
@@ -1114,27 +1157,23 @@ pico.Param = class {
 		this._setNumbers(numbers, key);
 	}
 
-	// Get param as 6bit code.
-	code6(key=0) {
-		return this._stringCode(this._string(key));
+	// Get code by string.
+	textCode(str, bitlength=6) {
+		const basebitlength = 6;
+		let code = this._stringCode(str);
+		if (bitlength > basebitlength) {
+			code = this._expandCode(code, bitlength);
+		}
+		return code;
 	}
 
-	// Set param as 6bit code.
-	setCode6(code6, key=0) {
-		this._setString(this._code2str(code6), key);
-	}
-
-	// Get param as 8bit compatible 6bit code.
-	code8(key=0) {
-		let code6 = this.code6(key)
-		return this._expandCode(code6);
-	}
-
-	// Set param as 8bit compatible 6bit code.
-	setCode8(code8, key=0) {
-		const compression = 2;
-		let code6 = this._compressCode(code8, compression)
-		this.setCode6(code6, key);
+	// Get string by code.
+	codeText(code, bitlength=6) {
+		const basebitlength = 6;
+		if (bitlength > basebitlength) {
+			code = this._compressCode(code, bitlength)
+		}
+		return this._codeString(code);
 	}
 
 	//*----------------------------------------------------------*/
@@ -1159,7 +1198,7 @@ pico.Param = class {
 		// Load query.
 		let query = window.location.search;
 		if (query != null && query != "") {
-			//console.log("Load query: " + query);
+			////console.log("Load query: " + query);
 			let text = query.slice(1);
 			this._deserialize(text);
 		}
@@ -1178,10 +1217,10 @@ pico.Param = class {
 				if (url) {
 					let separator = url && url.indexOf("?") < 0 ? "?" : "&";
 					let query = text ? separator + text : "";
-					//console.log("Jump: " + query);
+					////console.log("Jump: " + query);
 					window.location.href = url + query;
 				} else {
-					//console.log("Reload: " + text);
+					////console.log("Reload: " + text);
 					window.location.search = text;
 				}
 			}
@@ -1198,11 +1237,11 @@ pico.Param = class {
 				if (url) {
 					let separator = url && url.indexOf("?") < 0 ? "?" : "";
 					let query = text ? separator + text : "";
-					//console.log("Share query: " + query);
+					////console.log("Share query: " + query);
 					data.url = url + query;
 				} else if (!files) {
 					let query = text ? "?" + text : "";
-					//console.log("Flush query: " + query);
+					////console.log("Flush query: " + query);
 					window.history.replaceState(null, "", query);
 					data.url = window.location.href.replace(/[\?\#].*$/, "") + query;
 				}
@@ -1210,18 +1249,18 @@ pico.Param = class {
 					data.files = files;
 				}
 				if (navigator.canShare) {
-					//console.log("Sharing: " + JSON.stringify(data));
+					////console.log("Sharing: " + JSON.stringify(data));
 					if (navigator.canShare(data) && navigator.share) {
 						await navigator.share(data).then(() => {
-							//console.log("Successful share");
+							////console.log("Successful share");
 						}).catch((error) => {
-							//console.log("Error sharing:" + error);
+							////console.log("Error sharing:" + error);
 						});
 					} else {
-						//console.log("Not supported file");
+						////console.log("Not supported file");
 					}
 				} else {
-					//console.log("Not supported share");
+					////console.log("Not supported share");
 				}
 			}
 			return resolve();
@@ -1284,32 +1323,30 @@ pico.Param = class {
 		this.context[key] = numbers.join(separator);
 	}
 
-	// Get number 6bit+1(0-64) array: 0-9 a-z(10-35) A-Z(36-61) .(62) -(63) _(64)
+	// Get number 6bit array: 0-9 a-z(10-35) A-Z(36-61) .(62) -(63)
 	_stringCode(str) {
 		let results = [];
 		if (str) {
 			for (let i = 0; i < str.length; i++) {
 				let c = str.charCodeAt(i);
 				if ("0".charCodeAt(0) <= c && c <= "9".charCodeAt(0)) {
-					results[i] = c - "0".charCodeAt(0);
+					results.push(c - "0".charCodeAt(0));
 				} else if ("a".charCodeAt(0) <= c && c <= "z".charCodeAt(0)) {
-					results[i] = c - "a".charCodeAt(0) + 10;
+					results.push(c - "a".charCodeAt(0) + 10);
 				} else if ("A".charCodeAt(0) <= c && c <= "Z".charCodeAt(0)) {
-					results[i] = c - "A".charCodeAt(0) + 36;
+					results.push(c - "A".charCodeAt(0) + 36);
 				} else if (c == ".".charCodeAt(0)) {
-					results[i] = 62;
+					results.push(62);
 				} else if (c == "-".charCodeAt(0)) {
-					results[i] = 63;
-				} else {
-					results[i] = 64;
+					results.push(63);
 				}
 			}
 		}
 		return results;
 	}
 
-	// Set number 6bit+1(0-64) array: 0-9 a-z(10-35) A-Z(36-61) .(62) -(63) _(64)
-	_code2str(code6) {
+	// Set number 6bit array: 0-9 a-z(10-35) A-Z(36-61) .(62) -(63)
+	_codeString(code6) {
 		let result = "";
 		for (let i = 0; i < code6.length; i++) {
 			if (0 <= code6[i] && code6[i] < 10) {
@@ -1322,50 +1359,49 @@ pico.Param = class {
 				result += ".";
 			} else if (code6[i] == 63) {
 				result += "-";
-			} else {
-				result += "_";
 			}
 		}
 		return result;
 	}
 
-	// Expand code to 8bit code.
-	_expandCode(code) {
-		const maxbit = 8, maxmask = (1 << maxbit) - 1;
+	// Expand 6 bit code to X(bitlength) bit code.
+	_expandCode(code6, bitlength=8) {
+		const bitmask = (1 << bitlength) - 1;
 		let results = [];
-		for (let i = 0; i < code.length; i++) {
-			let r = 0, x = code[i];
-			// Expand 8bit compatible 6bit code to 6bit code.
-			let b = maxbit, a = (x - 1) & maxmask; // Minus 1 to reserve 0.
+		for (let i = 0; i < code6.length; i++) {
+			let r = 0, x = code6[i];
+			// Expand X bit compatible 6 bit code to X bit code.
+			let b = bitlength, a = (x - 1) & bitmask; // Minus 1 to reserve 0.
 			while (b--) { // Bit reverse.
 				r <<= 1;
 				r |= (a & 1);
 				a >>= 1;
 			}
-			r = r ^ maxmask; // Bit flip.
-			//console.log("Expand: " + ("00000000"+x.toString(2)).slice(-8) + " -> " + ("00000000"+r.toString(2)).slice(-8));
+			r = r ^ bitmask; // Bit flip.
+			//////console.log("Expand: " + ("00000000"+x.toString(2)).slice(-bitlength) + " -> " + ("00000000"+r.toString(2)).slice(-bitlength));
 			results[i] = r;
 		}
 		return results;
 	}
 
-	// Compress code to 8bit compatible X (8 - compression) bit code.
-	// Requires 6 (compression >= 2) bit when encode with ASCII code only.
-	_compressCode(code, compression=2) {
-		const maxbit = 8, maxmask = (1 << maxbit) - 1;
+	// Compress code to X(bitlength) bit compatible 6 bit code for encode with ASCII code only.
+	_compressCode(code, bitlength=8) {
+		const basebitlength = 6;
+		const compression = bitlength - basebitlength;
+		const bitmask = (1 << bitlength) - 1;
 		let results = [];
 		for (let i = 0; i < code.length; i++) {
 			let r = 0, x = code[i];
-			// Compress 6bit code to 8bit compatible 6bit code.
-			let b = maxbit - compression, a = x ^ maxmask; // Bit flip.
+			// Compress X bit code to X bit compatible 6 bit code.
+			let b = bitlength - compression, a = x ^ bitmask; // Bit flip.
 			a = a >> compression; // Compress.
 			while (b--) { // Bit reverse.
 				r <<= 1;
 				r |= (a & 1);
 				a >>= 1;
 			}
-			r = (r + 1) % (1 << (maxbit - compression)); // Plus 1 to reserve 0.
-			//console.log("Compress: " + ("00000000"+x.toString(2)).slice(-8) + " -> " + ("00000000"+r.toString(2)).slice(-8));
+			r = (r + 1) % (1 << (bitlength - compression)); // Plus 1 to reserve 0.
+			//////console.log("Compress: " + ("00000000"+x.toString(2)).slice(-bitlength) + " -> " + ("00000000"+r.toString(2)).slice(-bitlength));
 			results[i] = r;
 		}
 		return results;
@@ -1470,7 +1506,8 @@ async function picoStop() {
 }
 
 // Play pulse melody.
-// pattern=0.125,0.25,0.5 (8bit original parameter)
+// kcents = -3.6(A1:54.6Hz) .. 7.0(G9:12.4kHz)
+// pattern = 0 or 0.125, 0.25, 0.5 (8bit original parameter)
 async function picoPulse(kcents=[0], length=0.1, pattern=0, repeat=1) {
 	try {
 		await pico.sound.playPulse(kcents, length, pattern, repeat);
@@ -1480,7 +1517,8 @@ async function picoPulse(kcents=[0], length=0.1, pattern=0, repeat=1) {
 }
 
 // Play triangle melody.
-// pattern=16 (8bit original parameter)
+// kcents = -4.8(A0:27.3Hz) .. 8.4(A11:55.9kHz)
+// pattern = 0 or 16 (8bit original parameter)
 async function picoTriangle(kcents=[0], length=0.1, pattern=0, repeat=1) {
 	try {
 		await pico.sound.playTriangle(kcents, length, pattern, repeat);
@@ -1489,11 +1527,13 @@ async function picoTriangle(kcents=[0], length=0.1, pattern=0, repeat=1) {
 	}
 }
 
-// Play noise sound.
-// pattern=1,6 (8bit original parameter)
-async function picoNoise(length=0.1, pattern=0, delay=0) {
+// Play noise melody.
+// kcents = -7.9(D-3), -6.7(D-2), -5.5(D-1), -5.0(G-1), -4.3(D0), -3.8(G0), -3.1(D1),
+//          -1.5(F2#), -2.3(A2#), -0.7(D3), -0.2(G3), 0.5(D4), 1.7(D5), 2.9(D6), 4.1(D7), 5.3(D8)
+// pattern = 0 or 1, 6 (8bit original parameter)
+async function picoNoise(kcents=[0], length=0.1, pattern=0, repeat=1) {
 	try {
-		await pico.sound.playNoise(length, pattern, delay);
+		await pico.sound.playNoise(kcents, length, pattern, repeat);
 	} catch (error) {
 		console.error(error);
 	}
@@ -1530,10 +1570,10 @@ pico.Sound = class {
 		return new Promise(async (resolve) => {
 			for (let i = 0; i < repeat || repeat <= 0; i++) {
 				for (let j = 0; j < kcents.length; j++) {
-					//console.log("Pulse melody: " + i + "/" + repeat + ":" + j + "/" + kcents.length);
+					////console.log("Pulse melody: " + i + "/" + repeat + ":" + j + "/" + kcents.length);
 					await this._pulse(kcents[j], length, pattern);
 					if (this.stopped) {
-						//console.log("Pulse melody End.");
+						////console.log("Pulse melody End.");
 						resolve();
 					}
 				}
@@ -1546,10 +1586,10 @@ pico.Sound = class {
 		return new Promise(async (resolve) => {
 			for (let i = 0; i < repeat || repeat <= 0; i++) {
 				for (let j = 0; j < kcents.length; j++) {
-					//console.log("Triangle melody: " + i + "/" + repeat + ":" + j + "/" + kcents.length);
+					////console.log("Triangle melody: " + i + "/" + repeat + ":" + j + "/" + kcents.length);
 					await this._triangle(kcents[j], length, pattern);
 					if (this.stopped) {
-						//console.log("Triangle melody End.");
+						////console.log("Triangle melody End.");
 						resolve();
 					}
 				}
@@ -1558,8 +1598,19 @@ pico.Sound = class {
 	}
 
 	// Play noise.
-	playNoise(length=0.1, pattern=0, delay=0) {
-		return this._noise(length, pattern, delay);
+	playNoise(kcents=[0], length=0.1, pattern=0, repeat=1) {
+		return new Promise(async (resolve) => {
+			for (let i = 0; i < repeat || repeat <= 0; i++) {
+				for (let j = 0; j < kcents.length; j++) {
+					////console.log("Noise melody: " + i + "/" + repeat + ":" + j + "/" + kcents.length);
+					await this._noise(kcents[j], length, pattern);
+					if (this.stopped) {
+						////console.log("Noise melody End.");
+						resolve();
+					}
+				}
+			}
+		}); // end of new Promise.
 	}
 
 	//*----------------------------------------------------------*/
@@ -1678,7 +1729,7 @@ pico.Sound = class {
 			return new Promise((resolve) => {
 
 				// Wait to play.
-				//console.log("Wait to play: " + Date.now() + " -> " + this.endTime);
+				////console.log("Wait to play: " + Date.now() + " -> " + this.endTime);
 				//let endTime = Date.now() + length * 1000 + delay * 1000;
 				//this.endTime = endTime > this.endTime ? endTime : this.endTime;
 				this.endTime = Date.now() + length * 1000 + delay * 1000;
@@ -1740,7 +1791,7 @@ pico.Sound = class {
 							//	//console.log("Stopped.");
 							//} else {
 								// End.
-								//console.log("End: " + kcents + " x " + length * kcents.length);
+								////console.log("End: " + kcents + " x " + length * kcents.length);
 								this.master.gain.value = 0;
 							//}
 							resolve();
@@ -1757,7 +1808,6 @@ pico.Sound = class {
 			//console.log("No audio.");
 			return Promise.reject();
 		}
-		//console.log("Pulse" + pattern + ": " + kcent + " x " + length);
 
 		// 8bit original argorithm and parameter: pattern=0.125,0.25,0.5
 		if (pattern > 0) {
@@ -1782,12 +1832,18 @@ pico.Sound = class {
 				pulseFilters[1] = null;
 			}, length * 1000);
 
+			//console.log("Start pulse sound " + pattern + ": " + kcent + "=" + frequency + " x " + length);
+
 			// Start.
 			const type = "sawtooth";
 			return this._play(type, [kcent], length, 0, volume);
 
 		// Simple square sound.
 		} else {
+
+			//console.log("Start pulse sound " + pattern + ": " + kcent + " x " + length);
+
+			// Start.
 			const type = "square";
 			return this._play(type, [kcent], length, 0, volume);
 		}
@@ -1799,7 +1855,6 @@ pico.Sound = class {
 			//console.log("No audio.");
 			return Promise.reject();
 		}
-		//console.log("Triangle" + pattern + ": " + kcent + " x " + length);
 
 		// 8bit original argorithm and parameter: pattern=16
 		if (pattern > 0) {
@@ -1849,28 +1904,31 @@ pico.Sound = class {
 				triangleBuffer = null;
 			}, length * 1000);
 
+			//console.log("Start triangle sound " + pattern + ": " + kcent + "=" + frequency + " x " + length);
+
 			// Start.
 			const type = null;
 			return this._play(type, [0], length, 0, volume);
 
 		// Simple triangle sound.
 		} else {
+
+			//console.log("Start triangle sound " + pattern + ": " + kcent + " x " + length);
+
+			// Start.
 			const type = "triangle";
 			return this._play(type, [kcent], length, 0, volume);
 		}
 	}
 
 	// Start noise sound.
-	_noise(length=0.1, pattern=0, delay=0, volume=1) {
+	_noise(kcent=0, length=0.1, pattern=0, volume=0.5, delay=0) {
 		if (this.context == null) {
 			//console.log("No audio.");
 			return Promise.reject();
-		}/* else if (this.endTime < 0 || this.endTime > Date.now() + delay * 1000) {
-			//console.log("Not end previous sound.");
-			return Promise.resolve();
-		}*/
-		//console.log("Noise" + pattern + ": " + length + " + " + delay);
-		setTimeout(() => {
+		}
+
+		//setTimeout(() => {
 
 			// Create noise buffers.
 			let noiseBuffer = null;
@@ -1898,24 +1956,29 @@ pico.Sound = class {
 				}
 			}
 
-			// Connect noise generator to master volume.
+			// Create noise generator.
 			let noiseGenerator = null;
 			noiseGenerator = this.context.createBufferSource();
 			noiseGenerator.buffer = noiseBuffer;
+			noiseGenerator.detune.setValueAtTime(kcent * 1000, this.context.currentTime);
+
+			// Connect noise generator to master volume.
 			noiseGenerator.connect(this.master);
 			noiseGenerator.start();
 			setTimeout(() => {
-				//console.log("Disconnect noise generator.");
+				////console.log("Disconnect noise generator.");
 				noiseGenerator.disconnect(this.master);
 				noiseGenerator = null;
 				noiseBuffer = null;
 			}, length * 1000);
 
+			//console.log("Start noise sound " + pattern + ": " + kcent + " x " + length);
+
 			// Start.
 			const type = null;
 			return this._play(type, [0], length, 0, volume);
 
-		}, delay * 1000);
+		//}, delay * 1000);
 	}
 };
 

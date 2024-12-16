@@ -1,6 +1,6 @@
 {
 	"name": "saikoro.org",
-	"version": "0.9.40515",
+	"version": "0.10.41215",
 	"description": "saikoro.org",
 	"scripts": {
 		"@Usage:@": [
@@ -20,7 +20,8 @@
 
 		"build:lib": "pushd pico; npm run build --out=../public; popd",
 		"build:app": "pushd pico; for app in dice clock bank kuku chess shogi; do npm run build --out=../public/$app --main=app/$app/app.js; done; popd",
-		"build": "npm run build:lib; npm run build:app",
+		"build:menu": "pushd pico; npm run build --out=../public/ --main=app/menu/app.js",
+		"build": "npm run build:lib; npm run build:menu; npm run build:app",
 
 		"deploy": "firebase --project saikoroorg deploy",
 
